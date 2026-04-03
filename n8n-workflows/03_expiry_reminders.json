@@ -1,0 +1,101 @@
+{
+  "name": "GamePass — Expiry Reminders (5d + 1d)",
+  "nodes": [
+    {
+      "parameters": { "rule": { "interval": [{ "field": "cronExpression", "expression": "0 10 * * *" }] } },
+      "name": "Cron 10:00 Daily",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const today = new Date();\nconst in5days = new Date(today); in5days.setDate(today.getDate() + 5);\nconst in1day  = new Date(today); in1day.setDate(today.getDate() + 1);\nconst fmt = d => d.toISOString().split('T')[0];\nreturn [{ json: { date_5d: fmt(in5days), date_1d: fmt(in1day) } }];"
+      },
+      "name": "Compute Dates",
+      "type": "n8n-nodes-base.code",
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/subscriptions?status=eq.active&end_date=eq.{{ $json.date_5d }}&select=user_id,plan,end_date,users(phone,name)",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" }
+          ]
+        }
+      },
+      "name": "Get 5-day Expiring",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [680, 200]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/subscriptions?status=eq.active&end_date=eq.{{ $json.date_1d }}&select=user_id,plan,end_date,users(phone,name)",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" }
+          ]
+        }
+      },
+      "name": "Get 1-day Expiring",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [680, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "const subs = $input.all();\nreturn subs.flatMap(item => {\n  const list = Array.isArray(item.json) ? item.json : [item.json];\n  return list.map(s => ({\n    json: {\n      phone: s.users?.phone,\n      name: s.users?.name,\n      end_date: s.end_date,\n      days: 5,\n      message: `GamePass UZ: Ваша подписка истекает через 5 дней (${s.end_date}). Продлите на gamepassuz.uz 🎮`\n    }\n  }));\n});"
+      },
+      "name": "Format 5d Messages",
+      "type": "n8n-nodes-base.code",
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "const subs = $input.all();\nreturn subs.flatMap(item => {\n  const list = Array.isArray(item.json) ? item.json : [item.json];\n  return list.map(s => ({\n    json: {\n      phone: s.users?.phone,\n      name: s.users?.name,\n      end_date: s.end_date,\n      days: 1,\n      message: `GamePass UZ: Подписка истекает ЗАВТРА (${s.end_date})! Продлите прямо сейчас 🎮`\n    }\n  }));\n});"
+      },
+      "name": "Format 1d Messages",
+      "type": "n8n-nodes-base.code",
+      "position": [900, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://notify.eskiz.uz/api/message/sms/send",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [{ "name": "Authorization", "value": "=Bearer {{ $env.ESKIZ_TOKEN }}" }]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "mobile_phone", "value": "={{ $json.phone.replace('+', '') }}" },
+            { "name": "message", "value": "={{ $json.message }}" },
+            { "name": "from", "value": "4546" }
+          ]
+        }
+      },
+      "name": "Send SMS Reminders",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1120, 300]
+    }
+  ],
+  "connections": {
+    "Cron 10:00 Daily": { "main": [[{ "node": "Compute Dates", "type": "main", "index": 0 }]] },
+    "Compute Dates": {
+      "main": [[
+        { "node": "Get 5-day Expiring", "type": "main", "index": 0 },
+        { "node": "Get 1-day Expiring", "type": "main", "index": 0 }
+      ]]
+    },
+    "Get 5-day Expiring": { "main": [[{ "node": "Format 5d Messages", "type": "main", "index": 0 }]] },
+    "Get 1-day Expiring": { "main": [[{ "node": "Format 1d Messages", "type": "main", "index": 0 }]] },
+    "Format 5d Messages": { "main": [[{ "node": "Send SMS Reminders", "type": "main", "index": 0 }]] },
+    "Format 1d Messages": { "main": [[{ "node": "Send SMS Reminders", "type": "main", "index": 0 }]] }
+  }
+}

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PlayPass — Панель клуба</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="styles.css?v=2" />
+</head>
+<body>
+
+<!-- LOGIN PAGE -->
+<div id="login-page" class="page">
+  <div class="login-wrap">
+    <div class="logo"><span class="logo-text">PlayPass</span></div>
+    <h2 data-i18n="login_title">Вход в панель клуба</h2>
+    <p class="subtitle" data-i18n="login_sub">Войдите с данными, которые предоставил PlayPass</p>
+    <div class="form-group">
+      <label data-i18n="login_email">Email</label>
+      <input type="email" id="login-email" placeholder="club@example.com" autocomplete="email" />
+    </div>
+    <div class="form-group">
+      <label data-i18n="login_pass">Пароль</label>
+      <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" />
+    </div>
+    <div id="login-error" class="error-msg hidden"></div>
+    <button class="btn-primary" onclick="handleLogin()" data-i18n="login_btn">Войти</button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app-page" class="page hidden">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><span class="logo-text">PlayPass</span></div>
+    <nav class="sidebar-nav">
+      <!-- Основное -->
+      <div class="nav-group open">
+        <div class="nav-group-header" onclick="toggleNavGroup(this)"><span data-i18n="nav_main">Основное</span><span class="nav-arrow">&#9662;</span></div>
+        <div class="nav-group-items">
+          <a href="#" class="nav-item active" data-page="dashboard" onclick="showTab('dashboard',this)" data-i18n="nav_dashboard">Дашборд</a>
+          <a href="#" class="nav-item" data-page="visits" onclick="showTab('visits',this)" data-i18n="nav_visits">Визиты</a>
+          <a href="#" class="nav-item" data-page="finance" onclick="showTab('finance',this)" data-i18n="nav_finance">Финансы</a>
+        </div>
+      </div>
+      <!-- Операции -->
+      <div class="nav-group">
+        <div class="nav-group-header" onclick="toggleNavGroup(this)"><span data-i18n="nav_operations">Операции</span><span class="nav-arrow">&#9662;</span></div>
+        <div class="nav-group-items">
+          <a href="#" class="nav-item" data-page="pcs" onclick="showTab('pcs',this)" data-i18n="nav_pcs">Управление ПК</a>
+          <a href="#" class="nav-item" data-page="sessions" onclick="showTab('sessions',this)" data-i18n="nav_sessions">Активные сессии</a>
+          <a href="#" class="nav-item" data-page="bookings" onclick="showTab('bookings',this)" data-i18n="nav_bookings">Бронирование</a>
+        </div>
+      </div>
+      <!-- Управление -->
+      <div class="nav-group">
+        <div class="nav-group-header" onclick="toggleNavGroup(this)"><span data-i18n="nav_management">Управление</span><span class="nav-arrow">&#9662;</span></div>
+        <div class="nav-group-items">
+          <a href="#" class="nav-item" data-page="staff" onclick="showTab('staff',this)" data-i18n="nav_staff">Персонал</a>
+        </div>
+      </div>
+      <!-- Аналитика -->
+      <div class="nav-group">
+        <div class="nav-group-header" onclick="toggleNavGroup(this)"><span data-i18n="nav_analytics_group">Аналитика</span><span class="nav-arrow">&#9662;</span></div>
+        <div class="nav-group-items">
+          <a href="#" class="nav-item" data-page="analytics" onclick="showTab('analytics',this)" data-i18n="nav_analytics_hours">По часам</a>
+        </div>
+      </div>
+      <!-- Инструменты -->
+      <div class="nav-group">
+        <div class="nav-group-header" onclick="toggleNavGroup(this)"><span data-i18n="nav_tools">Инструменты</span><span class="nav-arrow">&#9662;</span></div>
+        <div class="nav-group-items">
+          <a href="#" class="nav-item" data-page="qr" onclick="showTab('qr',this)" data-i18n="nav_qr">QR-постер</a>
+        </div>
+      </div>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="sidebar-controls">
+        <button class="sidebar-ctrl-btn" id="theme-toggle" onclick="toggleTheme()" title="Dark / Light"><span id="theme-icon">☀</span></button>
+        <button class="sidebar-ctrl-btn" id="lang-toggle" onclick="toggleLang()"><span id="lang-label">UZ</span></button>
+      </div>
+      <div class="support-block">
+        <div class="support-title" data-i18n="sidebar_support">Поддержка</div>
+        <a href="https://t.me/playpass_support" target="_blank" class="support-link">Telegram</a>
+        <a href="tel:+998901234567" class="support-link">+998 90 123 45 67</a>
+      </div>
+      <div id="club-name-sidebar" class="club-name-sidebar" data-i18n="loading">Загрузка...</div>
+      <button class="btn-logout" onclick="handleLogout()" data-i18n="sidebar_logout">Выйти</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+
+    <!-- ══════ DASHBOARD ══════ -->
+    <div id="tab-dashboard" class="tab-content">
+      <div class="page-header">
+        <h1 data-i18n="dash_title">Дашборд</h1>
+        <span id="realtime-dot" class="realtime-dot" title="Live">●</span>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label" data-i18n="dash_today">Сегодня пришло</div><div class="stat-value" id="stat-today">—</div><div class="stat-sub" data-i18n="dash_visits_unit">визитов</div></div>
+        <div class="stat-card"><div class="stat-label" data-i18n="dash_month">Этот месяц</div><div class="stat-value" id="stat-month">—</div><div class="stat-sub" data-i18n="dash_visits_unit">визитов</div></div>
+        <div class="stat-card highlight"><div class="stat-label" data-i18n="dash_payout">К выплате</div><div class="stat-value" id="stat-payout">—</div><div class="stat-sub" data-i18n="dash_payout_sub">UZS (5-го числа)</div></div>
+        <div class="stat-card"><div class="stat-label" data-i18n="dash_total">Всего за всё время</div><div class="stat-value" id="stat-total">—</div><div class="stat-sub" data-i18n="dash_visits_unit">визитов</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3 data-i18n="dash_recent">Последние визиты</h3> <span class="badge-live">LIVE</span></div>
+        <div id="live-visits" class="live-visits"><div class="empty-state" data-i18n="dash_no_visits">Ожидание визитов...</div></div>
+      </div>
+    </div>
+
+    <!-- ══════ VISITS ══════ -->
+    <div id="tab-visits" class="tab-content hidden">
+      <div class="page-header">
+        <h1 data-i18n="visits_title">Визиты</h1>
+        <div class="header-actions">
+          <button class="btn-secondary" onclick="exportCSV()" data-i18n="visits_export">Экспорт CSV</button>
+        </div>
+      </div>
+      <div class="filters-row">
+        <input type="date" id="filter-from" onchange="loadVisits()" />
+        <input type="date" id="filter-to" onchange="loadVisits()" />
+        <input type="text" id="filter-search" data-i18n-ph="visits_search" placeholder="Поиск по имени..." oninput="filterVisitsTable()" />
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table id="visits-table">
+            <thead><tr><th data-i18n="visits_th_date">Дата и время</th><th data-i18n="visits_th_user">Пользователь</th><th data-i18n="visits_th_plan">План</th></tr></thead>
+            <tbody id="visits-tbody"><tr><td colspan="3" class="empty-cell" data-i18n="loading">Загрузка...</td></tr></tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <button class="btn-secondary" id="btn-prev" onclick="changePage(-1)" disabled data-i18n="visits_prev">← Назад</button>
+          <span id="page-info">1 / 1</span>
+          <button class="btn-secondary" id="btn-next" onclick="changePage(1)" data-i18n="visits_next">Вперёд →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ FINANCE ══════ -->
+    <div id="tab-finance" class="tab-content hidden">
+      <div class="page-header"><h1 data-i18n="fin_title">Финансы</h1></div>
+      <div class="stats-grid">
+        <div class="stat-card highlight"><div class="stat-label" data-i18n="fin_rate">Ставка за визит</div><div class="stat-value">8 000</div><div class="stat-sub">UZS</div></div>
+        <div class="stat-card"><div class="stat-label" data-i18n="fin_month_est">Оценка за месяц</div><div class="stat-value" id="finance-month-est">—</div><div class="stat-sub">UZS</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3 data-i18n="fin_payouts">История выплат</h3></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th data-i18n="fin_th_period">Период</th><th data-i18n="fin_th_visits">Визиты</th><th data-i18n="fin_th_amount">Сумма</th><th data-i18n="fin_th_status">Статус</th><th data-i18n="fin_th_date">Дата выплаты</th></tr></thead>
+            <tbody id="payouts-tbody"><tr><td colspan="5" class="empty-cell" data-i18n="loading">Загрузка...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ PC MANAGEMENT ══════ -->
+    <div id="tab-pcs" class="tab-content hidden">
+      <div class="page-header">
+        <h1 data-i18n="pcs_title">Управление ПК</h1>
+        <div class="header-actions">
+          <button class="btn-primary btn-inline" onclick="showAddPcModal()" data-i18n="pcs_add">+ Добавить ПК</button>
+        </div>
+      </div>
+      <div class="pc-summary" id="pc-summary"></div>
+      <div class="pc-grid" id="pc-grid"><div class="empty-state" data-i18n="loading">Загрузка...</div></div>
+    </div>
+
+    <!-- ══════ ACTIVE SESSIONS ══════ -->
+    <div id="tab-sessions" class="tab-content hidden">
+      <div class="page-header">
+        <h1 data-i18n="sess_title">Активные сессии</h1>
+        <span class="realtime-dot" title="Live">●</span>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th data-i18n="sess_th_pc">ПК</th><th data-i18n="sess_th_user">Пользователь</th><th data-i18n="sess_th_start">Начало</th><th data-i18n="sess_th_elapsed">Прошло</th><th data-i18n="sess_th_remaining">Осталось</th><th data-i18n="sess_th_actions">Действия</th></tr></thead>
+            <tbody id="sessions-tbody"><tr><td colspan="6" class="empty-cell" data-i18n="loading">Загрузка...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ BOOKINGS ══════ -->
+    <div id="tab-bookings" class="tab-content hidden">
+      <div class="page-header">
+        <h1 data-i18n="book_title">Бронирование</h1>
+        <div class="header-actions">
+          <input type="date" id="booking-date" onchange="loadBookings()" />
+        </div>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th data-i18n="book_th_time">Время</th><th data-i18n="book_th_pc">ПК</th><th data-i18n="book_th_user">Пользователь</th><th data-i18n="book_th_status">Статус</th><th data-i18n="book_th_actions">Действия</th></tr></thead>
+            <tbody id="bookings-tbody"><tr><td colspan="5" class="empty-cell" data-i18n="loading">Загрузка...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ STAFF ══════ -->
+    <div id="tab-staff" class="tab-content hidden">
+      <div class="page-header">
+        <h1 data-i18n="staff_title">Персонал</h1>
+        <div class="header-actions">
+          <button class="btn-primary btn-inline" onclick="showAddStaffModal()" data-i18n="staff_add">+ Добавить сотрудника</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th data-i18n="staff_th_name">Имя</th><th data-i18n="staff_th_role">Роль</th><th data-i18n="staff_th_phone">Телефон</th><th data-i18n="staff_th_shift">Смена</th><th data-i18n="staff_th_status">Статус</th><th data-i18n="staff_th_actions">Действия</th></tr></thead>
+            <tbody id="staff-tbody"><tr><td colspan="6" class="empty-cell" data-i18n="loading">Загрузка...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ ANALYTICS BY HOUR ══════ -->
+    <div id="tab-analytics" class="tab-content hidden">
+      <div class="page-header"><h1 data-i18n="analytics_title">Аналитика по часам</h1></div>
+      <div class="stats-grid">
+        <div class="stat-card highlight"><div class="stat-label" data-i18n="analytics_peak">Пиковые часы</div><div class="stat-value" id="peak-hours">—</div><div class="stat-sub" id="peak-hours-sub"></div></div>
+      </div>
+      <div class="charts-row">
+        <div class="card chart-card"><div class="card-header"><h3 data-i18n="analytics_by_hour">Визиты по часам (30 дней)</h3></div><div class="chart-wrap"><canvas id="chart-hours"></canvas></div></div>
+        <div class="card chart-card"><div class="card-header"><h3 data-i18n="analytics_by_day">По дням недели (30 дней)</h3></div><div class="chart-wrap"><canvas id="chart-weekdays"></canvas></div></div>
+      </div>
+    </div>
+
+    <!-- ══════ QR ══════ -->
+    <div id="tab-qr" class="tab-content hidden">
+      <div class="page-header"><h1 data-i18n="qr_title">QR-постер</h1></div>
+      <div class="card qr-card">
+        <p class="qr-hint" data-i18n="qr_hint">Распечатайте этот QR-код и разместите в клубе.</p>
+        <div id="qr-container" class="qr-container"><div class="loading" data-i18n="loading">Загрузка...</div></div>
+        <div class="qr-actions">
+          <button class="btn-primary" onclick="downloadQrPdf()" data-i18n="qr_download">Скачать PDF (A4)</button>
+          <button class="btn-secondary" onclick="regenerateQr()" data-i18n="qr_regen">Перегенерировать QR</button>
+        </div>
+        <p class="qr-note" data-i18n="qr_note">Пользователи PlayPass сканируют этот код для чекина.</p>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL -->
+<div id="modal-overlay" class="modal-overlay hidden" onclick="closeModal()">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3 id="modal-title"></h3>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div id="modal-body" class="modal-body"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script defer src="translations.js?v=2"></script>
+<script defer src="app.js?v=2"></script>
+</body>
+</html>

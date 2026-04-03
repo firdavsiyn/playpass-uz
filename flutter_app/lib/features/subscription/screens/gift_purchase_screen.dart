@@ -1,0 +1,227 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../core/constants/app_constants.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../services/supabase_service.dart';
+
+class GiftPurchaseScreen extends StatefulWidget {
+  const GiftPurchaseScreen({super.key});
+
+  @override
+  State<GiftPurchaseScreen> createState() => _GiftPurchaseScreenState();
+}
+
+class _GiftPurchaseScreenState extends State<GiftPurchaseScreen> {
+  String _selectedPlan = 'standard';
+  final _nameCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+  bool _loading = false;
+  String? _giftCode;
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _phoneCtrl.dispose();
+    super.dispose();
+  }
+
+  PlanConfig get _plan => AppConstants.plans[_selectedPlan]!;
+
+  Future<void> _createGift() async {
+    setState(() => _loading = true);
+    try {
+      final code = await SupabaseService().createGiftCertificate(
+        plan: _selectedPlan,
+        amountUzs: _plan.priceUzs,
+        recipientName: _nameCtrl.text.trim().isEmpty ? null : _nameCtrl.text.trim(),
+        recipientPhone: _phoneCtrl.text.trim().isEmpty ? null : _phoneCtrl.text.trim(),
+      );
+      setState(() => _giftCode = code);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Ошибка: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Подарить подписку')),
+      body: _giftCode != null ? _buildSuccess() : _buildForm(),
+    );
+  }
+
+  Widget _buildForm() {
+    final plans = AppConstants.plans.values.toList();
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+      children: [
+        // Plan selector
+        const Text('Выберите тариф', style: TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 10,
+          children: plans.map((p) {
+            final selected = p.id == _selectedPlan;
+            final color = _planColor(p.id);
+            return GestureDetector(
+              onTap: () => setState(() => _selectedPlan = p.id),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: selected ? color.withValues(alpha: 0.15) : AppTheme.bgSurface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: selected ? color : AppTheme.bgSurface),
+                  boxShadow: selected ? [BoxShadow(color: color.withValues(alpha: 0.2), blurRadius: 8)] : [],
+                ),
+                child: Text(p.name, style: TextStyle(color: selected ? color : AppTheme.textMuted, fontWeight: FontWeight.w600)),
+              ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          '${_formatPrice(_plan.priceUzs)} UZS  ·  ${_plan.isUnlimited ? "Безлимит" : "${_plan.hours} ч"}',
+          style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+        ),
+        const SizedBox(height: 24),
+
+        // Recipient info
+        const Text('Для кого подарок?', style: TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+        const SizedBox(height: 8),
+        const Text('Необязательно — можно просто скопировать код',
+            style: TextStyle(color: AppTheme.textMuted, fontSize: 13)),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _nameCtrl,
+          style: const TextStyle(color: AppTheme.textPrimary),
+          decoration: const InputDecoration(hintText: 'Имя получателя', prefixIcon: Icon(Icons.person_outline, size: 20)),
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _phoneCtrl,
+          keyboardType: TextInputType.phone,
+          style: const TextStyle(color: AppTheme.textPrimary),
+          decoration: const InputDecoration(hintText: 'Телефон (необязательно)', prefixIcon: Icon(Icons.phone_outlined, size: 20)),
+        ),
+        const SizedBox(height: 32),
+
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [BoxShadow(color: AppTheme.primary.withValues(alpha: 0.3), blurRadius: 12)],
+          ),
+          child: ElevatedButton(
+            onPressed: _loading ? null : _createGift,
+            child: _loading
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : Text('Оформить подарок · ${_formatPrice(_plan.priceUzs)} UZS'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSuccess() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 72, height: 72,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(colors: [
+                  AppTheme.success.withValues(alpha: 0.2),
+                  AppTheme.neonCyan.withValues(alpha: 0.15),
+                ]),
+                shape: BoxShape.circle,
+                boxShadow: AppTheme.neonGlow(color: AppTheme.success, radius: 20),
+              ),
+              child: const Icon(Icons.card_giftcard_rounded, color: AppTheme.success, size: 36),
+            ),
+            const SizedBox(height: 24),
+            const Text('Подарочный сертификат создан!',
+                style: TextStyle(color: AppTheme.textPrimary, fontSize: 20, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 8),
+            const Text('Поделитесь кодом с другом', style: TextStyle(color: AppTheme.textSecondary)),
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppTheme.bgCard,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppTheme.primary.withValues(alpha: 0.2)),
+                boxShadow: AppTheme.neonGlow(radius: 16),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    _giftCode!,
+                    style: const TextStyle(color: AppTheme.primaryLight, fontSize: 32, fontWeight: FontWeight.w800, letterSpacing: 4),
+                  ),
+                  const SizedBox(height: 8),
+                  Text('${_plan.name} · ${_formatPrice(_plan.priceUzs)} UZS',
+                      style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: _giftCode!));
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Код скопирован')));
+                    },
+                    icon: const Icon(Icons.copy_rounded, size: 18),
+                    label: const Text('Копировать'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(
+                        text: 'Привет! Дарю тебе подписку PlayPass. Активируй код: ${_giftCode!} в приложении!',
+                      ));
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Текст скопирован')));
+                    },
+                    icon: const Icon(Icons.share_rounded, size: 18),
+                    label: const Text('Поделиться'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            TextButton(onPressed: () => context.go('/home'), child: const Text('На главную')),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color _planColor(String id) => switch (id) {
+    'vip' => const Color(0xFFFBBF24),
+    'pro' => const Color(0xFF8B5CF6),
+    'standard' => AppTheme.primary,
+    _ => const Color(0xFF6B7280),
+  };
+
+  String _formatPrice(int p) {
+    final s = p.toString();
+    final buf = StringBuffer();
+    for (var i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) buf.write(' ');
+      buf.write(s[i]);
+    }
+    return buf.toString();
+  }
+}

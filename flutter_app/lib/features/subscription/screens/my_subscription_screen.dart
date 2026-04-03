@@ -1,0 +1,692 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../core/constants/app_constants.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../models/subscription.dart';
+import '../../../services/supabase_service.dart';
+
+// ── Provider ────────────────────────────────────────────────
+final _mySubProvider = FutureProvider<Subscription?>((ref) async {
+  return SupabaseService().getActiveSubscription();
+});
+
+// ── Screen ──────────────────────────────────────────────────
+class MySubscriptionScreen extends ConsumerWidget {
+  const MySubscriptionScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final subAsync = ref.watch(_mySubProvider);
+
+    return Scaffold(
+      body: CustomScrollView(
+        slivers: [
+          // ── Header ──────────────────────────────────
+          SliverToBoxAdapter(
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                child: const Text(
+                  'Мой абонемент',
+                  style: TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // ── Subscription card ───────────────────────
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+              child: subAsync.when(
+                data: (sub) => _SubscriptionCard(subscription: sub),
+                loading: () => _SubscriptionCardSkeleton(),
+                error: (_, __) => _SubscriptionCard(subscription: null),
+              ),
+            ),
+          ),
+
+          // ── Actions section ─────────────────────────
+          const SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(20, 28, 20, 12),
+              child: Text(
+                'Купить абонемент и допуслуги',
+                style: TextStyle(
+                  color: AppTheme.textMuted,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppTheme.bgCard,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppTheme.primary.withValues(alpha: 0.08)),
+                  boxShadow: AppTheme.cardGlow(),
+                ),
+                child: Column(
+                  children: [
+                    _ActionTile(
+                      icon: Icons.card_membership_rounded,
+                      iconColor: AppTheme.primary,
+                      title: 'Купить абонемент',
+                      onTap: () => context.push('/plans'),
+                    ),
+                    const _Divider(),
+                    _ActionTile(
+                      icon: Icons.confirmation_number_outlined,
+                      iconColor: const Color(0xFF22C55E),
+                      title: 'Активировать промокод',
+                      onTap: () => _showPromoDialog(context),
+                    ),
+                    const _Divider(),
+                    _ActionTile(
+                      icon: Icons.card_giftcard_rounded,
+                      iconColor: const Color(0xFFEF4444),
+                      title: 'Купить абонемент в подарок',
+                      onTap: () => _showGiftInfo(context),
+                    ),
+                    const _Divider(),
+                    _ActionTile(
+                      icon: Icons.redeem_rounded,
+                      iconColor: const Color(0xFF8B5CF6),
+                      title: 'Активировать сертификат',
+                      onTap: () => context.push('/gift/redeem'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // ── FAQ section ─────────────────────────────
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppTheme.bgCard,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: _ActionTile(
+                  icon: Icons.help_outline_rounded,
+                  iconColor: AppTheme.textMuted,
+                  title: 'Вопросы и ответы',
+                  onTap: () => _showFAQ(context),
+                ),
+              ),
+            ),
+          ),
+
+          // ── Plan comparison ─────────────────────────
+          const SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(20, 28, 20, 12),
+              child: Text(
+                'Сравнение тарифов',
+                style: TextStyle(
+                  color: AppTheme.textMuted,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+
+          SliverToBoxAdapter(
+            child: SizedBox(
+              height: 200,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                itemCount: AppConstants.plans.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 12),
+                itemBuilder: (context, index) {
+                  final plan = AppConstants.plans.values.toList()[index];
+                  return _MiniPlanCard(
+                    plan: plan,
+                    onTap: () => context.push('/payment', extra: plan.id),
+                  );
+                },
+              ),
+            ),
+          ),
+
+          // Bottom spacing
+          const SliverToBoxAdapter(child: SizedBox(height: 100)),
+        ],
+      ),
+    );
+  }
+
+  void _showPromoDialog(BuildContext context) {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: AppTheme.bgCard,
+        title: const Text('Промокод',
+            style: TextStyle(color: AppTheme.textPrimary)),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          style: const TextStyle(color: AppTheme.textPrimary),
+          decoration: const InputDecoration(
+            hintText: 'Введите промокод',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Отмена'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Промокод будет доступен в следующем обновлении'),
+                ),
+              );
+            },
+            child: const Text('Активировать'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showGiftInfo(BuildContext context) {
+    context.push('/gift/purchase');
+  }
+
+  void _showFAQ(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.bgCard,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        maxChildSize: 0.9,
+        minChildSize: 0.4,
+        expand: false,
+        builder: (_, scrollCtrl) => ListView(
+          controller: scrollCtrl,
+          padding: const EdgeInsets.all(24),
+          children: [
+            Center(
+              child: Container(
+                width: 40, height: 4,
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  color: AppTheme.textMuted.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const Text('Вопросы и ответы',
+                style: TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700)),
+            const SizedBox(height: 20),
+            _faqItem('Как активировать подписку?',
+                'После оплаты подписка активируется автоматически в течение 30 минут. Вы получите уведомление.'),
+            _faqItem('Можно ли заморозить подписку?',
+                'Да, вы можете заморозить подписку на срок до ${AppConstants.freezeMaxDays} дней через раздел Профиль.'),
+            _faqItem('Как работает безлимитный тариф?',
+                'Тарифы Про и VIP дают 1 визит в день без ограничения по часам.'),
+            _faqItem('Какие зоны мне доступны?',
+                'Базовый: только базовая зона. Стандарт и Про: базовая + про зоны. VIP: все зоны включая VIP.'),
+            _faqItem('Можно ли сменить тариф?',
+                'Да, перейдите в "Купить абонемент" и выберите новый тариф. Оставшиеся дни будут учтены.'),
+            _faqItem('Как работает реферальная программа?',
+                'Пригласите друга по реферальному коду и получите +${AppConstants.referralBonusHours} часа к подписке.'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _faqItem(String q, String a) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(q,
+              style: const TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15)),
+          const SizedBox(height: 6),
+          Text(a,
+              style: const TextStyle(
+                  color: AppTheme.textSecondary, fontSize: 14, height: 1.4)),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Subscription Card ───────────────────────────────────────
+
+class _SubscriptionCard extends StatelessWidget {
+  final Subscription? subscription;
+  const _SubscriptionCard({this.subscription});
+
+  @override
+  Widget build(BuildContext context) {
+    final sub = subscription;
+    final hasActive = sub != null && (sub.isActive || sub.isFrozen);
+
+    final glowColor = hasActive ? _glowForPlan(sub!.plan) : AppTheme.textMuted;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: hasActive
+            ? LinearGradient(
+                colors: sub!.isFrozen
+                    ? [const Color(0xFF37474F), const Color(0xFF455A64)]
+                    : _gradientForPlan(sub.plan),
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )
+            : const LinearGradient(
+                colors: [Color(0xFF374151), Color(0xFF4B5563)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+        border: Border.all(color: glowColor.withValues(alpha: 0.2)),
+        boxShadow: hasActive && !sub!.isFrozen
+            ? AppTheme.neonGlow(color: glowColor, radius: 20)
+            : [],
+      ),
+      child: hasActive ? _activeContent(context, sub!) : _expiredContent(context),
+    );
+  }
+
+  List<Color> _gradientForPlan(String plan) => switch (plan) {
+    'vip' => [const Color(0xFF92400E), const Color(0xFFB45309)],
+    'pro' => [const Color(0xFF581C87), const Color(0xFF7C3AED)],
+    'standard' => [const Color(0xFF1E1B4B), const Color(0xFF312E81)],
+    _ => [const Color(0xFF1E3A5F), const Color(0xFF1E40AF)],
+  };
+
+  Color _glowForPlan(String plan) => switch (plan) {
+    'vip' => const Color(0xFFD4A017),
+    'pro' => AppTheme.neonPurple,
+    'standard' => AppTheme.primary,
+    _ => AppTheme.neonBlue,
+  };
+
+  Widget _activeContent(BuildContext context, Subscription sub) {
+    final config = sub.planConfig;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Plan name + status
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                sub.planName,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            if (sub.isFrozen) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: Colors.blueGrey.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.ac_unit_rounded, color: Colors.white70, size: 14),
+                    SizedBox(width: 4),
+                    Text('Заморожена',
+                        style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              ),
+            ],
+            const Spacer(),
+            Icon(Icons.arrow_forward_ios_rounded,
+                color: Colors.white.withValues(alpha: 0.5), size: 18),
+          ],
+        ),
+        const SizedBox(height: 24),
+
+        // Hours or unlimited
+        if (sub.isUnlimited) ...[
+          const Text('∞',
+              style: TextStyle(color: Colors.white, fontSize: 52, fontWeight: FontWeight.w800)),
+          Text(sub.hoursSubtext,
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 15)),
+        ] else ...[
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(sub.hoursText,
+                  style: const TextStyle(color: Colors.white, fontSize: 52, fontWeight: FontWeight.w800)),
+              const SizedBox(width: 8),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Text(sub.hoursSubtext,
+                    style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 15)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: sub.hoursProgress,
+              backgroundColor: Colors.white.withValues(alpha: 0.15),
+              valueColor: const AlwaysStoppedAnimation(Colors.white),
+              minHeight: 6,
+            ),
+          ),
+        ],
+        const SizedBox(height: 16),
+
+        // Days remaining
+        Row(
+          children: [
+            Icon(Icons.calendar_today_rounded,
+                color: Colors.white.withValues(alpha: 0.6), size: 16),
+            const SizedBox(width: 6),
+            Text(
+              '${sub.daysRemaining} дней осталось',
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 14),
+            ),
+            if (!sub.isFrozen && sub.daysRemaining <= 3) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Text('Истекает!',
+                    style: TextStyle(color: Colors.orange, fontSize: 11, fontWeight: FontWeight.w700)),
+              ),
+            ],
+          ],
+        ),
+
+        // Allowed zones
+        if (config != null) ...[
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 6,
+            children: config.allowedZones.map((z) => Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                AppConstants.zoneLabel(z),
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12),
+              ),
+            )).toList(),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _expiredContent(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.info_outline_rounded, color: Colors.white54, size: 20),
+            const SizedBox(width: 8),
+            const Text('Нет активного абонемента',
+                style: TextStyle(color: Colors.white70, fontSize: 15, fontWeight: FontWeight.w600)),
+            const Spacer(),
+            Icon(Icons.arrow_forward_ios_rounded,
+                color: Colors.white.withValues(alpha: 0.4), size: 16),
+          ],
+        ),
+        const SizedBox(height: 16),
+        const Text('Абонемент закончился',
+            style: TextStyle(color: Colors.white38, fontSize: 14)),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () => context.push('/plans'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('Купить абонемент',
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SubscriptionCardSkeleton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 180,
+      decoration: BoxDecoration(
+        color: AppTheme.bgCard,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: const Center(
+        child: CircularProgressIndicator(color: AppTheme.primary),
+      ),
+    );
+  }
+}
+
+// ── Action tile ─────────────────────────────────────────────
+
+class _ActionTile extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final VoidCallback onTap;
+
+  const _ActionTile({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: iconColor, size: 22),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded,
+                color: AppTheme.textMuted.withValues(alpha: 0.5), size: 24),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Divider extends StatelessWidget {
+  const _Divider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Divider(
+        height: 1,
+        color: AppTheme.textMuted.withValues(alpha: 0.15),
+      ),
+    );
+  }
+}
+
+// ── Mini plan card ──────────────────────────────────────────
+
+class _MiniPlanCard extends StatelessWidget {
+  final PlanConfig plan;
+  final VoidCallback onTap;
+
+  const _MiniPlanCard({required this.plan, required this.onTap});
+
+  Color get _color => switch (plan.id) {
+    'vip' => const Color(0xFFFBBF24),
+    'pro' => const Color(0xFF8B5CF6),
+    'standard' => AppTheme.primary,
+    _ => const Color(0xFF6B7280),
+  };
+
+  String _formatPrice(int priceUzs) {
+    final str = priceUzs.toString();
+    final buffer = StringBuffer();
+    for (var i = 0; i < str.length; i++) {
+      if (i > 0 && (str.length - i) % 3 == 0) buffer.write(' ');
+      buffer.write(str[i]);
+    }
+    return '${buffer.toString()} UZS';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 160,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppTheme.bgCard,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: _color.withValues(alpha: 0.25)),
+          boxShadow: [
+            BoxShadow(
+              color: _color.withValues(alpha: 0.1),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Plan name
+            Text(
+              plan.name,
+              style: TextStyle(
+                color: _color,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 6),
+            // Hours
+            Text(
+              plan.isUnlimited ? '1 визит/день' : '${plan.hours} ч/мес',
+              style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+            ),
+            const Spacer(),
+            // Price
+            Text(
+              _formatPrice(plan.priceUzs),
+              style: const TextStyle(
+                color: AppTheme.textPrimary,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 4),
+            const Text('в месяц',
+                style: TextStyle(color: AppTheme.textMuted, fontSize: 12)),
+            const SizedBox(height: 10),
+            // Button
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              decoration: BoxDecoration(
+                color: _color.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                'Оформить',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: _color,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

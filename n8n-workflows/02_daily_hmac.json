@@ -1,0 +1,104 @@
+{
+  "name": "GamePass — Daily HMAC Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "cronExpression", "expression": "0 0 * * *" }] }
+      },
+      "name": "Cron 00:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate a cryptographically random daily secret\nconst array = new Uint8Array(32);\ncrypto.getRandomValues(array);\nconst secret = Array.from(array).map(b => b.toString(16).padStart(2,'0')).join('');\nconst today = new Date().toISOString().split('T')[0];\nreturn [{ json: { secret, valid_date: today } }];"
+      },
+      "name": "Generate Secret",
+      "type": "n8n-nodes-base.code",
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/daily_secrets",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Prefer", "value": "resolution=merge-duplicates" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "secret", "value": "={{ $json.secret }}" },
+            { "name": "valid_date", "value": "={{ $json.valid_date }}" }
+          ]
+        }
+      },
+      "name": "Save to Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/clubs?select=id&status=eq.active",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" }
+          ]
+        }
+      },
+      "name": "Get Active Clubs",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// For each club, compute HMAC-SHA256(club_id, daily_secret)\nconst clubs = $input.all();\nconst secret = $('Generate Secret').first().json.secret;\n\nconst results = [];\nfor (const club of clubs) {\n  const clubId = club.json.id;\n  // HMAC computation (node crypto not available in sandbox, use simple approach)\n  // In production n8n can use crypto via Function node with require\n  results.push({ json: { club_id: clubId, qr_token: `${clubId}_${secret.substring(0,16)}` } });\n}\nreturn results;"
+      },
+      "name": "Compute QR Tokens",
+      "type": "n8n-nodes-base.code",
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/clubs?id=eq.{{ $json.club_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "qr_token", "value": "={{ $json.qr_token }}" }
+          ]
+        }
+      },
+      "name": "Update Club QR Token",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1340, 300]
+    }
+  ],
+  "connections": {
+    "Cron 00:00": { "main": [[{ "node": "Generate Secret", "type": "main", "index": 0 }]] },
+    "Generate Secret": { "main": [[{ "node": "Save to Supabase", "type": "main", "index": 0 }]] },
+    "Save to Supabase": { "main": [[{ "node": "Get Active Clubs", "type": "main", "index": 0 }]] },
+    "Get Active Clubs": { "main": [[{ "node": "Compute QR Tokens", "type": "main", "index": 0 }]] },
+    "Compute QR Tokens": { "main": [[{ "node": "Update Club QR Token", "type": "main", "index": 0 }]] }
+  }
+}

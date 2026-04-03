@@ -1,0 +1,91 @@
+{
+  "name": "GamePass — Subscription Activated",
+  "nodes": [
+    {
+      "parameters": { "httpMethod": "POST", "path": "subscription-activated", "responseMode": "lastNode" },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/users?id=eq.{{ $json.body.user_id }}&select=phone,name",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" }
+          ]
+        }
+      },
+      "name": "Get User",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const user = $input.first().json[0];\nconst body = $('Webhook').first().json.body;\nconst hoursText = body.hours_balance === null ? 'Безлимит часов' : `${body.hours_balance} часов`;\nconst planNames = { start: 'Старт', standard: 'Стандарт', unlimited: 'Безлимит' };\nreturn [{\n  json: {\n    phone: user.phone,\n    name: user.name,\n    plan: planNames[body.plan] || body.plan,\n    hours: hoursText,\n    end_date: body.end_date,\n    user_id: body.user_id\n  }\n}];"
+      },
+      "name": "Prepare Data",
+      "type": "n8n-nodes-base.code",
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://notify.eskiz.uz/api/message/sms/send",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [{ "name": "Authorization", "value": "=Bearer {{ $env.ESKIZ_TOKEN }}" }]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "mobile_phone", "value": "={{ $json.phone.replace('+', '') }}" },
+            { "name": "message", "value": "=GamePass UZ: Подписка «{{ $json.plan }}» активирована! {{ $json.hours }}, действует до {{ $json.end_date }}. Сканируйте QR в клубах! 🎮" },
+            { "name": "from", "value": "4546" }
+          ]
+        }
+      },
+      "name": "Send SMS (Eskiz)",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://fcm.googleapis.com/fcm/send",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [{ "name": "Authorization", "value": "=key={{ $env.FCM_SERVER_KEY }}" }]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"/topics/user_{{ $json.user_id }}\",\n  \"notification\": {\n    \"title\": \"Подписка активирована! 🎮\",\n    \"body\": \"Тариф {{ $json.plan }} активен. {{ $json.hours }}. Сканируйте QR!\"\n  },\n  \"data\": { \"type\": \"subscription_activated\" }\n}"
+      },
+      "name": "Send FCM Push",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [900, 400]
+    },
+    {
+      "parameters": { "respondWith": "json", "responseBody": "={ \"ok\": true }" },
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [1120, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": { "main": [[{ "node": "Get User", "type": "main", "index": 0 }]] },
+    "Get User": { "main": [[{ "node": "Prepare Data", "type": "main", "index": 0 }]] },
+    "Prepare Data": {
+      "main": [[
+        { "node": "Send SMS (Eskiz)", "type": "main", "index": 0 },
+        { "node": "Send FCM Push", "type": "main", "index": 0 }
+      ]]
+    },
+    "Send SMS (Eskiz)": { "main": [[{ "node": "Respond", "type": "main", "index": 0 }]] }
+  }
+}

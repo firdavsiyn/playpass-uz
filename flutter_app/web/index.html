@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="A new Flutter project.">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="PlayPass">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>PlayPass</title>
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Yandex Maps JS API v2.1 (free, no key needed for dev) -->
+  <script src="https://api-maps.yandex.ru/2.1/?apikey=&lang=ru_RU" type="text/javascript"></script>
+
+  <style>
+    body { margin: 0; background: #0F0F1A; }
+    #loading {
+      position: fixed; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; background: #0F0F1A;
+      color: #6366F1; font-family: sans-serif; gap: 16px; z-index: 9999;
+    }
+    #loading .spinner {
+      width: 40px; height: 40px; border: 3px solid #6366F120;
+      border-top-color: #6366F1; border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #loading p { color: #9CA3AF; font-size: 14px; margin: 0; }
+  </style>
+</head>
+<body>
+  <div id="loading">
+    <div class="spinner"></div>
+    <p>Загрузка PlayPass...</p>
+  </div>
+  <script>
+    // Hide loading screen once Flutter is ready
+    window.addEventListener('flutter-first-frame', function() {
+      var el = document.getElementById('loading');
+      if (el) el.style.display = 'none';
+    });
+    // Global error catcher
+    window.onerror = function(msg, src, line, col, err) {
+      console.error('[PlayPass crash]', msg, src, line, err);
+    };
+    window.addEventListener('unhandledrejection', function(e) {
+      console.error('[PlayPass unhandled promise]', e.reason);
+    });
+  </script>
+
+  <!-- Yandex Maps interop for Flutter -->
+  <script>
+    window._ymapInstance = null;
+    window._ymapMarkers = [];
+    window._ymapMarkerClickCb = null;
+    window._ymapClickQueue = [];
+    window._ymapReady = false;
+
+    window.initYandexMap = function(containerId) {
+      console.log('[YMap] initYandexMap called for:', containerId);
+
+      if (typeof ymaps === 'undefined') {
+        console.error('[YMap] ymaps not loaded');
+        return;
+      }
+
+      ymaps.ready(function() {
+        var container = document.getElementById(containerId);
+        if (!container) {
+          console.error('[YMap] container not found:', containerId);
+          return;
+        }
+
+        // Ensure container has dimensions
+        container.style.width = '100%';
+        container.style.height = '100%';
+
+        var map = new ymaps.Map(containerId, {
+          center: [41.2995, 69.2401], // Tashkent [lat, lon]
+          zoom: 12,
+          controls: ['zoomControl', 'geolocationControl']
+        });
+
+        window._ymapInstance = map;
+        window._ymapReady = true;
+        console.log('[YMap] map initialized successfully');
+      });
+    };
+
+    window.addClubMarkers = function(markersJson) {
+      if (!window._ymapInstance || !window._ymapReady) {
+        console.warn('[YMap] map not ready, retrying in 500ms');
+        setTimeout(function() { window.addClubMarkers(markersJson); }, 500);
+        return;
+      }
+
+      window.clearClubMarkers();
+
+      var markers;
+      try {
+        markers = JSON.parse(markersJson);
+      } catch(e) {
+        console.error('[YMap] JSON parse error:', e);
+        return;
+      }
+
+      console.log('[YMap] adding', markers.length, 'markers');
+
+      markers.forEach(function(m) {
+        var color = m.tier === 'vip' ? '#FBBF24' : m.tier === 'pro' ? '#8B5CF6' : '#6366F1';
+
+        var placemark = new ymaps.Placemark(
+          [m.lat, m.lon],
+          {
+            hintContent: m.name,
+            balloonContent: '<strong>' + m.name + '</strong>',
+            clubId: m.id
+          },
+          {
+            preset: 'islands#dotIcon',
+            iconColor: color,
+            iconLayout: 'default#image',
+            iconImageHref: 'data:image/svg+xml,' + encodeURIComponent(
+              '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36"><circle cx="18" cy="18" r="16" fill="' + color + '" stroke="white" stroke-width="2"/><text x="18" y="23" text-anchor="middle" fill="white" font-size="16" font-family="sans-serif">🎮</text></svg>'
+            ),
+            iconImageSize: [36, 36],
+            iconImageOffset: [-18, -18]
+          }
+        );
+
+        if (!m.isOpen) {
+          placemark.options.set('opacity', 0.5);
+        }
+
+        placemark.events.add('click', function() {
+          console.log('[YMap] marker clicked:', m.id);
+          window._ymapClickQueue.push(m.id);
+          if (window._ymapMarkerClickCb) {
+            window._ymapMarkerClickCb(m.id);
+          }
+        });
+
+        window._ymapInstance.geoObjects.add(placemark);
+        window._ymapMarkers.push(placemark);
+      });
+    };
+
+    window.clearClubMarkers = function() {
+      if (!window._ymapInstance) return;
+      window._ymapMarkers.forEach(function(m) {
+        try { window._ymapInstance.geoObjects.remove(m); } catch(e) {}
+      });
+      window._ymapMarkers = [];
+    };
+
+    window.setMarkerClickCallback = function(cb) {
+      window._ymapMarkerClickCb = cb;
+    };
+
+    window.panToClub = function(lat, lon) {
+      if (!window._ymapInstance) return;
+      window._ymapInstance.setCenter([lat, lon], 15, { duration: 500 });
+    };
+  </script>
+
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

@@ -1,0 +1,208 @@
+import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../../../models/club.dart';
+import '../../../core/theme/app_theme.dart';
+
+/// Bottom sheet shown when a map marker is tapped
+class ClubMapBottomSheet extends StatelessWidget {
+  final Club club;
+  const ClubMapBottomSheet({super.key, required this.club});
+
+  void _navigate(BuildContext context) async {
+    if (club.lat == null || club.lon == null) return;
+    final url = Uri.parse(
+      'https://yandex.ru/maps/?rtext=~${club.lat},${club.lon}&rtt=auto',
+    );
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: const BoxDecoration(
+        color: AppTheme.bgCard,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle bar
+          Container(
+            width: 40,
+            height: 4,
+            margin: const EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              color: AppTheme.textMuted.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+
+          // Club info row
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Photo
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: club.thumbnail != null
+                    ? CachedNetworkImage(
+                        imageUrl: club.thumbnail!,
+                        width: 80,
+                        height: 80,
+                        fit: BoxFit.cover,
+                      )
+                    : Container(
+                        width: 80,
+                        height: 80,
+                        color: AppTheme.bgSurface,
+                        child: const Icon(Icons.sports_esports,
+                            color: AppTheme.textMuted, size: 32),
+                      ),
+              ),
+              const SizedBox(width: 14),
+              // Info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            club.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: AppTheme.textPrimary,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                        if (club.tier == 'vip')
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFBBF24)
+                                  .withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Text('VIP',
+                                style: TextStyle(
+                                    color: Color(0xFFFBBF24),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700)),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(Icons.location_on_outlined,
+                            size: 13, color: AppTheme.textMuted),
+                        const SizedBox(width: 2),
+                        Expanded(
+                          child: Text(club.address,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                  color: AppTheme.textMuted, fontSize: 12)),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        const Icon(Icons.star_rounded,
+                            size: 14, color: Color(0xFFFBBF24)),
+                        const SizedBox(width: 2),
+                        Text(club.rating.toStringAsFixed(1),
+                            style: const TextStyle(
+                                color: AppTheme.textSecondary, fontSize: 12)),
+                        const SizedBox(width: 10),
+                        const Icon(Icons.computer,
+                            size: 14, color: AppTheme.textMuted),
+                        const SizedBox(width: 2),
+                        Text('${club.pcCount} ПК',
+                            style: const TextStyle(
+                                color: AppTheme.textMuted, fontSize: 12)),
+                        const Spacer(),
+                        Container(
+                          width: 7,
+                          height: 7,
+                          decoration: BoxDecoration(
+                            color: club.isOpen ? AppTheme.success : AppTheme.error,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          club.isOpen ? 'Открыт' : 'Закрыт',
+                          style: TextStyle(
+                            color: club.isOpen ? AppTheme.success : AppTheme.error,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          // Action buttons
+          Row(
+            children: [
+              // Navigate button
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () => _navigate(context),
+                  icon: const Icon(Icons.directions_rounded, size: 18),
+                  label: const Text('Поехали'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Details button
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    context.push('/clubs/${club.id}');
+                  },
+                  icon: const Icon(Icons.info_outline_rounded, size: 18),
+                  label: const Text('Подробнее'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.primary,
+                    side: const BorderSide(color: AppTheme.primary),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 8),
+        ],
+      ),
+    );
+  }
+}

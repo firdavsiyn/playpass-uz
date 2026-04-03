@@ -1,0 +1,76 @@
+{
+  "name": "GamePass — Monthly Payout",
+  "nodes": [
+    {
+      "parameters": { "rule": { "interval": [{ "field": "cronExpression", "expression": "0 9 1 * *" }] } },
+      "name": "Cron 1st of Month",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/functions/v1/payout-calc",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{}"
+      },
+      "name": "Trigger Payout Calc",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/payouts?status=eq.processing&select=club_id,amount_uzs,visit_count,clubs(name,payout_details,owner_id)",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" }
+          ]
+        }
+      },
+      "name": "Get Processing Payouts",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const payouts = Array.isArray($input.first().json) ? $input.first().json : [];\nreturn payouts.map(p => ({\n  json: {\n    club_name: p.clubs?.name,\n    amount: p.amount_uzs,\n    visit_count: p.visit_count,\n    owner_id: p.clubs?.owner_id,\n    message: `GamePass UZ: Выплата за прошлый месяц: ${p.visit_count} визитов × 8 000 = ${new Intl.NumberFormat('ru').format(p.amount_uzs)} UZS. Переведены на ваши реквизиты. 💰`\n  }\n}));"
+      },
+      "name": "Format Notifications",
+      "type": "n8n-nodes-base.code",
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://fcm.googleapis.com/fcm/send",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [{ "name": "Authorization", "value": "=key={{ $env.FCM_SERVER_KEY }}" }]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"/topics/club_owner_{{ $json.owner_id }}\",\n  \"notification\": {\n    \"title\": \"Выплата отправлена 💰\",\n    \"body\": \"{{ $json.visit_count }} визитов · {{ $json.amount }} UZS\"\n  }\n}"
+      },
+      "name": "Notify Club Owners",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1120, 300]
+    }
+  ],
+  "connections": {
+    "Cron 1st of Month": { "main": [[{ "node": "Trigger Payout Calc", "type": "main", "index": 0 }]] },
+    "Trigger Payout Calc": { "main": [[{ "node": "Get Processing Payouts", "type": "main", "index": 0 }]] },
+    "Get Processing Payouts": { "main": [[{ "node": "Format Notifications", "type": "main", "index": 0 }]] },
+    "Format Notifications": { "main": [[{ "node": "Notify Club Owners", "type": "main", "index": 0 }]] }
+  }
+}

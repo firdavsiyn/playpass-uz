@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PlayPass — Super Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="styles.css?v=9" />
+</head>
+<body>
+
+<!-- LOGIN PAGE -->
+<div id="login-page" class="page">
+  <div class="login-wrap">
+    <div class="logo">
+      <span class="logo-text">PlayPass Admin</span>
+    </div>
+    <h2 data-i18n="login_title">Супер-админка</h2>
+    <p class="subtitle" data-i18n="login_sub">Вход только для команды PlayPass</p>
+    <div class="form-group">
+      <label data-i18n="login_email">Email</label>
+      <input type="email" id="login-email" placeholder="admin@playpass.uz" autocomplete="email" />
+    </div>
+    <div class="form-group">
+      <label data-i18n="login_pass">Пароль</label>
+      <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" />
+    </div>
+    <div id="login-error" class="error-msg hidden"></div>
+    <button class="btn-primary" onclick="handleLogin()" data-i18n="login_btn">Войти</button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app-page" class="page hidden">
+  <button id="sidebar-toggle" class="sidebar-toggle" onclick="toggleSidebar()">&laquo;</button>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-text">PlayPass</span>
+      <button class="sidebar-collapse-btn" onclick="toggleSidebar()" data-i18n-title="sidebar_collapse">&laquo;</button>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-group open">
+        <div class="nav-group-header" onclick="toggleNavGroup(this)"><span data-i18n="nav_analytics">Аналитика</span><span class="nav-arrow">&#9662;</span></div>
+        <div class="nav-group-items">
+          <a href="#" class="nav-item active" data-page="dashboard" onclick="showTab('dashboard',this)" data-i18n="nav_dashboard">Дэшборд</a>
+          <a href="#" class="nav-item" data-page="finance" onclick="showTab('finance',this)" data-i18n="nav_finance">Финансы</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-header" onclick="toggleNavGroup(this)"><span data-i18n="nav_clubs">Клубы</span><span class="nav-arrow">&#9662;</span></div>
+        <div class="nav-group-items">
+          <a href="#" class="nav-item" data-page="clubs" onclick="showTab('clubs',this)" data-i18n="nav_club_list">Список клубов</a>
+          <a href="#" class="nav-item" data-page="map" onclick="showTab('map',this)" data-i18n="nav_club_map">Карта клубов</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-header" onclick="toggleNavGroup(this)"><span data-i18n="nav_users_group">Пользователи</span><span class="nav-arrow">&#9662;</span></div>
+        <div class="nav-group-items">
+          <a href="#" class="nav-item" data-page="users" onclick="showTab('users',this)" data-i18n="nav_users">Пользователи</a>
+          <a href="#" class="nav-item" data-page="reviews" onclick="showTab('reviews',this)" data-i18n="nav_reviews">Отзывы</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-header" onclick="toggleNavGroup(this)"><span data-i18n="nav_payments_group">Платежи</span><span class="nav-arrow">&#9662;</span></div>
+        <div class="nav-group-items">
+          <a href="#" class="nav-item" data-page="payments" onclick="showTab('payments',this)" data-i18n="nav_payments">Оплаты</a>
+          <a href="#" class="nav-item" data-page="promos" onclick="showTab('promos',this)" data-i18n="nav_promos">Промокоды</a>
+          <a href="#" class="nav-item" data-page="gifts" onclick="showTab('gifts',this)" data-i18n="nav_gifts">Сертификаты</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-header" onclick="toggleNavGroup(this)"><span data-i18n="nav_marketing">Маркетинг</span><span class="nav-arrow">&#9662;</span></div>
+        <div class="nav-group-items">
+          <a href="#" class="nav-item" data-page="banners" onclick="showTab('banners',this)" data-i18n="nav_banners">Баннеры</a>
+          <a href="#" class="nav-item" data-page="notifications" onclick="showTab('notifications',this)" data-i18n="nav_notifications">Уведомления</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-header" onclick="toggleNavGroup(this)"><span data-i18n="nav_system">Система</span><span class="nav-arrow">&#9662;</span></div>
+        <div class="nav-group-items">
+          <a href="#" class="nav-item" data-page="tickets" onclick="showTab('tickets',this)" data-i18n="nav_tickets">Тикеты</a>
+          <a href="#" class="nav-item" data-page="logs" onclick="showTab('logs',this)" data-i18n="nav_logs">Лог действий</a>
+        </div>
+      </div>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="sidebar-controls">
+        <button class="sidebar-ctrl-btn" id="theme-toggle" onclick="toggleTheme()" title="Dark / Light">
+          <span id="theme-icon">☀</span>
+        </button>
+        <button class="sidebar-ctrl-btn" id="lang-toggle" onclick="toggleLang()">
+          <span id="lang-label">UZ</span>
+        </button>
+      </div>
+      <div id="admin-name" class="club-name-sidebar" data-i18n="sidebar_admin">Супер-админ</div>
+      <button class="btn-logout" onclick="handleLogout()" data-i18n="sidebar_logout">Выйти</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+
+    <!-- ══════ DASHBOARD ══════ -->
+    <div id="tab-dashboard" class="tab-content">
+      <div class="page-header">
+        <h1 data-i18n="dash_title">Аналитика</h1>
+        <span class="realtime-dot" title="Live">●</span>
+        <div class="header-actions">
+          <button class="btn-secondary" onclick="exportDashboardCSV()" data-i18n="dash_export">Экспорт CSV</button>
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label" data-i18n="dash_users">Пользователей</div><div class="stat-value" id="s-users">—</div><div class="stat-sub" data-i18n="dash_users_sub">всего</div></div>
+        <div class="stat-card"><div class="stat-label" data-i18n="dash_subs">Активных подписок</div><div class="stat-value" id="s-subs">—</div><div class="stat-sub" data-i18n="dash_subs_sub">сейчас</div></div>
+        <div class="stat-card highlight"><div class="stat-label" data-i18n="dash_revenue">Выручка (мес)</div><div class="stat-value" id="s-revenue">—</div><div class="stat-sub">UZS</div></div>
+        <div class="stat-card"><div class="stat-label" data-i18n="dash_visits">Визитов сегодня</div><div class="stat-value" id="s-today">—</div><div class="stat-sub" data-i18n="dash_visits_sub">чекинов</div></div>
+        <div class="stat-card"><div class="stat-label" data-i18n="dash_clubs">Клубов</div><div class="stat-value" id="s-clubs">—</div><div class="stat-sub" data-i18n="dash_clubs_sub">активных</div></div>
+        <div class="stat-card"><div class="stat-label" data-i18n="dash_pending">Ожидают оплаты</div><div class="stat-value" id="s-pending">—</div><div class="stat-sub" data-i18n="dash_pending_sub">заявок</div></div>
+      </div>
+      <div class="charts-row">
+        <div class="card chart-card"><div class="card-header"><h3 data-i18n="dash_chart_revenue">Выручка за 30 дней</h3></div><div class="chart-wrap"><canvas id="chart-revenue"></canvas></div></div>
+        <div class="card chart-card"><div class="card-header"><h3 data-i18n="dash_chart_users">Новые пользователи</h3></div><div class="chart-wrap"><canvas id="chart-users"></canvas></div></div>
+      </div>
+      <div class="charts-row">
+        <div class="card chart-card"><div class="card-header"><h3 data-i18n="dash_chart_top">Топ-10 клубов по визитам (мес)</h3></div><div class="chart-wrap"><canvas id="chart-top-clubs"></canvas></div></div>
+        <div class="card chart-card"><div class="card-header"><h3 data-i18n="dash_chart_funnel">Воронка конверсии</h3></div><div class="chart-wrap"><canvas id="chart-funnel"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3 data-i18n="dash_live">Последние визиты</h3> <span class="badge-live">LIVE</span></div>
+        <div id="live-visits" class="live-visits"><div class="empty-state" data-i18n="loading">Загрузка...</div></div>
+      </div>
+    </div>
+
+    <!-- ══════ CLUBS ══════ -->
+    <div id="tab-clubs" class="tab-content hidden">
+      <div class="page-header">
+        <h1 data-i18n="clubs_title">Клубы</h1>
+        <div class="header-actions">
+          <button class="btn-secondary" onclick="exportClubsCSV()" data-i18n="btn_export">Экспорт CSV</button>
+          <button class="btn-primary btn-inline" onclick="showAddClubModal()" data-i18n="clubs_add">+ Добавить клуб</button>
+        </div>
+      </div>
+      <div class="filters-row">
+        <input type="text" id="clubs-search" data-i18n-ph="clubs_search" placeholder="Поиск по названию..." oninput="filterClubs()" />
+        <select id="clubs-status-filter" onchange="filterClubs()">
+          <option value="all" data-i18n="clubs_all">Все статусы</option>
+          <option value="active" data-i18n="clubs_active">Активные</option>
+          <option value="suspended" data-i18n="clubs_suspended">Приостановленные</option>
+          <option value="pending" data-i18n="clubs_pending_filter">На проверке</option>
+        </select>
+        <div class="bulk-actions hidden" id="clubs-bulk-actions">
+          <button class="btn-secondary btn-small" onclick="bulkClubAction('active')" data-i18n="clubs_bulk_activate">Активировать</button>
+          <button class="btn-secondary btn-small" onclick="bulkClubAction('suspended')" data-i18n="clubs_bulk_suspend">Приостановить</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th><input type="checkbox" id="clubs-select-all" onchange="toggleAllClubs(this)"></th><th data-i18n="clubs_th_name">Клуб</th><th data-i18n="clubs_th_addr">Адрес</th><th data-i18n="clubs_th_tier">Tier</th><th data-i18n="clubs_th_pc">ПК</th><th data-i18n="clubs_th_rating">Рейтинг</th><th data-i18n="clubs_th_status">Статус</th><th data-i18n="clubs_th_actions">Действия</th></tr></thead>
+            <tbody id="clubs-tbody"><tr><td colspan="7" class="empty-cell" data-i18n="loading">Загрузка...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ USERS ══════ -->
+    <div id="tab-users" class="tab-content hidden">
+      <div class="page-header">
+        <h1 data-i18n="users_title">Пользователи</h1>
+        <div class="header-actions">
+          <button class="btn-secondary" onclick="exportUsersCSV()" data-i18n="btn_export">Экспорт CSV</button>
+        </div>
+      </div>
+      <div class="filters-row">
+        <input type="text" id="users-search" data-i18n-ph="users_search" placeholder="Поиск по имени или телефону..." oninput="filterUsers()" />
+        <div class="bulk-actions hidden" id="users-bulk-actions">
+          <button class="btn-secondary btn-small" onclick="bulkSendNotification()" data-i18n="users_bulk_notify">Уведомить выбранных</button>
+          <button class="btn-secondary btn-small" onclick="bulkExportSelected()" data-i18n="users_bulk_export">Экспорт выбранных</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th><input type="checkbox" id="users-select-all" onchange="toggleAllUsers(this)"></th><th data-i18n="users_th_name">Имя</th><th data-i18n="users_th_phone">Телефон</th><th data-i18n="users_th_sub">Подписка</th><th data-i18n="users_th_visits">Визитов</th><th data-i18n="users_th_level">Уровень</th><th data-i18n="users_th_reg">Регистрация</th><th data-i18n="users_th_actions">Действия</th></tr></thead>
+            <tbody id="users-tbody"><tr><td colspan="7" class="empty-cell" data-i18n="loading">Загрузка...</td></tr></tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <button class="btn-secondary" id="users-prev" onclick="usersPage(-1)" disabled data-i18n="users_prev">&larr; Назад</button>
+          <span id="users-page-info">1 / 1</span>
+          <button class="btn-secondary" id="users-next" onclick="usersPage(1)" data-i18n="users_next">Вперёд &rarr;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ PAYMENTS ══════ -->
+    <div id="tab-payments" class="tab-content hidden">
+      <div class="page-header">
+        <h1 data-i18n="payments_title">Заявки на оплату</h1>
+        <div class="header-actions">
+          <button class="btn-secondary" onclick="exportPaymentsCSV()" data-i18n="btn_export">Экспорт CSV</button>
+          <button class="btn-secondary" onclick="loadPayments()" data-i18n="btn_refresh">Обновить</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3 data-i18n="payments_pending">Ожидают подтверждения</h3></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th data-i18n="payments_th_date">Дата</th><th data-i18n="payments_th_user">Пользователь</th><th data-i18n="payments_th_plan">Тариф</th><th data-i18n="payments_th_amount">Сумма</th><th data-i18n="payments_th_phone">Телефон</th><th data-i18n="payments_th_note">Заметка</th><th data-i18n="payments_th_actions">Действия</th></tr></thead>
+            <tbody id="payments-pending-tbody"><tr><td colspan="7" class="empty-cell" data-i18n="loading">Загрузка...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3 data-i18n="payments_processed">Обработанные</h3></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th data-i18n="payments_th_date">Дата</th><th data-i18n="payments_th_user">Пользователь</th><th data-i18n="payments_th_plan">Тариф</th><th data-i18n="payments_th_amount">Сумма</th><th data-i18n="payments_th_status">Статус</th><th data-i18n="payments_th_processed">Обработано</th></tr></thead>
+            <tbody id="payments-done-tbody"><tr><td colspan="6" class="empty-cell" data-i18n="loading">Загрузка...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ PROMOS ══════ -->
+    <div id="tab-promos" class="tab-content hidden">
+      <div class="page-header">
+        <h1 data-i18n="promos_title">Промокоды</h1>
+        <div class="header-actions">
+          <button class="btn-secondary" onclick="exportPromosCSV()" data-i18n="btn_export">Экспорт CSV</button>
+          <button class="btn-primary btn-inline" onclick="showAddPromoModal()" data-i18n="promos_add">+ Создать промокод</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th data-i18n="promos_th_code">Код</th><th data-i18n="promos_th_discount">Скидка</th><th data-i18n="promos_th_used">Исп.</th><th data-i18n="promos_th_max">Макс.</th><th data-i18n="promos_th_plan">Мин. план</th><th data-i18n="promos_th_expires">Истекает</th><th data-i18n="promos_th_status">Статус</th><th data-i18n="promos_th_actions">Действия</th></tr></thead>
+            <tbody id="promos-tbody"><tr><td colspan="8" class="empty-cell" data-i18n="loading">Загрузка...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ NOTIFICATIONS ══════ -->
+    <div id="tab-notifications" class="tab-content hidden">
+      <div class="page-header"><h1 data-i18n="notif_title">Push-уведомления</h1></div>
+      <div class="card">
+        <div class="modal-body">
+          <div class="form-group">
+            <label data-i18n="notif_label_title">Заголовок</label>
+            <input type="text" id="notif-title" data-i18n-ph="notif_ph_title" placeholder="Новая акция!" />
+          </div>
+          <div class="form-group">
+            <label data-i18n="notif_label_text">Текст сообщения</label>
+            <textarea id="notif-body" data-i18n-ph="notif_ph_text" placeholder="Скидка 20% на подписку Standard до конца недели!"></textarea>
+          </div>
+          <div class="form-group">
+            <label data-i18n="notif_label_target">Получатели</label>
+            <select id="notif-target">
+              <option value="all" data-i18n="notif_target_all">Все пользователи</option>
+              <option value="active_sub" data-i18n="notif_target_active">С активной подпиской</option>
+              <option value="no_sub" data-i18n="notif_target_none">Без подписки</option>
+              <option value="expiring" data-i18n="notif_target_expiring">Подписка заканчивается (7 дней)</option>
+            </select>
+          </div>
+          <button class="btn-primary" onclick="sendNotification()" style="max-width:300px" data-i18n="notif_send">Отправить уведомление</button>
+        </div>
+      </div>
+      <div class="card" style="margin-top:24px">
+        <div class="card-header"><h3 data-i18n="notif_history">Отправленные уведомления</h3></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th data-i18n="notif_th_date">Дата</th><th data-i18n="notif_th_title">Заголовок</th><th data-i18n="notif_th_text">Текст</th><th data-i18n="notif_th_target">Получатели</th><th data-i18n="notif_th_count">Кол-во</th></tr></thead>
+            <tbody id="notif-history-tbody"><tr><td colspan="5" class="empty-cell" data-i18n="loading">Загрузка...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ REVIEWS ══════ -->
+    <div id="tab-reviews" class="tab-content hidden">
+      <div class="page-header"><h1 data-i18n="reviews_title">Модерация отзывов</h1></div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th data-i18n="reviews_th_date">Дата</th><th data-i18n="reviews_th_user">Пользователь</th><th data-i18n="reviews_th_club">Клуб</th><th data-i18n="reviews_th_rating">Оценка</th><th data-i18n="reviews_th_text">Текст</th><th data-i18n="reviews_th_actions">Действия</th></tr></thead>
+            <tbody id="reviews-tbody"><tr><td colspan="6" class="empty-cell" data-i18n="loading">Загрузка...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ GIFTS ══════ -->
+    <div id="tab-gifts" class="tab-content hidden">
+      <div class="page-header"><h1 data-i18n="gifts_title">Подарочные сертификаты</h1></div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th data-i18n="gifts_th_code">Код</th><th data-i18n="gifts_th_plan">Тариф</th><th data-i18n="gifts_th_amount">Сумма</th><th data-i18n="gifts_th_buyer">Покупатель</th><th data-i18n="gifts_th_recipient">Получатель</th><th data-i18n="gifts_th_status">Статус</th><th data-i18n="gifts_th_created">Создан</th></tr></thead>
+            <tbody id="gifts-tbody"><tr><td colspan="7" class="empty-cell" data-i18n="loading">Загрузка...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ LOGS ══════ -->
+    <div id="tab-logs" class="tab-content hidden">
+      <div class="page-header">
+        <h1 data-i18n="logs_title">Лог действий</h1>
+        <div class="header-actions">
+          <button class="btn-secondary" onclick="exportLogsCSV()" data-i18n="btn_export">Экспорт CSV</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th data-i18n="logs_th_date">Дата</th><th data-i18n="logs_th_admin">Админ</th><th data-i18n="logs_th_action">Действие</th><th data-i18n="logs_th_object">Объект</th><th data-i18n="logs_th_details">Детали</th></tr></thead>
+            <tbody id="logs-tbody"><tr><td colspan="5" class="empty-cell" data-i18n="loading">Загрузка...</td></tr></tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <button class="btn-secondary" id="logs-prev" onclick="logsPage(-1)" disabled data-i18n="users_prev">&larr; Назад</button>
+          <span id="logs-page-info">1 / 1</span>
+          <button class="btn-secondary" id="logs-next" onclick="logsPage(1)" data-i18n="users_next">Вперёд &rarr;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ MAP ══════ -->
+    <div id="tab-map" class="tab-content hidden">
+      <div class="page-header">
+        <h1 data-i18n="map_title">Карта клубов</h1>
+        <div class="header-actions">
+          <div class="map-search-wrap">
+            <input type="text" id="map-search" data-i18n-ph="map_search" placeholder="Поиск клуба..." oninput="filterMapClubs(this.value)" autocomplete="off" />
+            <div id="map-search-results" class="map-search-results hidden"></div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;border-radius:var(--radius);position:relative">
+        <div id="clubs-map" style="height:600px;width:100%"></div>
+        <div class="map-legend-overlay">
+          <span class="legend-item"><span class="legend-dot" style="background:#10B981"></span> <span data-i18n="map_legend_active">Активен</span></span>
+          <span class="legend-item"><span class="legend-dot" style="background:#EF4444"></span> <span data-i18n="map_legend_suspended">Приостановлен</span></span>
+          <span class="legend-item"><span class="legend-dot" style="background:#F59E0B"></span> <span data-i18n="map_legend_pending">На проверке</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ TICKETS ══════ -->
+    <div id="tab-tickets" class="tab-content hidden">
+      <div class="page-header">
+        <h1 data-i18n="tickets_title">Тикеты поддержки</h1>
+        <div class="header-actions">
+          <button class="btn-secondary" onclick="exportTicketsCSV()" data-i18n="btn_export">Экспорт CSV</button>
+        </div>
+      </div>
+      <div class="filters-row">
+        <select id="tickets-filter" onchange="loadTickets()">
+          <option value="all" data-i18n="tickets_all">Все тикеты</option>
+          <option value="open" data-i18n="tickets_open">Открытые</option>
+          <option value="in_progress" data-i18n="tickets_in_progress">В работе</option>
+          <option value="resolved" data-i18n="tickets_resolved">Решённые</option>
+          <option value="closed" data-i18n="tickets_closed">Закрытые</option>
+        </select>
+        <input type="text" id="tickets-search" data-i18n-ph="tickets_search" placeholder="Поиск..." oninput="filterTickets()" />
+      </div>
+      <div class="ticket-stats" id="ticket-stats"></div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th><input type="checkbox" id="tickets-select-all" onchange="toggleAllTickets(this)"></th><th data-i18n="tickets_th_date">Дата</th><th data-i18n="tickets_th_user">Пользователь</th><th data-i18n="tickets_th_subject">Тема</th><th data-i18n="tickets_th_priority">Приоритет</th><th data-i18n="tickets_th_status">Статус</th><th data-i18n="tickets_th_actions">Действия</th></tr></thead>
+            <tbody id="tickets-tbody"><tr><td colspan="7" class="empty-cell" data-i18n="loading">Загрузка...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ BANNERS ══════ -->
+    <div id="tab-banners" class="tab-content hidden">
+      <div class="page-header">
+        <h1 data-i18n="banners_title">Баннеры и новости</h1>
+        <div class="header-actions">
+          <button class="btn-primary btn-inline" onclick="showAddBannerModal()" data-i18n="banners_add">+ Создать</button>
+        </div>
+      </div>
+      <div class="filters-row">
+        <select id="banners-type-filter" onchange="loadBanners()">
+          <option value="all" data-i18n="banners_all">Все типы</option>
+          <option value="banner" data-i18n="banners_type_banner">Баннеры</option>
+          <option value="news" data-i18n="banners_type_news">Новости</option>
+          <option value="promo" data-i18n="banners_type_promo">Акции</option>
+        </select>
+      </div>
+      <div class="banners-grid" id="banners-grid">
+        <div class="empty-state" data-i18n="loading">Загрузка...</div>
+      </div>
+    </div>
+
+    <!-- ══════ FINANCE ══════ -->
+    <div id="tab-finance" class="tab-content hidden">
+      <div class="page-header">
+        <h1 data-i18n="fin_title">Финансовая аналитика</h1>
+        <div class="header-actions">
+          <button class="btn-secondary" onclick="exportFinanceCSV()" data-i18n="btn_export">Экспорт CSV</button>
+          <button class="btn-secondary" onclick="generateWeeklyReport()" data-i18n="fin_report_btn">Еженедельный отчёт</button>
+        </div>
+      </div>
+      <div class="stats-grid stats-grid-4">
+        <div class="stat-card"><div class="stat-label" data-i18n="fin_mrr">MRR</div><div class="stat-value" id="f-mrr">—</div><div class="stat-sub" data-i18n="fin_mrr_sub">ежемесячная выручка</div></div>
+        <div class="stat-card"><div class="stat-label" data-i18n="fin_arpu">ARPU</div><div class="stat-value" id="f-arpu">—</div><div class="stat-sub" data-i18n="fin_arpu_sub">выручка на пользователя</div></div>
+        <div class="stat-card"><div class="stat-label" data-i18n="fin_churn">Churn Rate</div><div class="stat-value" id="f-churn">—</div><div class="stat-sub" data-i18n="fin_churn_sub">отток за месяц</div></div>
+        <div class="stat-card"><div class="stat-label" data-i18n="fin_ltv">LTV</div><div class="stat-value" id="f-ltv">—</div><div class="stat-sub" data-i18n="fin_ltv_sub">ценность пользователя</div></div>
+      </div>
+      <div class="charts-row">
+        <div class="card chart-card"><div class="card-header"><h3 data-i18n="fin_chart_mrr">MRR за 6 месяцев</h3></div><div class="chart-wrap"><canvas id="chart-mrr"></canvas></div></div>
+        <div class="card chart-card"><div class="card-header"><h3 data-i18n="fin_chart_plans">Распределение по тарифам</h3></div><div class="chart-wrap"><canvas id="chart-plan-dist"></canvas></div></div>
+      </div>
+      <div class="charts-row">
+        <div class="card chart-card"><div class="card-header"><h3 data-i18n="fin_chart_cohort">Когортный анализ (удержание)</h3></div><div class="chart-wrap"><canvas id="chart-cohort"></canvas></div></div>
+        <div class="card chart-card"><div class="card-header"><h3 data-i18n="fin_chart_churn">Churn Rate по месяцам</h3></div><div class="chart-wrap"><canvas id="chart-churn"></canvas></div></div>
+      </div>
+      <div class="card" id="weekly-report-card" style="display:none;margin-top:24px">
+        <div class="card-header"><h3 data-i18n="fin_report_title">Еженедельный отчёт</h3></div>
+        <div id="weekly-report-body"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL -->
+<div id="modal-overlay" class="modal-overlay hidden" onclick="closeModal()">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3 id="modal-title"></h3>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div id="modal-body" class="modal-body"></div>
+  </div>
+</div>
+
+<!-- Yandex Maps loaded on demand (see loadMap in app.js) -->
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script defer src="translations.js?v=9"></script>
+<script defer src="app.js?v=9"></script>
+</body>
+</html>
