@@ -37,6 +37,11 @@ const Map<String, String> stringsUz = {
   'clubs.rate_visit': 'Tashrifingizni baholang',
   'clubs.send_review': 'Sharh yuborish',
   'clubs.review_hint': 'Tajribangiz haqida gapirib bering (ixtiyoriy)',
+  'clubs.today': 'Bugun',
+  'clubs.schedule_na': 'Ish vaqti ko\'rsatilmagan',
+  'clubs.seats': 'o\'rin',
+  'clubs.per_hour': 'UZS/soat',
+  'clubs.user': 'Foydalanuvchi',
 
   // ── Profile ───────────────────────────────
   'profile.title': 'Profil',
@@ -72,10 +77,27 @@ const Map<String, String> stringsUz = {
   'sub.days_left': 'kun qoldi',
   'sub.expires': 'Tugayapti!',
   'sub.per_month': 'oyiga',
+  'sub.actions': 'Obuna va qo\'shimcha xizmatlar',
+  'sub.order': 'Buyurtma berish',
+
+  // ── Promo ─────────────────────────────────
+  'promo.title': 'Promokod',
+  'promo.hint': 'Promokodni kiriting',
+  'promo.activate': 'Faollashtirish',
+  'promo.cancel': 'Bekor qilish',
+  'promo.close': 'Yopish',
+  'promo.empty': 'Promokodni kiriting',
+  'promo.invalid': 'Promokod yaroqsiz yoki muddati tugagan',
+  'promo.already_used': 'Siz bu promokodni allaqachon ishlatgansiz',
+  'promo.activated': 'Promokod faollashtirildi!',
+  'promo.hours': 'soat',
+  'promo.days': 'kun',
+  'promo.discount': 'chegirma',
 
   // ── Achievements ──────────────────────────
   'ach.title': 'Yutuqlar',
   'ach.unlocked': 'yutuq ochildi',
+  'ach.new_unlock': 'Yutuq ochildi',
 
   // ── Favorites ─────────────────────────────
   'fav.title': 'Sevimli klublar',
@@ -106,9 +128,32 @@ const Map<String, String> stringsUz = {
   'support.title': 'Qo\'llab-quvvatlash xizmati',
   'support.hours': 'Har kuni 10:00 dan 22:00 gacha aloqadamiz',
 
+  // ── Scanner ───────────────────────────────
+  'scan.title': 'QR skanerlash',
+  'scan.point_camera': 'Kamerani QR kodga qarating',
+  'scan.success': 'Chek-in bajarildi!',
+  'scan.error': 'Skanerlash xatosi',
+  'scan.no_permission': 'Kameraga ruxsat yo\'q',
+
+  // ── Auth ──────────────────────────────────
+  'auth.login': 'Kirish',
+  'auth.register': 'Ro\'yxatdan o\'tish',
+  'auth.email': 'Email',
+  'auth.password': 'Parol',
+  'auth.name': 'Ism',
+  'auth.phone': 'Telefon',
+  'auth.forgot': 'Parolni unutdingizmi?',
+  'auth.no_account': 'Hisobingiz yo\'qmi?',
+  'auth.has_account': 'Hisobingiz bormi?',
+
   // ── Common ────────────────────────────────
   'common.error': 'Xatolik',
   'common.cancel': 'Bekor qilish',
   'common.save': 'Saqlash',
   'common.unlimited': 'Cheksiz',
+  'common.loading': 'Yuklanmoqda...',
+  'common.retry': 'Qayta urinish',
+  'common.close': 'Yopish',
+  'common.review_published': 'Sharh chop etildi!',
+  'common.select_rating': 'Bahoni tanlang',
 };

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'supabase_service.dart';
 
 class AchievementService {
@@ -39,6 +40,9 @@ class AchievementService {
     final refStats = await _svc.getReferralStats();
     final friendsCount = refStats['friends_count'] as int? ?? 0;
 
+    // Reviews count
+    final reviewCount = await _svc.getUserReviewCount();
+
     // Check each achievement
     for (final a in all) {
       final id = a['id'] as String;
@@ -66,7 +70,10 @@ class AchievementService {
           earned = friendsCount >= threshold;
         case 'favorite_collector':
           earned = favIds.length >= threshold;
-        // reviewer is checked separately
+        case 'first_review':
+          earned = reviewCount >= threshold;
+        case 'reviewer':
+          earned = reviewCount >= threshold;
       }
 
       if (earned) {
@@ -78,5 +85,24 @@ class AchievementService {
     }
 
     return newlyUnlocked;
+  }
+
+  /// Show a snackbar for newly unlocked achievements
+  static void showUnlockNotifications(BuildContext context, List<String> names) {
+    for (final name in names) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.emoji_events_rounded, color: Color(0xFFFBBF24), size: 20),
+              const SizedBox(width: 8),
+              Expanded(child: Text('Достижение разблокировано: $name')),
+            ],
+          ),
+          backgroundColor: const Color(0xFF1E293B),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
   }
 }

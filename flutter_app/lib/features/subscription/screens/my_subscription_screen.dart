@@ -90,7 +90,7 @@ class MySubscriptionScreen extends ConsumerWidget {
                       icon: Icons.confirmation_number_outlined,
                       iconColor: const Color(0xFF22C55E),
                       title: 'Активировать промокод',
-                      onTap: () => _showPromoDialog(context),
+                      onTap: () => _showPromoDialog(context, ref),
                     ),
                     const _Divider(),
                     _ActionTile(
@@ -171,39 +171,13 @@ class MySubscriptionScreen extends ConsumerWidget {
     );
   }
 
-  void _showPromoDialog(BuildContext context) {
+  void _showPromoDialog(BuildContext context, WidgetRef ref) {
     final controller = TextEditingController();
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: AppTheme.bgCard,
-        title: const Text('Промокод',
-            style: TextStyle(color: AppTheme.textPrimary)),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          style: const TextStyle(color: AppTheme.textPrimary),
-          decoration: const InputDecoration(
-            hintText: 'Введите промокод',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Отмена'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Промокод будет доступен в следующем обновлении'),
-                ),
-              );
-            },
-            child: const Text('Активировать'),
-          ),
-        ],
+      builder: (_) => _PromoDialog(
+        controller: controller,
+        onApplied: () => ref.invalidate(_mySubProvider),
       ),
     );
   }
@@ -586,6 +560,111 @@ class _Divider extends StatelessWidget {
         height: 1,
         color: AppTheme.textMuted.withValues(alpha: 0.15),
       ),
+    );
+  }
+}
+
+// ── Mini plan card ──────────────────────────────────────────
+
+// ── Promo dialog ───────────────────────────────────────────
+
+class _PromoDialog extends StatefulWidget {
+  final TextEditingController controller;
+  final VoidCallback onApplied;
+  const _PromoDialog({required this.controller, required this.onApplied});
+
+  @override
+  State<_PromoDialog> createState() => _PromoDialogState();
+}
+
+class _PromoDialogState extends State<_PromoDialog> {
+  bool _loading = false;
+  String? _error;
+  String? _success;
+
+  Future<void> _apply() async {
+    final code = widget.controller.text.trim();
+    if (code.isEmpty) {
+      setState(() => _error = 'Введите промокод');
+      return;
+    }
+    setState(() { _loading = true; _error = null; _success = null; });
+    try {
+      final result = await SupabaseService().applyPromoCode(code);
+      final type = result['type'] as String;
+      final value = result['value'] as int;
+      final bonus = type == 'hours'
+          ? '+$value часов'
+          : type == 'days'
+              ? '+$value дней'
+              : '${value}% скидка';
+      setState(() => _success = 'Промокод активирован! $bonus');
+      widget.onApplied();
+    } catch (e) {
+      setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: AppTheme.bgCard,
+      title: const Text('Промокод',
+          style: TextStyle(color: AppTheme.textPrimary)),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: widget.controller,
+            autofocus: true,
+            textCapitalization: TextCapitalization.characters,
+            style: const TextStyle(color: AppTheme.textPrimary, letterSpacing: 2),
+            decoration: InputDecoration(
+              hintText: 'Введите промокод',
+              errorText: _error,
+            ),
+          ),
+          if (_success != null) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF22C55E).withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.check_circle_rounded,
+                      color: Color(0xFF22C55E), size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(_success!,
+                        style: const TextStyle(
+                            color: Color(0xFF22C55E), fontSize: 13)),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(_success != null ? 'Закрыть' : 'Отмена'),
+        ),
+        if (_success == null)
+          ElevatedButton(
+            onPressed: _loading ? null : _apply,
+            child: _loading
+                ? const SizedBox(
+                    width: 18, height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : const Text('Активировать'),
+          ),
+      ],
     );
   }
 }

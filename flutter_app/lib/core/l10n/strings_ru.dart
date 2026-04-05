@@ -37,6 +37,11 @@ const Map<String, String> stringsRu = {
   'clubs.rate_visit': 'Оцените ваш визит',
   'clubs.send_review': 'Отправить отзыв',
   'clubs.review_hint': 'Расскажите о вашем опыте (необязательно)',
+  'clubs.today': 'Сегодня',
+  'clubs.schedule_na': 'Расписание не указано',
+  'clubs.seats': 'мест',
+  'clubs.per_hour': 'UZS/ч',
+  'clubs.user': 'Пользователь',
 
   // ── Profile ───────────────────────────────
   'profile.title': 'Профиль',
@@ -72,10 +77,27 @@ const Map<String, String> stringsRu = {
   'sub.days_left': 'дней осталось',
   'sub.expires': 'Истекает!',
   'sub.per_month': 'в месяц',
+  'sub.actions': 'Купить абонемент и допуслуги',
+  'sub.order': 'Оформить',
+
+  // ── Promo ─────────────────────────────────
+  'promo.title': 'Промокод',
+  'promo.hint': 'Введите промокод',
+  'promo.activate': 'Активировать',
+  'promo.cancel': 'Отмена',
+  'promo.close': 'Закрыть',
+  'promo.empty': 'Введите промокод',
+  'promo.invalid': 'Промокод недействителен или истёк',
+  'promo.already_used': 'Вы уже использовали этот промокод',
+  'promo.activated': 'Промокод активирован!',
+  'promo.hours': 'часов',
+  'promo.days': 'дней',
+  'promo.discount': 'скидка',
 
   // ── Achievements ──────────────────────────
   'ach.title': 'Достижения',
   'ach.unlocked': 'достижений разблокировано',
+  'ach.new_unlock': 'Достижение разблокировано',
 
   // ── Favorites ─────────────────────────────
   'fav.title': 'Избранные клубы',
@@ -106,9 +128,32 @@ const Map<String, String> stringsRu = {
   'support.title': 'Служба поддержки',
   'support.hours': 'Мы на связи ежедневно с 10:00 до 22:00',
 
+  // ── Scanner ───────────────────────────────
+  'scan.title': 'Сканировать QR',
+  'scan.point_camera': 'Наведите камеру на QR-код',
+  'scan.success': 'Чек-ин выполнен!',
+  'scan.error': 'Ошибка сканирования',
+  'scan.no_permission': 'Нет доступа к камере',
+
+  // ── Auth ──────────────────────────────────
+  'auth.login': 'Войти',
+  'auth.register': 'Регистрация',
+  'auth.email': 'Email',
+  'auth.password': 'Пароль',
+  'auth.name': 'Имя',
+  'auth.phone': 'Телефон',
+  'auth.forgot': 'Забыли пароль?',
+  'auth.no_account': 'Нет аккаунта?',
+  'auth.has_account': 'Уже есть аккаунт?',
+
   // ── Common ────────────────────────────────
   'common.error': 'Ошибка',
   'common.cancel': 'Отмена',
   'common.save': 'Сохранить',
   'common.unlimited': 'Безлимит',
+  'common.loading': 'Загрузка...',
+  'common.retry': 'Повторить',
+  'common.close': 'Закрыть',
+  'common.review_published': 'Отзыв опубликован!',
+  'common.select_rating': 'Выберите оценку',
 };

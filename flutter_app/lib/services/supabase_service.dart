@@ -208,6 +208,88 @@ class SupabaseService {
     return data;
   }
 
+  // ── Promo Codes ───────────────────────────────────────────
+  Future<Map<String, dynamic>?> validatePromoCode(String code) async {
+    final res = await _client
+        .from('promos')
+        .select()
+        .eq('code', code.toUpperCase().trim())
+        .eq('is_active', true)
+        .maybeSingle();
+    if (res == null) return null;
+
+    // Check expiry
+    final expiresAt = res['expires_at'] as String?;
+    if (expiresAt != null && DateTime.parse(expiresAt).isBefore(DateTime.now())) {
+      return null;
+    }
+
+    // Check usage limit
+    final maxUses = res['max_uses'] as int? ?? 0;
+    final usedCount = res['used_count'] as int? ?? 0;
+    if (maxUses > 0 && usedCount >= maxUses) return null;
+
+    return res;
+  }
+
+  Future<Map<String, dynamic>> applyPromoCode(String code) async {
+    final userId = currentUser!.id;
+    final promo = await validatePromoCode(code);
+    if (promo == null) throw Exception('Промокод недействителен или истёк');
+
+    final promoId = promo['id'] as String;
+    final type = promo['type'] as String? ?? 'hours';
+    final value = promo['value'] as int? ?? 0;
+
+    // Check if user already used this promo
+    final existing = await _client
+        .from('promo_usages')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('promo_id', promoId)
+        .maybeSingle();
+    if (existing != null) throw Exception('Вы уже использовали этот промокод');
+
+    // Record usage
+    await _client.from('promo_usages').insert({
+      'user_id': userId,
+      'promo_id': promoId,
+    });
+
+    // Increment used_count
+    await _client.from('promos').update({
+      'used_count': (promo['used_count'] as int? ?? 0) + 1,
+    }).eq('id', promoId);
+
+    // Apply bonus based on type
+    if (type == 'hours') {
+      // Add hours to active subscription
+      final sub = await getActiveSubscription();
+      if (sub != null) {
+        await _client.from('subscriptions').update({
+          'hours_balance': (sub.hoursBalance ?? 0) + value,
+        }).eq('id', sub.id);
+      }
+    } else if (type == 'days') {
+      // Extend subscription
+      final sub = await getActiveSubscription();
+      if (sub != null) {
+        final newEnd = sub.endDate.add(Duration(days: value));
+        await _client.from('subscriptions').update({
+          'end_date': newEnd.toIso8601String().split('T')[0],
+        }).eq('id', sub.id);
+      }
+    } else if (type == 'discount') {
+      // Discount promos are validated at payment time, just record usage
+    }
+
+    return {
+      'type': type,
+      'value': value,
+      'description': promo['description'] as String? ?? '',
+    };
+  }
+
   // ── Reviews ───────────────────────────────────────────────
   Future<List<Review>> getClubReviews(String clubId) async {
     final res = await _client
@@ -231,6 +313,16 @@ class SupabaseService {
       'rating': rating,
       'text': text,
     });
+  }
+
+  Future<int> getUserReviewCount() async {
+    final userId = currentUser?.id;
+    if (userId == null) return 0;
+    final res = await _client
+        .from('reviews')
+        .select('id')
+        .eq('user_id', userId);
+    return (res as List).length;
   }
 
   Future<bool> hasReviewed(String clubId) async {

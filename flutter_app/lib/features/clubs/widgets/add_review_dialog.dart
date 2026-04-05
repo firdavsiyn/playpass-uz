@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../services/supabase_service.dart';
+import '../../../services/achievement_service.dart';
 
 class AddReviewDialog extends StatefulWidget {
   final String clubId;
@@ -49,6 +50,12 @@ class _AddReviewDialogState extends State<AddReviewDialog> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Отзыв опубликован!')),
         );
+        // Check achievements in background
+        AchievementService().checkAndUnlock().then((names) {
+          if (names.isNotEmpty && context.mounted) {
+            AchievementService.showUnlockNotifications(context, names);
+          }
+        });
       }
     } catch (e) {
       if (mounted) {

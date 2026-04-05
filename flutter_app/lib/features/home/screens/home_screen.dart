@@ -7,6 +7,7 @@ import '../../../models/club.dart';
 import '../../../models/visit.dart';
 import '../../../services/supabase_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../widgets/subscription_widget.dart';
 import '../widgets/nearby_clubs_row.dart';
 import '../widgets/recent_visits_widget.dart';
@@ -131,11 +132,11 @@ class HomeScreen extends ConsumerWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Ближайшие клубы',
+                      Text(ref.lang('home.nearby'),
                           style: Theme.of(context).textTheme.titleMedium),
                       TextButton(
                         onPressed: () => context.go('/clubs'),
-                        child: const Text('Все', style: TextStyle(color: AppTheme.primary)),
+                        child: Text(ref.lang('home.all'), style: const TextStyle(color: AppTheme.primary)),
                       ),
                     ],
                   ),
@@ -148,11 +149,11 @@ class HomeScreen extends ConsumerWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Последние визиты',
+                      Text(ref.lang('home.recent'),
                           style: Theme.of(context).textTheme.titleMedium),
                       TextButton(
                         onPressed: () => context.push('/profile/history'),
-                        child: const Text('История', style: TextStyle(color: AppTheme.primary)),
+                        child: Text(ref.lang('home.history'), style: const TextStyle(color: AppTheme.primary)),
                       ),
                     ],
                   ),
@@ -170,13 +171,13 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
-class _ScanButton extends StatelessWidget {
+class _ScanButton extends ConsumerWidget {
   final bool hasActiveSubscription;
   final bool isFrozen;
   const _ScanButton({required this.hasActiveSubscription, this.isFrozen = false});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final canScan = hasActiveSubscription && !isFrozen;
 
     return GestureDetector(
@@ -233,10 +234,10 @@ class _ScanButton extends StatelessWidget {
             const SizedBox(width: 12),
             Text(
               isFrozen
-                  ? 'Подписка заморожена'
+                  ? ref.lang('home.frozen')
                   : hasActiveSubscription
-                      ? 'Сканировать QR'
-                      : 'Купить подписку',
+                      ? ref.lang('home.scan_qr')
+                      : ref.lang('home.buy_sub'),
               style: TextStyle(
                 color: canScan ? Colors.white : AppTheme.textMuted,
                 fontSize: 17,

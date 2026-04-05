@@ -31,7 +31,7 @@ class ProfileScreen extends ConsumerWidget {
     final subAsync = ref.watch(subscriptionProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Профиль')),
+      appBar: AppBar(title: Text(ref.lang('profile.title'))),
       body: profileAsync.when(
         data: (profile) => _ProfileContent(
           profile: profile,
@@ -132,7 +132,7 @@ class _ProfileContent extends ConsumerWidget {
                       ),
                     ),
                     Text(
-                      '$totalVisits визитов всего',
+                      '$totalVisits ${ref.lang('profile.visits_total')}',
                       style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
                     ),
                   ],
@@ -201,65 +201,65 @@ class _ProfileContent extends ConsumerWidget {
         // Menu items
         _MenuItem(
           icon: Icons.favorite_rounded,
-          title: 'Избранные клубы',
+          title: ref.lang('profile.favorites'),
           onTap: () => context.push('/profile/favorites'),
         ),
         _MenuItem(
           icon: Icons.emoji_events_rounded,
-          title: 'Достижения',
+          title: ref.lang('profile.achievements'),
           onTap: () => context.push('/profile/achievements'),
         ),
         _MenuItem(
           icon: Icons.history_rounded,
-          title: 'История визитов',
+          title: ref.lang('profile.visit_history'),
           onTap: () => context.push('/profile/history'),
         ),
         _MenuItem(
           icon: Icons.card_membership_rounded,
-          title: 'Купить / Продлить подписку',
+          title: ref.lang('profile.buy_sub'),
           onTap: () => context.push('/plans'),
         ),
         _MenuItem(
           icon: Icons.card_giftcard_rounded,
-          title: 'Подарочные сертификаты',
-          subtitle: 'Подарить подписку другу',
+          title: ref.lang('profile.gifts'),
+          subtitle: ref.lang('profile.gifts_sub'),
           onTap: () => context.push('/gift/purchase'),
         ),
         _MenuItem(
           icon: Icons.people_outline_rounded,
-          title: 'Реферальная программа',
-          subtitle: '+3 часа за друга',
+          title: ref.lang('profile.referral'),
+          subtitle: ref.lang('profile.referral_sub'),
           onTap: () => context.push('/profile/referral'),
         ),
         if (subscription != null && subscription!.canFreeze)
           _MenuItem(
             icon: Icons.ac_unit_rounded,
-            title: 'Заморозить подписку',
+            title: ref.lang('profile.freeze'),
             subtitle: '${subscription!.freezeDaysLeft} дн. доступно',
             onTap: () => context.push('/profile/freeze', extra: subscription),
           ),
         if (subscription != null && subscription!.isFrozen)
           _MenuItem(
             icon: Icons.ac_unit_rounded,
-            title: 'Подписка заморожена',
-            subtitle: 'Нажмите для разморозки',
+            title: ref.lang('profile.frozen'),
+            subtitle: ref.lang('profile.frozen_sub'),
             onTap: () => context.push('/profile/freeze', extra: subscription),
           ),
         _LanguageToggle(),
         _MenuItem(
           icon: Icons.edit_outlined,
-          title: 'Изменить имя',
+          title: ref.lang('profile.change_name'),
           onTap: () => _showChangeNameDialog(context, ref, name),
         ),
         _MenuItem(
           icon: Icons.help_outline_rounded,
-          title: 'Поддержка',
+          title: ref.lang('profile.support'),
           onTap: () => _showSupportSheet(context),
         ),
         const SizedBox(height: 8),
         _MenuItem(
           icon: Icons.logout_rounded,
-          title: 'Выйти из аккаунта',
+          title: ref.lang('profile.logout'),
           color: AppTheme.error,
           onTap: () async {
             await SupabaseService().signOut();
