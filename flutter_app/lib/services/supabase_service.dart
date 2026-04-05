@@ -564,6 +564,54 @@ class SupabaseService {
     }).eq('code', code.toUpperCase());
   }
 
+  // ── Bookings ──────────────────────────────────────────────
+  Future<void> createBooking({
+    required String clubId,
+    required String zone,
+    required DateTime bookingTime,
+    required int durationHours,
+  }) async {
+    final userId = currentUser!.id;
+    await _client.from('bookings').insert({
+      'user_id': userId,
+      'club_id': clubId,
+      'zone': zone,
+      'booking_time': bookingTime.toIso8601String(),
+      'duration_hours': durationHours,
+      'status': 'confirmed',
+    });
+  }
+
+  Future<List<Map<String, dynamic>>> getMyBookings() async {
+    final userId = currentUser?.id;
+    if (userId == null) return [];
+    final res = await _client
+        .from('bookings')
+        .select('*, clubs(name)')
+        .eq('user_id', userId)
+        .order('booking_time', ascending: false)
+        .limit(20);
+    return (res as List).cast<Map<String, dynamic>>();
+  }
+
+  Future<void> cancelBooking(String bookingId) async {
+    await _client.from('bookings').update({
+      'status': 'cancelled',
+    }).eq('id', bookingId);
+  }
+
+  // ── Banners ──────────────────────────────────────────────
+  Future<List<Map<String, dynamic>>> getActiveBanners() async {
+    final now = DateTime.now().toIso8601String();
+    final res = await _client
+        .from('banners')
+        .select()
+        .eq('is_active', true)
+        .or('expires_at.is.null,expires_at.gte.$now')
+        .order('sort_order');
+    return (res as List).cast<Map<String, dynamic>>();
+  }
+
   // ── Avatar upload ─────────────────────────────────────────
   Future<String> uploadAvatar(List<int> fileBytes, String fileName) async {
     final userId = currentUser!.id;

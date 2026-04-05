@@ -56,6 +56,8 @@ const Map<String, String> stringsUz = {
   'profile.freeze': 'Obunani muzlatish',
   'profile.frozen': 'Obuna muzlatilgan',
   'profile.frozen_sub': 'Eritish uchun bosing',
+  'profile.booking': 'PK band qilish',
+  'profile.booking_sub': 'Klub va vaqtni tanlang',
   'profile.change_name': 'Ismni o\'zgartirish',
   'profile.support': 'Qo\'llab-quvvatlash',
   'profile.logout': 'Hisobdan chiqish',

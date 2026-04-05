@@ -644,3 +644,61 @@ async function loadAnalytics() {
       scales: { x: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 10 } } }, y: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 10 } }, beginAtZero: true } } },
   });
 }
+
+/* ═══════════════════════════════════════════════
+   EXPORT: PC, Bookings, Staff, Analytics
+   ═══════════════════════════════════════════════ */
+function _downloadCSV(filename, rows) {
+  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(';')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = filename; a.click();
+}
+
+async function exportPCsCSV() {
+  if (!currentClub) return;
+  const { data } = await sb.from('club_pcs').select('*').eq('club_id', currentClub.id).order('pc_number');
+  if (!data?.length) { showToast('Нет данных для экспорта', 'error'); return; }
+  const rows = [['№ ПК', 'Зона', 'Характеристики', 'Статус']];
+  data.forEach(pc => rows.push([pc.pc_number, pc.zone || 'basic', pc.specs || '', pc.status || 'free']));
+  _downloadCSV(`pcs_${currentClub.name}_${toDateInput(new Date())}.csv`, rows);
+}
+
+async function exportBookingsCSV() {
+  if (!currentClub) return;
+  const { data } = await sb.from('bookings').select('*, users(name)').eq('club_id', currentClub.id).order('booking_time', { ascending: false }).limit(500);
+  if (!data?.length) { showToast('Нет данных для экспорта', 'error'); return; }
+  const rows = [['Дата/время', 'Пользователь', 'Зона', 'Длительность', 'Статус']];
+  data.forEach(b => rows.push([
+    formatDateTime(new Date(b.booking_time)),
+    b.users?.name || '',
+    b.zone || 'basic',
+    (b.duration_hours || 2) + ' ч',
+    b.status || '',
+  ]));
+  _downloadCSV(`bookings_${currentClub.name}_${toDateInput(new Date())}.csv`, rows);
+}
+
+async function exportStaffCSV() {
+  if (!currentClub) return;
+  const { data } = await sb.from('club_staff').select('*').eq('club_id', currentClub.id).order('name');
+  if (!data?.length) { showToast('Нет данных для экспорта', 'error'); return; }
+  const rows = [['Имя', 'Должность', 'Телефон', 'Смена']];
+  data.forEach(s => rows.push([s.name, s.role || '', s.phone || '', s.shift || '']));
+  _downloadCSV(`staff_${currentClub.name}_${toDateInput(new Date())}.csv`, rows);
+}
+
+async function exportFinanceCSV() {
+  if (!currentClub) return;
+  const { data } = await sb.from('payouts').select('*').eq('club_id', currentClub.id).order('period_month', { ascending: false });
+  if (!data?.length) { showToast('Нет данных для экспорта', 'error'); return; }
+  const rows = [['Период', 'Визиты', 'Сумма', 'Статус', 'Дата выплаты']];
+  data.forEach(p => rows.push([
+    p.period_month,
+    p.visit_count || 0,
+    formatMoney(p.amount || 0),
+    p.status || '',
+    p.paid_at ? formatDateTime(new Date(p.paid_at)) : '',
+  ]));
+  _downloadCSV(`finance_${currentClub.name}_${toDateInput(new Date())}.csv`, rows);
+}

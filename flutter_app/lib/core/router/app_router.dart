@@ -25,6 +25,7 @@ import '../../features/profile/screens/favorites_screen.dart';
 import '../../features/profile/screens/achievements_screen.dart';
 import '../../features/subscription/screens/gift_purchase_screen.dart';
 import '../../features/subscription/screens/gift_redeem_screen.dart';
+import '../../features/booking/screens/booking_screen.dart';
 import '../../models/subscription.dart';
 
 /// Notifier that triggers GoRouter to re-evaluate redirects when auth changes.
@@ -124,6 +125,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Gift certificates
       GoRoute(path: '/gift/purchase', builder: (_, __) => const GiftPurchaseScreen()),
       GoRoute(path: '/gift/redeem', builder: (_, __) => const GiftRedeemScreen()),
+
+      // Booking
+      GoRoute(path: '/booking', builder: (_, __) => const BookingScreen()),
     ],
   );
 });

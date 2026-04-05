@@ -141,7 +141,12 @@
 
     <!-- ══════ FINANCE ══════ -->
     <div id="tab-finance" class="tab-content hidden">
-      <div class="page-header"><h1 data-i18n="fin_title">Финансы</h1></div>
+      <div class="page-header">
+        <h1 data-i18n="fin_title">Финансы</h1>
+        <div class="header-actions">
+          <button class="btn-secondary btn-inline" onclick="exportFinanceCSV()" data-i18n="fin_export">Экспорт CSV</button>
+        </div>
+      </div>
       <div class="stats-grid">
         <div class="stat-card highlight"><div class="stat-label" data-i18n="fin_rate">Ставка за визит</div><div class="stat-value">8 000</div><div class="stat-sub">UZS</div></div>
         <div class="stat-card"><div class="stat-label" data-i18n="fin_month_est">Оценка за месяц</div><div class="stat-value" id="finance-month-est">—</div><div class="stat-sub">UZS</div></div>
@@ -162,6 +167,7 @@
       <div class="page-header">
         <h1 data-i18n="pcs_title">Управление ПК</h1>
         <div class="header-actions">
+          <button class="btn-secondary btn-inline" onclick="exportPCsCSV()" data-i18n="pcs_export">Экспорт CSV</button>
           <button class="btn-primary btn-inline" onclick="showAddPcModal()" data-i18n="pcs_add">+ Добавить ПК</button>
         </div>
       </div>
@@ -190,6 +196,7 @@
       <div class="page-header">
         <h1 data-i18n="book_title">Бронирование</h1>
         <div class="header-actions">
+          <button class="btn-secondary btn-inline" onclick="exportBookingsCSV()" data-i18n="book_export">Экспорт CSV</button>
           <input type="date" id="booking-date" onchange="loadBookings()" />
         </div>
       </div>
@@ -208,6 +215,7 @@
       <div class="page-header">
         <h1 data-i18n="staff_title">Персонал</h1>
         <div class="header-actions">
+          <button class="btn-secondary btn-inline" onclick="exportStaffCSV()" data-i18n="staff_export">Экспорт CSV</button>
           <button class="btn-primary btn-inline" onclick="showAddStaffModal()" data-i18n="staff_add">+ Добавить сотрудника</button>
         </div>
       </div>

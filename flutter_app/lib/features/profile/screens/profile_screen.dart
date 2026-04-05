@@ -9,6 +9,7 @@ import '../../../services/supabase_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/l10n/app_locale.dart';
+import '../../../core/theme/theme_provider.dart';
 import '../../../core/widgets/app_avatar.dart';
 import '../../../models/subscription.dart';
 
@@ -215,6 +216,12 @@ class _ProfileContent extends ConsumerWidget {
           onTap: () => context.push('/profile/history'),
         ),
         _MenuItem(
+          icon: Icons.computer_rounded,
+          title: ref.lang('profile.booking'),
+          subtitle: ref.lang('profile.booking_sub'),
+          onTap: () => context.push('/booking'),
+        ),
+        _MenuItem(
           icon: Icons.card_membership_rounded,
           title: ref.lang('profile.buy_sub'),
           onTap: () => context.push('/plans'),
@@ -246,6 +253,7 @@ class _ProfileContent extends ConsumerWidget {
             onTap: () => context.push('/profile/freeze', extra: subscription),
           ),
         _LanguageToggle(),
+        _ThemeToggle(),
         _MenuItem(
           icon: Icons.edit_outlined,
           title: ref.lang('profile.change_name'),
@@ -597,6 +605,42 @@ class _LanguageToggle extends ConsumerWidget {
                   _LangChip(label: 'UZ', selected: !isRu),
                 ],
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ThemeToggle extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = ref.watch(themeModeProvider) == 'dark';
+
+    return GestureDetector(
+      onTap: () => ref.read(themeModeProvider.notifier).toggle(),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardTheme.color,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppTheme.primary.withValues(alpha: 0.05)),
+        ),
+        child: Row(
+          children: [
+            Icon(isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                color: Theme.of(context).textTheme.bodyLarge?.color, size: 22),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(isDark ? 'Тёмная тема' : 'Светлая тема',
+                  style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color, fontSize: 15)),
+            ),
+            Switch(
+              value: isDark,
+              activeColor: AppTheme.primary,
+              onChanged: (_) => ref.read(themeModeProvider.notifier).toggle(),
             ),
           ],
         ),

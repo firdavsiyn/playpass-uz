@@ -56,6 +56,8 @@ const Map<String, String> stringsRu = {
   'profile.freeze': 'Заморозить подписку',
   'profile.frozen': 'Подписка заморожена',
   'profile.frozen_sub': 'Нажмите для разморозки',
+  'profile.booking': 'Забронировать ПК',
+  'profile.booking_sub': 'Выберите клуб и время',
   'profile.change_name': 'Изменить имя',
   'profile.support': 'Поддержка',
   'profile.logout': 'Выйти из аккаунта',

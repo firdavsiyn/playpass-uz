@@ -12,6 +12,7 @@ import '../widgets/subscription_widget.dart';
 import '../widgets/nearby_clubs_row.dart';
 import '../widgets/recent_visits_widget.dart';
 import '../widgets/active_session_widget.dart';
+import '../widgets/banners_carousel.dart';
 
 // Providers
 final activeSubscriptionProvider = FutureProvider<Subscription?>((ref) async {
@@ -126,7 +127,11 @@ class HomeScreen extends ConsumerWidget {
                     error: (_, __) => const SizedBox.shrink(),
                   ),
 
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 20),
+
+                  // Banners carousel
+                  const BannersCarousel(),
+                  const SizedBox(height: 20),
 
                   // Nearby clubs
                   Row(

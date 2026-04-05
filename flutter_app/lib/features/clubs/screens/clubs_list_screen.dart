@@ -15,6 +15,7 @@ import '../widgets/club_map_bottom_sheet.dart';
 final selectedTierProvider = StateProvider<String?>((ref) => null);
 final searchQueryProvider = StateProvider<String>((ref) => '');
 final isMapViewProvider = StateProvider<bool>((ref) => false);
+final sortModeProvider = StateProvider<String>((ref) => 'rating');
 
 // Console filters
 final filterPsProvider = StateProvider<bool>((ref) => false);
@@ -22,9 +23,30 @@ final filterPsProvider = StateProvider<bool>((ref) => false);
 final clubsFilteredProvider = FutureProvider<List<Club>>((ref) async {
   final tier = ref.watch(selectedTierProvider);
   final ps = ref.watch(filterPsProvider);
+  final sortMode = ref.watch(sortModeProvider);
   var clubs = await SupabaseService().getActiveClubs(tier: tier);
   if (ps) clubs = clubs.where((c) => c.hasPlaystation).toList();
+
+  switch (sortMode) {
+    case 'rating':
+      clubs.sort((a, b) => b.rating.compareTo(a.rating));
+    case 'price':
+      clubs.sort((a, b) => a.pricePerHour.compareTo(b.pricePerHour));
+    case 'name':
+      clubs.sort((a, b) => a.name.compareTo(b.name));
+  }
   return clubs;
+});
+
+// Occupancy for list display
+final clubsOccupancyProvider = FutureProvider<Map<String, int>>((ref) async {
+  final clubs = ref.watch(clubsFilteredProvider).valueOrNull ?? [];
+  final Map<String, int> result = {};
+  final futures = clubs.map((c) async {
+    try { result[c.id] = await SupabaseService().getClubOccupancy(c.id); } catch (_) {}
+  });
+  await Future.wait(futures);
+  return result;
 });
 
 // ── Screen ─────────────────────────────────────────────────
@@ -126,6 +148,42 @@ class ClubsListScreen extends ConsumerWidget {
                         onTap: () =>
                             ref.read(filterPsProvider.notifier).state = !ps,
                       ),
+                    ],
+                  ),
+                ),
+
+                // Sort row
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.sort_rounded, size: 14, color: AppTheme.textMuted),
+                      const SizedBox(width: 6),
+                      ...['rating', 'price', 'name'].map((mode) {
+                        final sortMode = ref.watch(sortModeProvider);
+                        final selected = sortMode == mode;
+                        final label = mode == 'rating' ? 'По рейтингу' :
+                            mode == 'price' ? 'По цене' : 'По имени';
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 6),
+                          child: GestureDetector(
+                            onTap: () => ref.read(sortModeProvider.notifier).state = mode,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: selected ? AppTheme.primary.withValues(alpha: 0.15) : Colors.transparent,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(label,
+                                  style: TextStyle(
+                                    color: selected ? AppTheme.primary : AppTheme.textMuted,
+                                    fontSize: 11,
+                                    fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                                  )),
+                            ),
+                          ),
+                        );
+                      }),
                     ],
                   ),
                 ),
@@ -472,6 +530,25 @@ class _ClubListCard extends ConsumerWidget {
                           style: const TextStyle(
                               color: AppTheme.textMuted, fontSize: 12),
                         ),
+                        // Occupancy indicator
+                        Consumer(builder: (_, ref, __) {
+                          final occ = ref.watch(clubsOccupancyProvider).valueOrNull;
+                          final count = occ?[club.id] ?? 0;
+                          if (count == 0) return const SizedBox.shrink();
+                          final pct = club.pcCount > 0 ? (count / club.pcCount * 100).round() : 0;
+                          final color = pct > 80 ? AppTheme.error : pct > 50 ? AppTheme.warning : AppTheme.success;
+                          return Padding(
+                            padding: const EdgeInsets.only(left: 8),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: color.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text('$pct%', style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w700)),
+                            ),
+                          );
+                        }),
                         const Spacer(),
                         Container(
                           width: 7,
