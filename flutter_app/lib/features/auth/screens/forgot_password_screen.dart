@@ -37,7 +37,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     });
 
     try {
-      await Supabase.instance.client.auth.resetPasswordForEmail(email);
+      await Supabase.instance.client.auth.resetPasswordForEmail(
+        email,
+        redirectTo: 'https://playpass-app.vercel.app/#/auth/reset-password',
+      );
       setState(() => _sent = true);
     } catch (e) {
       setState(() => _error = 'Не удалось отправить письмо. Проверьте email.');

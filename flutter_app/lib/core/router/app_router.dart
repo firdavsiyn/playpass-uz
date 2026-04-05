@@ -7,6 +7,7 @@ import '../l10n/app_locale.dart';
 
 import '../../features/auth/screens/auth_screen.dart';
 import '../../features/auth/screens/forgot_password_screen.dart';
+import '../../features/auth/screens/reset_password_screen.dart';
 import '../../features/auth/screens/onboarding_screen.dart';
 import '../../features/auth/screens/profile_setup_screen.dart';
 import '../../features/home/screens/home_screen.dart';
@@ -49,7 +50,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isAuthRoute = state.fullPath?.startsWith('/auth') ?? false;
 
       if (!isAuth && !isAuthRoute) return '/auth/login';
-      if (isAuth && (state.fullPath == '/' || isAuthRoute)) return '/home';
+      final isResetPassword = state.fullPath == '/auth/reset-password';
+      if (isAuth && !isResetPassword && (state.fullPath == '/' || isAuthRoute)) return '/home';
       return null;
     },
     routes: [
@@ -58,6 +60,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Auth flow — Email + Пароль
       GoRoute(path: '/auth/login', builder: (_, __) => const AuthScreen()),
       GoRoute(path: '/auth/forgot-password', builder: (_, __) => const ForgotPasswordScreen()),
+      GoRoute(path: '/auth/reset-password', builder: (_, __) => const ResetPasswordScreen()),
       GoRoute(path: '/auth/onboarding', builder: (_, __) => const OnboardingScreen()),
       GoRoute(path: '/auth/profile-setup', builder: (_, __) => const ProfileSetupScreen()),
 
