@@ -10,11 +10,24 @@ final bannersProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   return SupabaseService().getActiveBanners();
 });
 
-class BannersCarousel extends ConsumerWidget {
+class BannersCarousel extends ConsumerStatefulWidget {
   const BannersCarousel({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<BannersCarousel> createState() => _BannersCarouselState();
+}
+
+class _BannersCarouselState extends ConsumerState<BannersCarousel> {
+  final _pageController = PageController(viewportFraction: 0.92);
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final bannersAsync = ref.watch(bannersProvider);
 
     return bannersAsync.when(
@@ -23,7 +36,7 @@ class BannersCarousel extends ConsumerWidget {
         return SizedBox(
           height: 140,
           child: PageView.builder(
-            controller: PageController(viewportFraction: 0.92),
+            controller: _pageController,
             itemCount: banners.length,
             itemBuilder: (_, i) => _BannerCard(banner: banners[i]),
           ),

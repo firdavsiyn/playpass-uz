@@ -25,6 +25,12 @@ let selectedUsers = new Set();
 let selectedTickets = new Set();
 let currentLang = localStorage.getItem('lang') || 'ru';
 
+/* ── HELPERS ─────────────────────────────────── */
+const $ = (id) => document.getElementById(id);
+const fmt = (n) => Number(n || 0).toLocaleString('ru-RU');
+const fmtDate = (d) => d ? new Date(d).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+const fmtDateTime = (d) => d ? new Date(d).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+
 /* ── i18n ────────────────────────────────────── */
 function t(key) { return (LANG[currentLang] && LANG[currentLang][key]) || (LANG.ru[key]) || key; }
 
@@ -72,16 +78,11 @@ function toggleTheme() {
   if (icon) icon.textContent = next === 'dark' ? '☀' : '🌙';
 }
 
-/* ── HELPERS ─────────────────────────────────── */
-const $ = (id) => document.getElementById(id);
-const fmt = (n) => Number(n || 0).toLocaleString('ru-RU');
-const fmtDate = (d) => d ? new Date(d).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
-const fmtDateTime = (d) => d ? new Date(d).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
 const timeAgo = (d) => {
   const diff = (Date.now() - new Date(d).getTime()) / 1000;
-  if (diff < 60) return 'только что';
-  if (diff < 3600) return `${Math.floor(diff / 60)} мин назад`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)} ч назад`;
+  if (diff < 60) return t('dash_just_now');
+  if (diff < 3600) return `${Math.floor(diff / 60)} ${t('dash_min_ago')}`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} ${t('dash_hr_ago')}`;
   return fmtDate(d);
 };
 
@@ -1508,16 +1509,17 @@ async function loadFinance() {
 }
 
 async function loadMrrChart() {
-  const labels = [], values = [];
+  const months = [];
   for (let i = 5; i >= 0; i--) {
     const d = new Date(); d.setMonth(d.getMonth() - i);
-    const start = new Date(d.getFullYear(), d.getMonth(), 1);
-    const end = new Date(d.getFullYear(), d.getMonth() + 1, 0);
-    labels.push(start.toLocaleString('ru-RU', { month: 'short' }));
-    const { data } = await sb.from('subscription_requests').select('amount_uzs').eq('status', 'approved')
-      .gte('created_at', start.toISOString()).lte('created_at', end.toISOString());
-    values.push((data || []).reduce((s, p) => s + (p.amount_uzs || 0), 0));
+    months.push({ start: new Date(d.getFullYear(), d.getMonth(), 1), end: new Date(d.getFullYear(), d.getMonth() + 1, 0) });
   }
+  const labels = months.map(m => m.start.toLocaleString('ru-RU', { month: 'short' }));
+  const results = await Promise.all(months.map(m =>
+    sb.from('subscription_requests').select('amount_uzs').eq('status', 'approved')
+      .gte('created_at', m.start.toISOString()).lte('created_at', m.end.toISOString())
+  ));
+  const values = results.map(r => (r.data || []).reduce((s, p) => s + (p.amount_uzs || 0), 0));
   renderChart('chart-mrr', 'bar', labels, values, 'MRR (UZS)', '#6366F1');
 }
 
@@ -1532,42 +1534,44 @@ async function loadPlanDistChart() {
 }
 
 async function loadChurnChart() {
-  const labels = [], values = [];
+  const months = [];
   for (let i = 5; i >= 0; i--) {
     const d = new Date(); d.setMonth(d.getMonth() - i);
-    const start = new Date(d.getFullYear(), d.getMonth(), 1);
-    const end = new Date(d.getFullYear(), d.getMonth() + 1, 0);
-    labels.push(start.toLocaleString('ru-RU', { month: 'short' }));
-    const { count: churned } = await sb.from('subscriptions').select('*', { count: 'exact', head: true })
-      .in('status', ['expired', 'cancelled']).gte('updated_at', start.toISOString()).lte('updated_at', end.toISOString());
-    const { count: active } = await sb.from('subscriptions').select('*', { count: 'exact', head: true })
-      .eq('status', 'active').lte('created_at', end.toISOString());
-    const total = (active || 0) + (churned || 0);
-    values.push(total > 0 ? parseFloat(((churned || 0) / total * 100).toFixed(1)) : 0);
+    months.push({ start: new Date(d.getFullYear(), d.getMonth(), 1), end: new Date(d.getFullYear(), d.getMonth() + 1, 0) });
   }
-  renderChart('chart-churn', 'line', labels, values, 'Churn %', '#EF4444');
+  const labels = months.map(m => m.start.toLocaleString('ru-RU', { month: 'short' }));
+  const results = await Promise.all(months.map(async m => {
+    const [churnedRes, activeRes] = await Promise.all([
+      sb.from('subscriptions').select('*', { count: 'exact', head: true })
+        .in('status', ['expired', 'cancelled']).gte('updated_at', m.start.toISOString()).lte('updated_at', m.end.toISOString()),
+      sb.from('subscriptions').select('*', { count: 'exact', head: true })
+        .eq('status', 'active').lte('created_at', m.end.toISOString()),
+    ]);
+    const churned = churnedRes.count || 0;
+    const active = activeRes.count || 0;
+    const total = active + churned;
+    return total > 0 ? parseFloat((churned / total * 100).toFixed(1)) : 0;
+  }));
+  renderChart('chart-churn', 'line', labels, results, 'Churn %', '#EF4444');
 }
 
 async function loadCohortChart() {
-  // Simplified cohort: for each month of registration, what % still has active sub
-  const labels = [], values = [];
+  const months = [];
   for (let i = 5; i >= 0; i--) {
     const d = new Date(); d.setMonth(d.getMonth() - i);
-    const start = new Date(d.getFullYear(), d.getMonth(), 1);
-    const end = new Date(d.getFullYear(), d.getMonth() + 1, 0);
-    labels.push(start.toLocaleString('ru-RU', { month: 'short' }));
-    const { count: registered } = await sb.from('users').select('*', { count: 'exact', head: true })
-      .gte('created_at', start.toISOString()).lte('created_at', end.toISOString());
-    if (!registered) { values.push(0); continue; }
+    months.push({ start: new Date(d.getFullYear(), d.getMonth(), 1), end: new Date(d.getFullYear(), d.getMonth() + 1, 0) });
+  }
+  const labels = months.map(m => m.start.toLocaleString('ru-RU', { month: 'short' }));
+  const results = await Promise.all(months.map(async m => {
     const { data: cohortUsers } = await sb.from('users').select('id')
-      .gte('created_at', start.toISOString()).lte('created_at', end.toISOString());
+      .gte('created_at', m.start.toISOString()).lte('created_at', m.end.toISOString());
     const userIds = (cohortUsers || []).map(u => u.id);
-    if (userIds.length === 0) { values.push(0); continue; }
+    if (userIds.length === 0) return 0;
     const { count: retained } = await sb.from('subscriptions').select('*', { count: 'exact', head: true })
       .eq('status', 'active').in('user_id', userIds);
-    values.push(parseFloat(((retained || 0) / registered * 100).toFixed(1)));
-  }
-  renderChart('chart-cohort', 'bar', labels, values, 'Удержание %', '#10B981');
+    return parseFloat(((retained || 0) / userIds.length * 100).toFixed(1));
+  }));
+  renderChart('chart-cohort', 'bar', labels, results, 'Удержание %', '#10B981');
 }
 
 /* ── WEEKLY REPORT ──────────────────────────── */

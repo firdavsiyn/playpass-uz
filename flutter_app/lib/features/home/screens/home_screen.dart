@@ -42,10 +42,12 @@ class HomeScreen extends ConsumerWidget {
     return Scaffold(
       body: RefreshIndicator(
         onRefresh: () async {
-          ref.invalidate(activeSubscriptionProvider);
-          ref.invalidate(nearbyClubsProvider);
-          ref.invalidate(recentVisitsProvider);
-          ref.invalidate(activeSessionProvider);
+          await Future.wait([
+            ref.refresh(activeSubscriptionProvider.future),
+            ref.refresh(nearbyClubsProvider.future),
+            ref.refresh(recentVisitsProvider.future),
+            ref.refresh(activeSessionProvider.future),
+          ]);
         },
         child: CustomScrollView(
           slivers: [
@@ -53,7 +55,7 @@ class HomeScreen extends ConsumerWidget {
             SliverAppBar(
               floating: true,
               pinned: false,
-              backgroundColor: AppTheme.bgDark,
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               title: Row(
                 children: [
                   Container(

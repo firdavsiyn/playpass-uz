@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:typed_data';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/subscription.dart';
@@ -69,6 +70,13 @@ class SupabaseService {
         .eq('id', subscriptionId)
         .single();
 
+    if (sub['frozen_since'] == null) {
+      await _client.from('subscriptions').update({
+        'status': 'active',
+        'frozen_since': null,
+      }).eq('id', subscriptionId);
+      return;
+    }
     final frozenSince = DateTime.parse(sub['frozen_since'] as String);
     final frozenDays = DateTime.now().difference(frozenSince).inDays;
     final oldEnd = DateTime.parse(sub['end_date'] as String);
@@ -459,6 +467,20 @@ class SupabaseService {
     return (res as List).length;
   }
 
+  /// Batch occupancy for all clubs in one query
+  Future<Map<String, int>> getAllClubsOccupancy() async {
+    final res = await _client
+        .from('active_sessions')
+        .select('club_id')
+        .eq('status', 'active');
+    final Map<String, int> result = {};
+    for (final row in (res as List)) {
+      final cid = row['club_id'] as String;
+      result[cid] = (result[cid] ?? 0) + 1;
+    }
+    return result;
+  }
+
   // ── Achievements ─────────────────────────────────────────
   Future<List<Map<String, dynamic>>> getAllAchievements() async {
     final res = await _client
@@ -525,8 +547,8 @@ class SupabaseService {
 
   String _generateGiftCode() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    final rng = DateTime.now().microsecondsSinceEpoch;
-    return List.generate(8, (i) => chars[(rng + i * 7) % chars.length]).join();
+    final rng = Random.secure();
+    return List.generate(8, (_) => chars[rng.nextInt(chars.length)]).join();
   }
 
   Future<List<Map<String, dynamic>>> getMyGiftCertificates() async {

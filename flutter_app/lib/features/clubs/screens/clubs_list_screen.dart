@@ -38,15 +38,10 @@ final clubsFilteredProvider = FutureProvider<List<Club>>((ref) async {
   return clubs;
 });
 
-// Occupancy for list display
+// Occupancy for list display — single batch query instead of N+1
 final clubsOccupancyProvider = FutureProvider<Map<String, int>>((ref) async {
-  final clubs = ref.watch(clubsFilteredProvider).valueOrNull ?? [];
-  final Map<String, int> result = {};
-  final futures = clubs.map((c) async {
-    try { result[c.id] = await SupabaseService().getClubOccupancy(c.id); } catch (_) {}
-  });
-  await Future.wait(futures);
-  return result;
+  ref.watch(clubsFilteredProvider);
+  return SupabaseService().getAllClubsOccupancy();
 });
 
 // ── Screen ─────────────────────────────────────────────────

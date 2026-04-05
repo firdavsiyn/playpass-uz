@@ -19,6 +19,7 @@ final profileProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
   return SupabaseService().getUserProfile(userId);
 });
 
+// Re-use activeSubscriptionProvider from home_screen to avoid duplicate queries
 final subscriptionProvider = FutureProvider<Subscription?>((ref) async {
   return SupabaseService().getActiveSubscription();
 });

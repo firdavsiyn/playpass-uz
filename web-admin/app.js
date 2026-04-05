@@ -282,7 +282,7 @@ function exportCSV() {
   if (!allVisits.length) { showToast(t('visits_empty'), 'error'); return; }
   const rows = [[t('visits_th_date'), t('visits_th_user'), t('visits_th_plan')]];
   allVisits.forEach(v => rows.push([formatDateTime(new Date(v.created_at)), v.users?.name || '', v.subscriptions?.plan || '']));
-  const csv = rows.map(r => r.map(c => `"${c}"`).join(';')).join('\n');
+  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(';')).join('\n');
   const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
   a.download = `visits_${currentClub.name}_${toDateInput(new Date())}.csv`; a.click();
@@ -423,16 +423,17 @@ async function savePc(id) {
     status: $('pc-status').value,
     club_id: currentClub.id,
   };
-  try {
-    if (id) { await sb.from('club_pcs').update(payload).eq('id', id); }
-    else { await sb.from('club_pcs').insert(payload); }
-    showToast(t('pcs_saved')); closeModal(); loadPcs();
-  } catch (e) { showToast(e.message, 'error'); }
+  const { error } = id
+    ? await sb.from('club_pcs').update(payload).eq('id', id)
+    : await sb.from('club_pcs').insert(payload);
+  if (error) { showToast(t('error_prefix') + ': ' + error.message, 'error'); return; }
+  showToast(t('pcs_saved')); closeModal(); loadPcs();
 }
 
 async function deletePc(id) {
   if (!confirm(t('confirm_delete'))) return;
-  await sb.from('club_pcs').delete().eq('id', id);
+  const { error } = await sb.from('club_pcs').delete().eq('id', id);
+  if (error) { showToast(t('error_prefix') + ': ' + error.message, 'error'); return; }
   showToast(t('pcs_deleted')); closeModal(); loadPcs();
 }
 
@@ -454,7 +455,7 @@ function renderSessionsTable(sessions) {
     const userName = s.users?.name || '—';
     const start = s.session_start ? formatTime(new Date(s.session_start)) : '—';
     const elapsedMin = s.session_start ? Math.floor((Date.now() - new Date(s.session_start).getTime()) / 60000) : 0;
-    const elapsedStr = elapsedMin < 60 ? `${elapsedMin} мин` : `${Math.floor(elapsedMin / 60)}ч ${elapsedMin % 60}м`;
+    const elapsedStr = elapsedMin < 60 ? `${elapsedMin} ${t('min_ago')}` : `${Math.floor(elapsedMin / 60)}${t('hr_ago').charAt(0)} ${elapsedMin % 60}${t('min_ago').charAt(0)}`;
     const sub = s.users?.subscriptions?.[0];
     const remaining = sub ? (sub.hours_balance === -1 ? t('sess_unlimited') : `${sub.hours_balance}ч`) : '—';
     return `<tr data-session-start="${s.session_start}">
@@ -474,7 +475,7 @@ function updateSessionTimers() {
     if (!start) return;
     const elapsedMin = Math.floor((Date.now() - new Date(start).getTime()) / 60000);
     const cell = row.querySelector('.sess-elapsed');
-    if (cell) cell.textContent = elapsedMin < 60 ? `${elapsedMin} мин` : `${Math.floor(elapsedMin / 60)}ч ${elapsedMin % 60}м`;
+    if (cell) cell.textContent = elapsedMin < 60 ? `${elapsedMin} ${t('min_ago')}` : `${Math.floor(elapsedMin / 60)}${t('hr_ago').charAt(0)} ${elapsedMin % 60}${t('min_ago').charAt(0)}`;
   });
 }
 
@@ -513,12 +514,14 @@ function renderBookingsTable(bookings) {
 }
 
 async function confirmBooking(id) {
-  await sb.from('bookings').update({ status: 'confirmed' }).eq('id', id);
+  const { error } = await sb.from('bookings').update({ status: 'confirmed' }).eq('id', id);
+  if (error) { showToast(t('error_prefix') + ': ' + error.message, 'error'); return; }
   showToast(t('book_confirmed_toast')); loadBookings();
 }
 
 async function cancelBooking(id) {
-  await sb.from('bookings').update({ status: 'cancelled' }).eq('id', id);
+  const { error } = await sb.from('bookings').update({ status: 'cancelled' }).eq('id', id);
+  if (error) { showToast(t('error_prefix') + ': ' + error.message, 'error'); return; }
   showToast(t('book_cancelled_toast')); loadBookings();
 }
 
@@ -582,15 +585,16 @@ async function saveStaff(id) {
     club_id: currentClub.id,
   };
   if (!payload.name) { showToast(t('staff_label_name'), 'error'); return; }
-  try {
-    if (id) { await sb.from('club_staff').update(payload).eq('id', id); }
-    else { await sb.from('club_staff').insert(payload); }
-    showToast(t('staff_saved')); closeModal(); loadStaff();
-  } catch (e) { showToast(e.message, 'error'); }
+  const { error } = id
+    ? await sb.from('club_staff').update(payload).eq('id', id)
+    : await sb.from('club_staff').insert(payload);
+  if (error) { showToast(t('error_prefix') + ': ' + error.message, 'error'); return; }
+  showToast(t('staff_saved')); closeModal(); loadStaff();
 }
 
 async function toggleStaffActive(id, isActive) {
-  await sb.from('club_staff').update({ is_active: !isActive }).eq('id', id);
+  const { error } = await sb.from('club_staff').update({ is_active: !isActive }).eq('id', id);
+  if (error) { showToast(t('error_prefix') + ': ' + error.message, 'error'); return; }
   showToast(t('staff_toggled')); loadStaff();
 }
 
@@ -657,47 +661,50 @@ function _downloadCSV(filename, rows) {
 
 async function exportPCsCSV() {
   if (!currentClub) return;
-  const { data } = await sb.from('club_pcs').select('*').eq('club_id', currentClub.id).order('pc_number');
-  if (!data?.length) { showToast('Нет данных для экспорта', 'error'); return; }
-  const rows = [['№ ПК', 'Зона', 'Характеристики', 'Статус']];
-  data.forEach(pc => rows.push([pc.pc_number, pc.zone || 'basic', pc.specs || '', pc.status || 'free']));
+  const { data, error } = await sb.from('club_pcs').select('*').eq('club_id', currentClub.id).order('pc_number');
+  if (error) { showToast(t('error_prefix') + ': ' + error.message, 'error'); return; }
+  if (!data?.length) { showToast(t('visits_empty'), 'error'); return; }
+  const rows = [[t('pcs_label_number'), t('pcs_label_zone'), t('pcs_label_name'), t('pcs_label_status')]];
+  data.forEach(pc => rows.push([pc.pc_number, pc.zone || 'main', pc.label || '', t('pcs_status_' + (pc.status || 'free'))]));
   _downloadCSV(`pcs_${currentClub.name}_${toDateInput(new Date())}.csv`, rows);
 }
 
 async function exportBookingsCSV() {
   if (!currentClub) return;
-  const { data } = await sb.from('bookings').select('*, users(name)').eq('club_id', currentClub.id).order('booking_time', { ascending: false }).limit(500);
-  if (!data?.length) { showToast('Нет данных для экспорта', 'error'); return; }
-  const rows = [['Дата/время', 'Пользователь', 'Зона', 'Длительность', 'Статус']];
+  const { data, error } = await sb.from('bookings').select('*, users(name), club_pcs(pc_number)').eq('club_id', currentClub.id).order('date', { ascending: false }).limit(500);
+  if (error) { showToast(t('error_prefix') + ': ' + error.message, 'error'); return; }
+  if (!data?.length) { showToast(t('book_empty'), 'error'); return; }
+  const rows = [[t('book_th_time'), t('book_th_pc'), t('book_th_user'), t('book_th_status')]];
   data.forEach(b => rows.push([
-    formatDateTime(new Date(b.booking_time)),
+    `${b.date} ${b.start_time || ''}-${b.end_time || ''}`,
+    b.club_pcs?.pc_number || '—',
     b.users?.name || '',
-    b.zone || 'basic',
-    (b.duration_hours || 2) + ' ч',
-    b.status || '',
+    t('book_' + (b.status || 'pending')),
   ]));
   _downloadCSV(`bookings_${currentClub.name}_${toDateInput(new Date())}.csv`, rows);
 }
 
 async function exportStaffCSV() {
   if (!currentClub) return;
-  const { data } = await sb.from('club_staff').select('*').eq('club_id', currentClub.id).order('name');
-  if (!data?.length) { showToast('Нет данных для экспорта', 'error'); return; }
-  const rows = [['Имя', 'Должность', 'Телефон', 'Смена']];
-  data.forEach(s => rows.push([s.name, s.role || '', s.phone || '', s.shift || '']));
+  const { data, error } = await sb.from('club_staff').select('*').eq('club_id', currentClub.id).order('name');
+  if (error) { showToast(t('error_prefix') + ': ' + error.message, 'error'); return; }
+  if (!data?.length) { showToast(t('staff_empty'), 'error'); return; }
+  const rows = [[t('staff_th_name'), t('staff_th_role'), t('staff_th_phone'), t('staff_th_shift')]];
+  data.forEach(s => rows.push([s.name, t('staff_role_' + (s.role || 'admin')), s.phone || '', t('staff_shift_' + (s.shift_pattern || 'flexible'))]));
   _downloadCSV(`staff_${currentClub.name}_${toDateInput(new Date())}.csv`, rows);
 }
 
 async function exportFinanceCSV() {
   if (!currentClub) return;
-  const { data } = await sb.from('payouts').select('*').eq('club_id', currentClub.id).order('period_month', { ascending: false });
-  if (!data?.length) { showToast('Нет данных для экспорта', 'error'); return; }
-  const rows = [['Период', 'Визиты', 'Сумма', 'Статус', 'Дата выплаты']];
+  const { data, error } = await sb.from('payouts').select('*').eq('club_id', currentClub.id).order('period_month', { ascending: false });
+  if (error) { showToast(t('error_prefix') + ': ' + error.message, 'error'); return; }
+  if (!data?.length) { showToast(t('fin_empty'), 'error'); return; }
+  const rows = [[t('fin_th_period'), t('fin_th_visits'), t('fin_th_amount'), t('fin_th_status'), t('fin_th_date')]];
   data.forEach(p => rows.push([
     p.period_month,
     p.visit_count || 0,
-    formatMoney(p.amount || 0),
-    p.status || '',
+    formatMoney(p.amount_uzs || 0),
+    p.status === 'paid' ? t('fin_paid') : t('fin_pending'),
     p.paid_at ? formatDateTime(new Date(p.paid_at)) : '',
   ]));
   _downloadCSV(`finance_${currentClub.name}_${toDateInput(new Date())}.csv`, rows);

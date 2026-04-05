@@ -99,6 +99,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                 GoRoute(path: 'achievements', builder: (_, __) => const AchievementsScreen()),
                 GoRoute(
                   path: 'freeze',
+                  redirect: (_, state) => state.extra is Subscription ? null : '/profile',
                   builder: (_, state) => FreezeScreen(
                     subscription: state.extra as Subscription,
                   ),
@@ -113,10 +114,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/plans', builder: (_, __) => const PlansScreen()),
       GoRoute(
         path: '/payment',
+        redirect: (_, state) => state.extra is String ? null : '/plans',
         builder: (_, state) => PaymentScreen(plan: state.extra as String),
       ),
       GoRoute(
         path: '/upsell',
+        redirect: (_, state) => state.extra is Map<String, String> ? null : '/plans',
         builder: (_, state) => UpsellScreen(
           extra: state.extra as Map<String, String>,
         ),
@@ -145,7 +148,7 @@ class MainShell extends ConsumerWidget {
       body: shell,
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF0D0D1A),
+          color: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
           border: Border(
             top: BorderSide(
               color: AppTheme.primary.withValues(alpha: 0.1),
