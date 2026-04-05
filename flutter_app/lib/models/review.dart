@@ -26,7 +26,7 @@ class Review {
     userId: json['user_id'] as String,
     userName: (json['users'] as Map<String, dynamic>?)?['name'] as String?,
     rating: json['rating'] as int? ?? 5,
-    text: json['text'] as String?,
+    text: json['comment'] as String?,
     photoUrls: (json['photo_urls'] as List<dynamic>?)?.cast<String>() ?? [],
     createdAt: DateTime.parse(json['created_at'] as String),
   );

@@ -320,7 +320,7 @@ class SupabaseService {
       'club_id': clubId,
       'user_id': userId,
       'rating': rating,
-      'text': text,
+      'comment': text,
       'photo_urls': photoUrls,
     });
   }
