@@ -878,6 +878,11 @@ label.wh-247-label input { cursor: pointer; }
 }
 .bulk-actions.hidden { display: none; }
 
+/* ── REVIEW PHOTOS ────────────────────────── */
+.review-photos { display: flex; gap: 6px; margin-top: 6px; }
+.review-thumb { width: 48px; height: 48px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; transition: transform .15s; }
+.review-thumb:hover { transform: scale(1.1); }
+
 /* ── FINANCE STATS GRID 4-COL ──────────────── */
 .stats-grid-4 { grid-template-columns: repeat(4, 1fr); }
 

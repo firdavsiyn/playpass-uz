@@ -313,6 +313,7 @@ class SupabaseService {
     required String clubId,
     required int rating,
     String? text,
+    List<String> photoUrls = const [],
   }) async {
     final userId = currentUser!.id;
     await _client.from('reviews').insert({
@@ -320,7 +321,21 @@ class SupabaseService {
       'user_id': userId,
       'rating': rating,
       'text': text,
+      'photo_urls': photoUrls,
     });
+  }
+
+  /// Upload review photo to Supabase Storage, returns public URL
+  Future<String> uploadReviewPhoto(List<int> bytes, String fileName) async {
+    final userId = currentUser!.id;
+    final ext = fileName.split('.').last;
+    final path = '$userId/${DateTime.now().millisecondsSinceEpoch}.$ext';
+    await _client.storage.from('review-photos').uploadBinary(
+      path,
+      Uint8List.fromList(bytes),
+      fileOptions: const FileOptions(upsert: true),
+    );
+    return _client.storage.from('review-photos').getPublicUrl(path);
   }
 
   Future<int> getUserReviewCount() async {

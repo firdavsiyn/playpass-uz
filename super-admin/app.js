@@ -967,11 +967,17 @@ async function loadReviews() {
 function renderReviews(reviews) {
   const tbody = $('reviews-tbody');
   if (reviews.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="empty-cell">Нет отзывов</td></tr>'; return; }
-  tbody.innerHTML = reviews.map(r => `<tr>
+  tbody.innerHTML = reviews.map(r => {
+    const photos = (r.photo_urls || []);
+    const photosHtml = photos.length > 0
+      ? `<div class="review-photos">${photos.map(url => `<a href="${esc(url)}" target="_blank"><img src="${esc(url)}" class="review-thumb" alt="фото" /></a>`).join('')}</div>`
+      : '';
+    return `<tr>
     <td>${fmtDate(r.created_at)}</td><td>${esc(r.users?.name || '—')}</td><td>${esc(r.clubs?.name || '—')}</td>
     <td><span class="stars">${'★'.repeat(r.rating || 0)}${'☆'.repeat(5 - (r.rating || 0))}</span></td>
-    <td class="text-truncate">${esc(r.comment || '—')}</td>
-    <td><button class="btn-small btn-delete" onclick="deleteReview('${r.id}')">Удалить</button></td></tr>`).join('');
+    <td class="text-truncate">${esc(r.text || '—')}${photosHtml}</td>
+    <td><button class="btn-small btn-delete" onclick="deleteReview('${r.id}')">Удалить</button></td></tr>`;
+  }).join('');
 }
 
 async function deleteReview(id) {

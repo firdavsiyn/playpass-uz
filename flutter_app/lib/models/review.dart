@@ -6,6 +6,7 @@ class Review {
   final String? userName;
   final int rating; // 1–5
   final String? text;
+  final List<String> photoUrls;
   final DateTime createdAt;
 
   const Review({
@@ -15,6 +16,7 @@ class Review {
     this.userName,
     required this.rating,
     this.text,
+    this.photoUrls = const [],
     required this.createdAt,
   });
 
@@ -25,6 +27,7 @@ class Review {
     userName: (json['users'] as Map<String, dynamic>?)?['name'] as String?,
     rating: json['rating'] as int? ?? 5,
     text: json['text'] as String?,
+    photoUrls: (json['photo_urls'] as List<dynamic>?)?.cast<String>() ?? [],
     createdAt: DateTime.parse(json['created_at'] as String),
   );
 }
