@@ -58,16 +58,19 @@ class SupabaseService {
 
   // ── Freeze / Unfreeze ────────────────────────────────────
   Future<void> freezeSubscription(String subscriptionId, int days) async {
+    final userId = currentUser!.id;
     await _client.from('subscriptions').update({
       'status': 'frozen',
       'frozen_since': DateTime.now().toIso8601String().split('T')[0],
-    }).eq('id', subscriptionId);
+    }).eq('id', subscriptionId).eq('user_id', userId);
   }
 
   Future<void> unfreezeSubscription(String subscriptionId) async {
+    final userId = currentUser!.id;
     final sub = await _client.from('subscriptions')
         .select()
         .eq('id', subscriptionId)
+        .eq('user_id', userId)
         .single();
 
     if (sub['frozen_since'] == null) {
@@ -88,7 +91,7 @@ class SupabaseService {
       'frozen_since': null,
       'frozen_days_used': oldUsed + frozenDays,
       'end_date': newEnd.toIso8601String().split('T')[0],
-    }).eq('id', subscriptionId);
+    }).eq('id', subscriptionId).eq('user_id', userId);
   }
 
   // ── Subscription Requests (ручная оплата) ─────────────────
@@ -632,9 +635,10 @@ class SupabaseService {
   }
 
   Future<void> cancelBooking(String bookingId) async {
+    final userId = currentUser!.id;
     await _client.from('bookings').update({
       'status': 'cancelled',
-    }).eq('id', bookingId);
+    }).eq('id', bookingId).eq('user_id', userId);
   }
 
   // ── Banners ──────────────────────────────────────────────
