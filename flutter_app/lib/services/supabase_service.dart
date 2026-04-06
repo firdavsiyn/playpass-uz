@@ -614,10 +614,17 @@ class SupabaseService {
     required int durationHours,
   }) async {
     final userId = currentUser!.id;
+    final endTime = bookingTime.add(Duration(hours: durationHours));
+    final dateStr = '${bookingTime.year}-${bookingTime.month.toString().padLeft(2, '0')}-${bookingTime.day.toString().padLeft(2, '0')}';
+    final startStr = '${bookingTime.hour.toString().padLeft(2, '0')}:${bookingTime.minute.toString().padLeft(2, '0')}:00';
+    final endStr = '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}:00';
     await _client.from('bookings').insert({
       'user_id': userId,
       'club_id': clubId,
       'zone': zone,
+      'date': dateStr,
+      'start_time': startStr,
+      'end_time': endStr,
       'booking_time': bookingTime.toIso8601String(),
       'duration_hours': durationHours,
       'status': 'confirmed',
