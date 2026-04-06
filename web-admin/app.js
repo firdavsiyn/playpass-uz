@@ -354,36 +354,100 @@ function downloadQrPdf() {
 /* ═══════════════════════════════════════════════
    5. PC MANAGEMENT
    ═══════════════════════════════════════════════ */
+let pcTimerInterval = null;
+
 async function loadPcs() {
   if (!currentClub) return;
-  const { data, error } = await sb.from('club_pcs').select('*, users:current_user_id(name)').eq('club_id', currentClub.id).order('pc_number');
+  const { data, error } = await sb.from('club_pcs').select('*, users:current_user_id(name, subscriptions(hours_balance))').eq('club_id', currentClub.id).order('pc_number');
   if (error) { $('pc-grid').innerHTML = `<div class="empty-state">${t('error_prefix')}: ${escHtml(error.message)}</div>`; return; }
   const pcs = data || [];
   renderPcSummary(pcs);
   renderPcGrid(pcs);
+  // Start live timers on PC cards (every second)
+  if (pcTimerInterval) clearInterval(pcTimerInterval);
+  pcTimerInterval = setInterval(updatePcCardTimers, 1000);
 }
 
 function renderPcSummary(pcs) {
   const counts = { free: 0, busy: 0, broken: 0, reserved: 0 };
   pcs.forEach(p => counts[p.status] = (counts[p.status] || 0) + 1);
-  $('pc-summary').innerHTML = Object.entries(counts).map(([s, c]) =>
-    `<span><span class="count count-${s}">${c}</span> ${t('pcs_' + s)}</span>`
-  ).join('');
+  const total = pcs.length;
+  $('pc-summary').innerHTML = `<span><strong>${total}</strong> ${t('pcs_total')}</span>` +
+    Object.entries(counts).map(([s, c]) =>
+      `<span><span class="count count-${s}">${c}</span> ${t('pcs_' + s)}</span>`
+    ).join('');
 }
 
 function renderPcGrid(pcs) {
   const grid = $('pc-grid');
   if (!pcs.length) { grid.innerHTML = `<div class="empty-state">${t('pcs_empty')}</div>`; return; }
-  grid.innerHTML = pcs.map(p => {
-    const userName = p.status === 'busy' && p.users ? escHtml(p.users.name) : '';
-    return `<div class="pc-card pc-${p.status}" onclick="showEditPcModal('${p.id}')">
-      <div class="pc-number">${p.pc_number}</div>
-      <div class="pc-label">${escHtml(p.label || p.zone)}</div>
-      <span class="pc-status-dot"></span>
-      ${userName ? `<div class="pc-user">${userName}</div>` : ''}
-      ${p.status === 'busy' && p.session_start ? `<div class="pc-user">${elapsed(p.session_start)}</div>` : ''}
+
+  // Group PCs by zone
+  const zones = {};
+  pcs.forEach(p => {
+    const z = p.zone || 'main';
+    if (!zones[z]) zones[z] = [];
+    zones[z].push(p);
+  });
+
+  grid.innerHTML = Object.entries(zones).map(([zoneName, zonePcs]) => {
+    const zCounts = { free: 0, busy: 0, broken: 0, reserved: 0 };
+    zonePcs.forEach(p => zCounts[p.status] = (zCounts[p.status] || 0) + 1);
+    const total = zonePcs.length;
+
+    const cards = zonePcs.map(p => {
+      const userName = p.status === 'busy' && p.users ? escHtml(p.users.name) : '';
+      const sub = p.users?.subscriptions?.[0];
+      const balanceHrs = sub ? (sub.hours_balance === -1 ? '∞' : sub.hours_balance + 'ч') : '';
+      return `<div class="pc-card pc-${p.status}" onclick="showEditPcModal('${p.id}')">
+        <div class="pc-number">${p.pc_number}</div>
+        <div class="pc-label">${escHtml(p.label || '')}</div>
+        <span class="pc-status-dot"></span>
+        ${userName ? `<div class="pc-user">${userName}</div>` : ''}
+        ${p.status === 'busy' && p.session_start ? `<div class="pc-timer" data-start="${p.session_start}">⏱ ${elapsedDetailed(p.session_start)}</div>` : ''}
+        ${p.status === 'busy' && balanceHrs ? `<div class="pc-balance">${t('pcs_balance')}: ${balanceHrs}</div>` : ''}
+        ${p.status === 'reserved' ? `<div class="pc-reserved-label">🔒 ${t('pcs_reserved')}</div>` : ''}
+      </div>`;
+    }).join('');
+
+    return `<div class="zone-group">
+      <div class="zone-header">
+        <div class="zone-title">
+          <span class="zone-icon">🖥</span>
+          <strong>${escHtml(zoneName)}</strong>
+          <span class="zone-count">${total} ${t('pcs_pcs')}</span>
+        </div>
+        <div class="zone-stats">
+          <span class="zone-stat zone-free">${zCounts.free} ${t('pcs_free')}</span>
+          <span class="zone-stat zone-busy">${zCounts.busy} ${t('pcs_busy')}</span>
+          ${zCounts.reserved ? `<span class="zone-stat zone-reserved">${zCounts.reserved} ${t('pcs_reserved')}</span>` : ''}
+          ${zCounts.broken ? `<span class="zone-stat zone-broken">${zCounts.broken} ${t('pcs_broken')}</span>` : ''}
+        </div>
+      </div>
+      <div class="zone-progress">
+        <div class="zone-bar zone-bar-busy" style="width:${total ? (zCounts.busy / total * 100) : 0}%"></div>
+        <div class="zone-bar zone-bar-reserved" style="width:${total ? (zCounts.reserved / total * 100) : 0}%"></div>
+        <div class="zone-bar zone-bar-broken" style="width:${total ? (zCounts.broken / total * 100) : 0}%"></div>
+      </div>
+      <div class="zone-grid">${cards}</div>
     </div>`;
   }).join('');
+}
+
+function elapsedDetailed(start) {
+  const ms = Date.now() - new Date(start).getTime();
+  const totalSec = Math.floor(ms / 1000);
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+function updatePcCardTimers() {
+  document.querySelectorAll('.pc-timer[data-start]').forEach(el => {
+    el.textContent = '⏱ ' + elapsedDetailed(el.dataset.start);
+  });
 }
 
 function showAddPcModal() {
@@ -413,6 +477,44 @@ function pcFormHtml(pc = null) {
       <button class="btn-primary btn-inline" onclick="savePc('${pc?.id || ''}')">${t('btn_save')}</button>
       ${pc ? `<button class="btn-delete" onclick="deletePc('${pc.id}')" style="margin-left:auto">${t('btn_delete')}</button>` : ''}
     </div>`;
+}
+
+function showAddZoneModal() {
+  $('modal-title').textContent = t('pcs_zone_add');
+  $('modal-body').innerHTML = `
+    <div class="form-group"><label>${t('pcs_zone_name')}</label><input type="text" id="zone-name" placeholder="VIP, Standard, Console..." /></div>
+    <div class="form-group"><label>${t('pcs_zone_count')}</label><input type="number" id="zone-count" value="10" min="1" max="100" /></div>
+    <div class="form-group"><label>${t('pcs_zone_start')}</label><input type="number" id="zone-start-num" value="1" min="1" /></div>
+    <div class="form-group"><label>${t('pcs_label_name')} (${t('pcs_zone_prefix')})</label><input type="text" id="zone-pc-label" placeholder="PC" /></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">${t('btn_cancel')}</button>
+      <button class="btn-primary btn-inline" onclick="saveZone()">${t('pcs_zone_create')}</button>
+    </div>`;
+  openModal();
+}
+
+async function saveZone() {
+  const name = $('zone-name').value.trim();
+  const count = parseInt($('zone-count').value) || 10;
+  const startNum = parseInt($('zone-start-num').value) || 1;
+  const label = $('zone-pc-label').value.trim() || 'PC';
+  if (!name) { showToast(t('pcs_zone_name_required'), 'error'); return; }
+
+  const pcs = [];
+  for (let i = 0; i < count; i++) {
+    pcs.push({
+      club_id: currentClub.id,
+      pc_number: startNum + i,
+      label: `${label} ${startNum + i}`,
+      zone: name,
+      status: 'free',
+    });
+  }
+
+  const { error } = await sb.from('club_pcs').insert(pcs);
+  if (error) { showToast(t('error_prefix') + ': ' + error.message, 'error'); return; }
+  showToast(`${t('pcs_zone_created')}: ${name} (${count} ${t('pcs_pcs')})`);
+  closeModal(); loadPcs();
 }
 
 async function savePc(id) {
