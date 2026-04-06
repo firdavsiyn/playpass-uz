@@ -45,7 +45,7 @@ class Visit {
     zoneId: json['zone_id'] as String?,
     zoneType: json['zone_type'] as String? ?? 'basic',
     timeSlot: json['time_slot'] as String? ?? 'day',
-    hoursDeducted: json['hours_deducted'] as int? ?? 1,
+    hoursDeducted: json['hours_spent'] as int? ?? 1,
     priceAtCheckin: json['price_at_checkin'] as int? ?? 0,
     createdAt: DateTime.parse(json['created_at'] as String),
   );

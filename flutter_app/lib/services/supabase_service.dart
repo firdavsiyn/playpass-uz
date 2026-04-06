@@ -379,19 +379,23 @@ class SupabaseService {
 
   Future<Map<String, dynamic>> getReferralStats() async {
     final userId = currentUser!.id;
-    final res = await _client
-        .from('referral_transactions')
-        .select('*, users!referral_transactions_invitee_id_fkey(name)')
-        .eq('inviter_id', userId)
-        .order('created_at', ascending: false)
-        .limit(10);
-    final list = res as List;
-    final totalHours = list.fold<int>(0, (sum, v) => sum + (v['bonus_hours'] as int? ?? 3));
-    return {
-      'friends_count': list.length,
-      'total_hours': totalHours,
-      'transactions': list,
-    };
+    try {
+      final res = await _client
+          .from('referral_bonuses')
+          .select('*, users!referral_bonuses_invitee_id_fkey(name)')
+          .eq('inviter_id', userId)
+          .order('created_at', ascending: false)
+          .limit(10);
+      final list = res as List;
+      final totalHours = list.fold<int>(0, (sum, v) => sum + (v['bonus_hours'] as int? ?? 3));
+      return {
+        'friends_count': list.length,
+        'total_hours': totalHours,
+        'transactions': list,
+      };
+    } catch (_) {
+      return {'friends_count': 0, 'total_hours': 0, 'transactions': []};
+    }
   }
 
   // ── Realtime ──────────────────────────────────────────────
@@ -697,7 +701,7 @@ class SupabaseService {
         .order('created_at', ascending: false);
     final list = res as List;
 
-    final totalHours = list.fold<int>(0, (sum, v) => sum + (v['hours_deducted'] as int? ?? 1));
+    final totalHours = list.fold<int>(0, (sum, v) => sum + (v['hours_spent'] as int? ?? 1));
 
     // Find favorite club
     final Map<String, Map<String, dynamic>> clubCounts = {};
@@ -824,16 +828,28 @@ class SupabaseService {
   // ── Loyalty / XP ─────────────────────────────────────────
   Future<Map<String, dynamic>> getLoyaltyInfo() async {
     final userId = currentUser!.id;
-    final user = await _client.from('users')
-        .select('xp, loyalty_level, streak_days, last_visit_date')
-        .eq('id', userId)
-        .single();
 
-    final points = await _client.from('loyalty_points')
-        .select('amount, reason, created_at')
-        .eq('user_id', userId)
-        .order('created_at', ascending: false)
-        .limit(50);
+    Map<String, dynamic> user = {};
+    try {
+      user = await _client.from('users')
+          .select('xp, loyalty_level, streak_days, last_visit_date')
+          .eq('id', userId)
+          .single();
+    } catch (_) {
+      // Columns may not exist yet — fall back to defaults
+      user = {};
+    }
+
+    List points = [];
+    try {
+      points = await _client.from('loyalty_points')
+          .select('amount, reason, created_at')
+          .eq('user_id', userId)
+          .order('created_at', ascending: false)
+          .limit(50);
+    } catch (_) {
+      // Table may not exist yet
+    }
 
     return {
       'xp': user['xp'] as int? ?? 0,
@@ -845,24 +861,28 @@ class SupabaseService {
   }
 
   Future<void> _addXp(String userId, int amount, String reason, String? refId) async {
-    await _client.from('loyalty_points').insert({
-      'user_id': userId,
-      'amount': amount,
-      'reason': reason,
-      'reference_id': refId,
-    });
-    // Update user XP and level
-    final user = await _client.from('users').select('xp').eq('id', userId).single();
-    final newXp = (user['xp'] as int? ?? 0) + amount;
-    String level = 'bronze';
-    if (newXp >= 5000) level = 'diamond';
-    else if (newXp >= 2000) level = 'gold';
-    else if (newXp >= 500) level = 'silver';
+    try {
+      await _client.from('loyalty_points').insert({
+        'user_id': userId,
+        'amount': amount,
+        'reason': reason,
+        'reference_id': refId,
+      });
+      // Update user XP and level
+      final user = await _client.from('users').select('xp').eq('id', userId).single();
+      final newXp = (user['xp'] as int? ?? 0) + amount;
+      String level = 'bronze';
+      if (newXp >= 5000) level = 'diamond';
+      else if (newXp >= 2000) level = 'gold';
+      else if (newXp >= 500) level = 'silver';
 
-    await _client.from('users').update({
-      'xp': newXp,
-      'loyalty_level': level,
-    }).eq('id', userId);
+      await _client.from('users').update({
+        'xp': newXp,
+        'loyalty_level': level,
+      }).eq('id', userId);
+    } catch (_) {
+      // loyalty_points table or xp column may not exist yet — silently skip
+    }
   }
 
   // ── Notification Preferences ─────────────────────────────
@@ -983,11 +1003,23 @@ class SupabaseService {
 
   // ── Leaderboard ──────────────────────────────────────────
   Future<List<Map<String, dynamic>>> getLeaderboard({int limit = 50}) async {
-    final res = await _client.from('users')
-        .select('id, name, avatar_url, xp, loyalty_level, total_visits')
-        .order('xp', ascending: false)
-        .limit(limit);
-    return (res as List).cast<Map<String, dynamic>>();
+    try {
+      final res = await _client.from('users')
+          .select('id, name, avatar_url, xp, loyalty_level, total_visits')
+          .order('xp', ascending: false)
+          .limit(limit);
+      return (res as List).cast<Map<String, dynamic>>();
+    } catch (_) {
+      // Columns xp/loyalty_level/total_visits may not exist yet
+      try {
+        final res = await _client.from('users')
+            .select('id, name, avatar_url')
+            .limit(limit);
+        return (res as List).cast<Map<String, dynamic>>();
+      } catch (_) {
+        return [];
+      }
+    }
   }
 
   // ── Happy Hours ──────────────────────────────────────────
@@ -1028,16 +1060,11 @@ class SupabaseService {
 
   double _haversine(double lat1, double lon1, double lat2, double lon2) {
     const r = 6371000.0; // Earth radius in meters
-    final dLat = (lat2 - lat1) * 3.141592653589793 / 180;
-    final dLon = (lon2 - lon1) * 3.141592653589793 / 180;
-    final a = _sin2(dLat / 2) + _cos(lat1 * 3.141592653589793 / 180) * _cos(lat2 * 3.141592653589793 / 180) * _sin2(dLon / 2);
-    return r * 2 * _atan2(_sqrt(a), _sqrt(1 - a));
+    final dLat = (lat2 - lat1) * pi / 180;
+    final dLon = (lon2 - lon1) * pi / 180;
+    final a = sin(dLat / 2) * sin(dLat / 2) +
+        cos(lat1 * pi / 180) * cos(lat2 * pi / 180) *
+        sin(dLon / 2) * sin(dLon / 2);
+    return r * 2 * atan2(sqrt(a), sqrt(1 - a));
   }
-
-  double _sin2(double x) { final s = _sin(x); return s * s; }
-  double _sin(double x) => x - (x*x*x)/6 + (x*x*x*x*x)/120 - (x*x*x*x*x*x*x)/5040;
-  double _cos(double x) => 1 - (x*x)/2 + (x*x*x*x)/24 - (x*x*x*x*x*x)/720;
-  double _sqrt(double x) { double g = x / 2; for (int i = 0; i < 10; i++) g = (g + x / g) / 2; return g; }
-  double _atan2(double y, double x) { if (x > 0) return _atan(y / x); if (x < 0) return _atan(y / x) + 3.141592653589793; return y > 0 ? 1.5707963 : -1.5707963; }
-  double _atan(double x) => x - (x*x*x)/3 + (x*x*x*x*x)/5 - (x*x*x*x*x*x*x)/7;
 }

@@ -304,10 +304,9 @@ class _MapView extends ConsumerWidget {
   const _MapView({required this.clubs, required this.allClubs});
 
   void _showClubSheet(BuildContext context, String clubId) {
-    final club = allClubs.firstWhere(
-      (c) => c.id == clubId,
-      orElse: () => clubs.first,
-    );
+    final match = allClubs.where((c) => c.id == clubId);
+    if (match.isEmpty && clubs.isEmpty) return;
+    final club = match.isNotEmpty ? match.first : clubs.first;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,

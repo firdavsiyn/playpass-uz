@@ -71,7 +71,7 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen>
   Future<void> _onQrDetected(BarcodeCapture capture) async {
     if (_processed || _state != ScanState.scanning) return;
     final barcode = capture.barcodes.firstOrNull;
-    if (barcode?.rawValue == null) return;
+    if (barcode == null || barcode.rawValue == null) return;
 
     _processed = true;
     setState(() => _state = ScanState.processing);

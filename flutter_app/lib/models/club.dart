@@ -42,7 +42,19 @@ class Club {
   bool get isOpen {
     final now = DateTime.now();
     final dayKeys = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
-    final dayKey = dayKeys[now.weekday - 1];
+    final current = now.hour * 60 + now.minute;
+
+    // Check today's schedule
+    if (_isOpenForDay(dayKeys[now.weekday - 1], current, false)) return true;
+
+    // Check yesterday's schedule (for overnight hours, e.g., 22:00-04:00 — now is 1:00 AM)
+    final yesterdayIdx = (now.weekday - 2) % 7;
+    if (_isOpenForDay(dayKeys[yesterdayIdx], current, true)) return true;
+
+    return false;
+  }
+
+  bool _isOpenForDay(String dayKey, int currentMinutes, bool checkOverflowOnly) {
     final hours = workingHours[dayKey];
     if (hours == null) return false;
 
@@ -51,12 +63,19 @@ class Club {
 
     try {
       final open = _parseTime(parts[0]);
-      var close = _parseTime(parts[1]);
-      final current = now.hour * 60 + now.minute;
+      final close = _parseTime(parts[1]);
 
-      // Handle overnight (e.g., 10:00-02:00)
-      if (close < open) close += 24 * 60;
-      return current >= open && current <= close;
+      if (close < open) {
+        // Overnight schedule
+        if (checkOverflowOnly) {
+          // Only check the after-midnight portion
+          return currentMinutes <= close;
+        }
+        return currentMinutes >= open || currentMinutes <= close;
+      }
+
+      if (checkOverflowOnly) return false;
+      return currentMinutes >= open && currentMinutes <= close;
     } catch (_) {
       return false;
     }
