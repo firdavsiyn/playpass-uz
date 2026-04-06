@@ -223,6 +223,24 @@ class _ProfileContent extends ConsumerWidget {
           onTap: () => context.push('/booking'),
         ),
         _MenuItem(
+          icon: Icons.emoji_events_rounded,
+          title: 'Турниры',
+          subtitle: 'Соревнуйтесь с другими игроками',
+          onTap: () => context.push('/tournaments'),
+        ),
+        _MenuItem(
+          icon: Icons.star_rounded,
+          title: 'Программа лояльности',
+          subtitle: 'XP, уровни и привилегии',
+          onTap: () => context.push('/loyalty'),
+        ),
+        _MenuItem(
+          icon: Icons.notifications_rounded,
+          title: 'Уведомления',
+          subtitle: 'Настройки push-уведомлений',
+          onTap: () => context.push('/notifications-settings'),
+        ),
+        _MenuItem(
           icon: Icons.card_membership_rounded,
           title: ref.lang('profile.buy_sub'),
           onTap: () => context.push('/plans'),

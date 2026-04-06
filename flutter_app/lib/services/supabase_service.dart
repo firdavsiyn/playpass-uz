@@ -7,6 +7,8 @@ import '../models/club.dart';
 import '../models/club_zone.dart';
 import '../models/visit.dart';
 import '../models/review.dart';
+import '../models/tournament.dart';
+import '../models/story.dart';
 
 class SupabaseService {
   final SupabaseClient _client = Supabase.instance.client;
@@ -718,5 +720,184 @@ class SupabaseService {
       'total_hours': totalHours,
       'favorite_club': favoriteClub,
     };
+  }
+
+  // ── Tournaments ──────────────────────────────────────────
+  Future<List<Tournament>> getTournaments({String? status, String? clubId}) async {
+    var q = _client.from('tournaments')
+        .select('*, clubs(name), tournament_participants(id)')
+        .order('starts_at');
+    if (status != null) q = q.eq('status', status);
+    if (clubId != null) q = q.eq('club_id', clubId);
+    final res = await q;
+    return (res as List).map((j) {
+      j['participant_count'] = (j['tournament_participants'] as List?)?.length ?? 0;
+      return Tournament.fromJson(j);
+    }).toList();
+  }
+
+  Future<Tournament> getTournamentById(String id) async {
+    final res = await _client.from('tournaments')
+        .select('*, clubs(name), tournament_participants(id)')
+        .eq('id', id)
+        .single();
+    res['participant_count'] = (res['tournament_participants'] as List?)?.length ?? 0;
+    return Tournament.fromJson(res);
+  }
+
+  Future<List<Map<String, dynamic>>> getTournamentParticipants(String tournamentId) async {
+    final res = await _client.from('tournament_participants')
+        .select('*, users(name, avatar_url)')
+        .eq('tournament_id', tournamentId)
+        .order('registered_at');
+    return (res as List).cast<Map<String, dynamic>>();
+  }
+
+  Future<bool> isRegisteredForTournament(String tournamentId) async {
+    final userId = currentUser?.id;
+    if (userId == null) return false;
+    final res = await _client.from('tournament_participants')
+        .select('id')
+        .eq('tournament_id', tournamentId)
+        .eq('user_id', userId)
+        .maybeSingle();
+    return res != null;
+  }
+
+  Future<void> registerForTournament(String tournamentId, {String? teamName}) async {
+    final userId = currentUser!.id;
+    await _client.from('tournament_participants').insert({
+      'tournament_id': tournamentId,
+      'user_id': userId,
+      'team_name': teamName,
+    });
+    // Award XP for tournament registration
+    await _addXp(userId, 20, 'tournament_register', tournamentId);
+  }
+
+  Future<void> unregisterFromTournament(String tournamentId) async {
+    final userId = currentUser!.id;
+    await _client.from('tournament_participants')
+        .delete()
+        .eq('tournament_id', tournamentId)
+        .eq('user_id', userId);
+  }
+
+  // ── Stories / News Feed ──────────────────────────────────
+  Future<List<Story>> getStories({int limit = 30}) async {
+    final userId = currentUser?.id;
+    final res = await _client.from('stories')
+        .select('*, clubs(name, logo_url)')
+        .eq('is_active', true)
+        .order('is_pinned', ascending: false)
+        .order('created_at', ascending: false)
+        .limit(limit);
+
+    Set<String> viewedIds = {};
+    if (userId != null) {
+      final views = await _client.from('story_views')
+          .select('story_id')
+          .eq('user_id', userId);
+      viewedIds = (views as List).map((v) => v['story_id'] as String).toSet();
+    }
+
+    return (res as List).map((j) => Story.fromJson(j, viewedIds: viewedIds)).toList();
+  }
+
+  Future<void> markStoryViewed(String storyId) async {
+    final userId = currentUser?.id;
+    if (userId == null) return;
+    await _client.from('story_views').upsert({
+      'story_id': storyId,
+      'user_id': userId,
+    }, onConflict: 'story_id,user_id');
+    // Increment views counter
+    await _client.rpc('increment_story_views', params: {'sid': storyId}).catchError((_) {});
+  }
+
+  // ── Loyalty / XP ─────────────────────────────────────────
+  Future<Map<String, dynamic>> getLoyaltyInfo() async {
+    final userId = currentUser!.id;
+    final user = await _client.from('users')
+        .select('xp, loyalty_level, streak_days, last_visit_date')
+        .eq('id', userId)
+        .single();
+
+    final points = await _client.from('loyalty_points')
+        .select('amount, reason, created_at')
+        .eq('user_id', userId)
+        .order('created_at', ascending: false)
+        .limit(50);
+
+    return {
+      'xp': user['xp'] as int? ?? 0,
+      'level': user['loyalty_level'] as String? ?? 'bronze',
+      'streak_days': user['streak_days'] as int? ?? 0,
+      'last_visit': user['last_visit_date'] as String?,
+      'history': points,
+    };
+  }
+
+  Future<void> _addXp(String userId, int amount, String reason, String? refId) async {
+    await _client.from('loyalty_points').insert({
+      'user_id': userId,
+      'amount': amount,
+      'reason': reason,
+      'reference_id': refId,
+    });
+    // Update user XP and level
+    final user = await _client.from('users').select('xp').eq('id', userId).single();
+    final newXp = (user['xp'] as int? ?? 0) + amount;
+    String level = 'bronze';
+    if (newXp >= 5000) level = 'diamond';
+    else if (newXp >= 2000) level = 'gold';
+    else if (newXp >= 500) level = 'silver';
+
+    await _client.from('users').update({
+      'xp': newXp,
+      'loyalty_level': level,
+    }).eq('id', userId);
+  }
+
+  // ── Notification Preferences ─────────────────────────────
+  Future<Map<String, dynamic>> getNotificationPrefs() async {
+    final userId = currentUser!.id;
+    final res = await _client.from('notification_prefs')
+        .select()
+        .eq('user_id', userId)
+        .maybeSingle();
+    if (res != null) return res;
+    // Create default prefs
+    final defaults = {
+      'user_id': userId,
+      'push_enabled': true,
+      'promo_enabled': true,
+      'tournament_enabled': true,
+      'subscription_enabled': true,
+      'club_news_enabled': true,
+    };
+    await _client.from('notification_prefs').insert(defaults);
+    return defaults;
+  }
+
+  Future<void> updateNotificationPrefs(Map<String, dynamic> prefs) async {
+    final userId = currentUser!.id;
+    await _client.from('notification_prefs')
+        .upsert({'user_id': userId, ...prefs, 'updated_at': DateTime.now().toIso8601String()});
+  }
+
+  Future<void> saveFcmToken(String token) async {
+    final userId = currentUser?.id;
+    if (userId == null) return;
+    await _client.from('notification_prefs')
+        .upsert({'user_id': userId, 'fcm_token': token}, onConflict: 'user_id');
+  }
+
+  // ── Clubs for map (with coordinates) ─────────────────────
+  Future<List<Map<String, dynamic>>> getClubsWithCoordinates() async {
+    final res = await _client.from('clubs')
+        .select('id, name, address, logo_url, latitude, longitude, status')
+        .eq('status', 'active');
+    return (res as List).cast<Map<String, dynamic>>();
   }
 }

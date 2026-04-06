@@ -186,6 +186,16 @@ const LANG = {
     analytics_mon: 'Пн', analytics_tue: 'Вт', analytics_wed: 'Ср',
     analytics_thu: 'Чт', analytics_fri: 'Пт', analytics_sat: 'Сб', analytics_sun: 'Вс',
 
+    // ── Occupancy Analytics ─────────────────
+    nav_occupancy: 'Загруженность',
+    occ_title: 'Аналитика загруженности',
+    occ_by_hour: 'Загруженность по часам (%)',
+    occ_by_day: 'Загруженность по дням (%)',
+    occ_note: 'Данные автоматические. Красный >80%, жёлтый >50%, зелёный <50%.',
+    analytics_occupancy: 'Загруженность %',
+    analytics_peak_hours: 'Пиковые часы',
+    analytics_no_data: 'Нет данных за последние 30 дней',
+
     // ── Common ───────────────────────────────
     btn_cancel: 'Отмена',
     btn_save: 'Сохранить',
@@ -387,6 +397,16 @@ const LANG = {
     analytics_avg: 'o\'rtacha tashriflar',
     analytics_mon: 'Du', analytics_tue: 'Se', analytics_wed: 'Cho',
     analytics_thu: 'Pa', analytics_fri: 'Ju', analytics_sat: 'Sha', analytics_sun: 'Ya',
+
+    // ── Occupancy Analytics ─────────────────
+    nav_occupancy: 'Bandlik',
+    occ_title: 'Bandlik analitikasi',
+    occ_by_hour: 'Soatlar bo\'yicha bandlik (%)',
+    occ_by_day: 'Kunlar bo\'yicha bandlik (%)',
+    occ_note: 'Ma\'lumotlar avtomatik. Qizil >80%, sariq >50%, yashil <50%.',
+    analytics_occupancy: 'Bandlik %',
+    analytics_peak_hours: 'Eng band soatlar',
+    analytics_no_data: 'Oxirgi 30 kun uchun ma\'lumot yo\'q',
 
     // ── Common ───────────────────────────────
     btn_cancel: 'Bekor qilish',

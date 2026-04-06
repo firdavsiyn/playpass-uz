@@ -27,6 +27,12 @@ import '../../features/profile/screens/achievements_screen.dart';
 import '../../features/subscription/screens/gift_purchase_screen.dart';
 import '../../features/subscription/screens/gift_redeem_screen.dart';
 import '../../features/booking/screens/booking_screen.dart';
+import '../../features/tournaments/screens/tournaments_screen.dart';
+import '../../features/tournaments/screens/tournament_detail_screen.dart';
+import '../../features/stories/screens/stories_screen.dart';
+import '../../features/loyalty/screens/loyalty_screen.dart';
+import '../../features/clubs/screens/clubs_map_screen.dart';
+import '../../features/profile/screens/notification_settings_screen.dart';
 import '../../models/subscription.dart';
 
 /// Notifier that triggers GoRouter to re-evaluate redirects when auth changes.
@@ -134,6 +140,22 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Booking
       GoRoute(path: '/booking', builder: (_, __) => const BookingScreen()),
+
+      // Tournaments
+      GoRoute(path: '/tournaments', builder: (_, __) => const TournamentsScreen()),
+      GoRoute(path: '/tournaments/:id', builder: (_, state) => TournamentDetailScreen(tournamentId: state.pathParameters['id']!)),
+
+      // Stories / News
+      GoRoute(path: '/stories', builder: (_, __) => const StoriesScreen()),
+
+      // Loyalty
+      GoRoute(path: '/loyalty', builder: (_, __) => const LoyaltyScreen()),
+
+      // Club Map
+      GoRoute(path: '/clubs-map', builder: (_, __) => const ClubsMapScreen()),
+
+      // Notification Settings
+      GoRoute(path: '/notifications-settings', builder: (_, __) => const NotificationSettingsScreen()),
     ],
   );
 });

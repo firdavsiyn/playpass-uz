@@ -158,4 +158,42 @@ const Map<String, String> stringsRu = {
   'common.close': 'Закрыть',
   'common.review_published': 'Отзыв опубликован!',
   'common.select_rating': 'Выберите оценку',
+
+  // ── Home Quick Actions ────────────────────
+  'home_tournaments': 'Турниры',
+  'home_map': 'Карта',
+  'home_loyalty': 'XP',
+  'home_news': 'Новости',
+
+  // ── Tournaments ───────────────────────────
+  'tournaments_title': 'Турниры',
+  'tournaments_empty': 'Пока нет турниров',
+  'tournaments_ongoing': 'Сейчас идут',
+  'tournaments_upcoming': 'Предстоящие',
+  'tournaments_finished': 'Завершённые',
+
+  // ── Stories ───────────────────────────────
+  'stories_title': 'Новости',
+  'stories_empty': 'Пока нет новостей',
+
+  // ── Loyalty ───────────────────────────────
+  'loyalty_title': 'Программа лояльности',
+  'loyalty_history': 'История XP',
+
+  // ── Club Map ──────────────────────────────
+  'clubs_map_title': 'Карта клубов',
+
+  // ── Notifications ─────────────────────────
+  'notif_title': 'Уведомления',
+  'notif_push': 'Push-уведомления',
+  'notif_push_desc': 'Получать уведомления на устройство',
+  'notif_categories': 'Категории',
+  'notif_promo': 'Акции и скидки',
+  'notif_promo_desc': 'Новые промокоды и спецпредложения',
+  'notif_tournaments': 'Турниры',
+  'notif_tournaments_desc': 'Новые турниры и результаты',
+  'notif_subscription': 'Подписка',
+  'notif_subscription_desc': 'Истечение, заморозка, продление',
+  'notif_news': 'Новости клубов',
+  'notif_news_desc': 'Новые публикации от клубов',
 };

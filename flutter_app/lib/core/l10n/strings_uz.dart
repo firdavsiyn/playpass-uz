@@ -158,4 +158,42 @@ const Map<String, String> stringsUz = {
   'common.close': 'Yopish',
   'common.review_published': 'Sharh chop etildi!',
   'common.select_rating': 'Bahoni tanlang',
+
+  // ── Home Quick Actions ────────────────────
+  'home_tournaments': 'Turnirlar',
+  'home_map': 'Xarita',
+  'home_loyalty': 'XP',
+  'home_news': 'Yangiliklar',
+
+  // ── Tournaments ───────────────────────────
+  'tournaments_title': 'Turnirlar',
+  'tournaments_empty': 'Hozircha turnirlar yo\'q',
+  'tournaments_ongoing': 'Hozir davom etmoqda',
+  'tournaments_upcoming': 'Kutilayotgan',
+  'tournaments_finished': 'Yakunlangan',
+
+  // ── Stories ───────────────────────────────
+  'stories_title': 'Yangiliklar',
+  'stories_empty': 'Hozircha yangiliklar yo\'q',
+
+  // ── Loyalty ───────────────────────────────
+  'loyalty_title': 'Sodiqlik dasturi',
+  'loyalty_history': 'XP tarixi',
+
+  // ── Club Map ──────────────────────────────
+  'clubs_map_title': 'Klublar xaritasi',
+
+  // ── Notifications ─────────────────────────
+  'notif_title': 'Bildirishnomalar',
+  'notif_push': 'Push-bildirishnomalar',
+  'notif_push_desc': 'Qurilmaga bildirishnomalar olish',
+  'notif_categories': 'Turkumlar',
+  'notif_promo': 'Aksiyalar va chegirmalar',
+  'notif_promo_desc': 'Yangi promokodlar va maxsus takliflar',
+  'notif_tournaments': 'Turnirlar',
+  'notif_tournaments_desc': 'Yangi turnirlar va natijalar',
+  'notif_subscription': 'Obuna',
+  'notif_subscription_desc': 'Muddati tugashi, muzlatish, uzaytirish',
+  'notif_news': 'Klub yangiliklari',
+  'notif_news_desc': 'Klublardan yangi nashrlar',
 };

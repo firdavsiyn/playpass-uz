@@ -811,3 +811,119 @@ async function exportFinanceCSV() {
   ]));
   _downloadCSV(`finance_${currentClub.name}_${toDateInput(new Date())}.csv`, rows);
 }
+
+/* ═══════════════════════════════════════════════
+   11. OCCUPANCY ANALYTICS (real-time snapshot recording)
+   ═══════════════════════════════════════════════ */
+async function recordOccupancySnapshot() {
+  if (!currentClub) return;
+  const { data } = await sb.from('club_pcs').select('status').eq('club_id', currentClub.id);
+  if (!data) return;
+  const total = data.length;
+  const busy = data.filter(p => p.status === 'busy').length;
+  const now = new Date();
+  await sb.from('occupancy_snapshots').insert({
+    club_id: currentClub.id,
+    total_pcs: total,
+    busy_pcs: busy,
+    hour: now.getHours(),
+    day_of_week: now.getDay() === 0 ? 6 : now.getDay() - 1,
+  });
+}
+
+async function loadOccupancyAnalytics() {
+  if (!currentClub) return;
+  // Record current snapshot
+  await recordOccupancySnapshot();
+
+  const thirtyAgo = new Date();
+  thirtyAgo.setDate(thirtyAgo.getDate() - 30);
+  const { data } = await sb.from('occupancy_snapshots')
+    .select('*')
+    .eq('club_id', currentClub.id)
+    .gte('recorded_at', thirtyAgo.toISOString())
+    .order('recorded_at');
+
+  if (!data || !data.length) {
+    const el = $('occupancy-chart-wrap');
+    if (el) el.innerHTML = `<p style="color:var(--text-muted);text-align:center;padding:40px">${t('analytics_no_data') || 'Нет данных за последние 30 дней'}</p>`;
+    return;
+  }
+
+  // Aggregate average occupancy by hour
+  const hourData = new Array(24).fill(null).map(() => ({ total: 0, busy: 0, count: 0 }));
+  data.forEach(s => {
+    hourData[s.hour].total += s.total_pcs;
+    hourData[s.hour].busy += s.busy_pcs;
+    hourData[s.hour].count++;
+  });
+
+  const avgOccupancy = hourData.map(h => h.count > 0 ? Math.round((h.busy / h.total) * 100) : 0);
+
+  // Find peak hours
+  const peakHours = avgOccupancy.map((v, i) => ({ h: i, v }))
+    .sort((a, b) => b.v - a.v)
+    .slice(0, 3)
+    .map(p => `${p.h}:00 (${p.v}%)`);
+
+  const peakEl = $('occupancy-peaks');
+  if (peakEl) peakEl.innerHTML = `<strong>${t('analytics_peak_hours') || 'Пиковые часы'}:</strong> ${peakHours.join(', ')}`;
+
+  // Render chart
+  const isLight = document.documentElement.dataset.theme === 'light';
+  const gridColor = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)';
+  const tickColor = isLight ? '#9CA3AF' : '#6B7280';
+
+  const colors = avgOccupancy.map(v => v > 80 ? '#EF4444BB' : v > 50 ? '#F59E0BBB' : '#10B981BB');
+
+  if (analyticsCharts['chart-occupancy']) analyticsCharts['chart-occupancy'].destroy();
+  analyticsCharts['chart-occupancy'] = new Chart($('chart-occupancy'), {
+    type: 'bar',
+    data: {
+      labels: Array.from({ length: 24 }, (_, i) => `${i}:00`),
+      datasets: [{
+        label: t('analytics_occupancy') || 'Загруженность %',
+        data: avgOccupancy,
+        backgroundColor: colors,
+        borderRadius: 4,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 10 } } },
+        y: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 10 }, callback: v => v + '%' }, beginAtZero: true, max: 100 },
+      },
+    },
+  });
+
+  // Day of week aggregation
+  const dayData = new Array(7).fill(null).map(() => ({ total: 0, busy: 0, count: 0 }));
+  data.forEach(s => {
+    dayData[s.day_of_week].total += s.total_pcs;
+    dayData[s.day_of_week].busy += s.busy_pcs;
+    dayData[s.day_of_week].count++;
+  });
+  const avgByDay = dayData.map(d => d.count > 0 ? Math.round((d.busy / d.total) * 100) : 0);
+  const dayLabels = ['analytics_mon','analytics_tue','analytics_wed','analytics_thu','analytics_fri','analytics_sat','analytics_sun'].map(k => t(k));
+  const dayColors = avgByDay.map(v => v > 80 ? '#EF4444BB' : v > 50 ? '#F59E0BBB' : '#10B981BB');
+
+  if (analyticsCharts['chart-occupancy-days']) analyticsCharts['chart-occupancy-days'].destroy();
+  analyticsCharts['chart-occupancy-days'] = new Chart($('chart-occupancy-days'), {
+    type: 'bar',
+    data: {
+      labels: dayLabels,
+      datasets: [{ label: t('analytics_occupancy') || 'Загруженность %', data: avgByDay, backgroundColor: dayColors, borderRadius: 4 }],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 10 } } },
+        y: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 10 }, callback: v => v + '%' }, beginAtZero: true, max: 100 },
+      },
+    },
+  });
+}

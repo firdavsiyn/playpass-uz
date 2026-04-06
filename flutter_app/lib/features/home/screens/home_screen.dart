@@ -13,6 +13,7 @@ import '../widgets/nearby_clubs_row.dart';
 import '../widgets/recent_visits_widget.dart';
 import '../widgets/active_session_widget.dart';
 import '../widgets/banners_carousel.dart';
+import '../../stories/screens/stories_screen.dart';
 
 // Providers
 final activeSubscriptionProvider = FutureProvider<Subscription?>((ref) async {
@@ -81,7 +82,7 @@ class HomeScreen extends ConsumerWidget {
               actions: [
                 IconButton(
                   icon: const Icon(Icons.notifications_outlined),
-                  onPressed: () {},
+                  onPressed: () => context.push('/notifications-settings'),
                 ),
               ],
             ),
@@ -130,6 +131,14 @@ class HomeScreen extends ConsumerWidget {
                   ),
 
                   const SizedBox(height: 20),
+
+                  // Stories bubbles
+                  const StoryBubbles(),
+                  const SizedBox(height: 12),
+
+                  // Quick actions
+                  const _QuickActions(),
+                  const SizedBox(height: 16),
 
                   // Banners carousel
                   const BannersCarousel(),
@@ -252,6 +261,66 @@ class _ScanButton extends ConsumerWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _QuickActions extends ConsumerWidget {
+  const _QuickActions();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = tr(ref.watch(localeProvider));
+    return SizedBox(
+      height: 80,
+      child: Row(
+        children: [
+          _QuickAction(icon: Icons.emoji_events, label: t['home_tournaments'] ?? 'Турниры',
+              color: AppTheme.warning, onTap: () => context.push('/tournaments')),
+          const SizedBox(width: 10),
+          _QuickAction(icon: Icons.map, label: t['home_map'] ?? 'Карта',
+              color: AppTheme.neonBlue, onTap: () => context.push('/clubs-map')),
+          const SizedBox(width: 10),
+          _QuickAction(icon: Icons.star, label: t['home_loyalty'] ?? 'XP',
+              color: AppTheme.neonPurple, onTap: () => context.push('/loyalty')),
+          const SizedBox(width: 10),
+          _QuickAction(icon: Icons.newspaper, label: t['home_news'] ?? 'Новости',
+              color: AppTheme.success, onTap: () => context.push('/stories')),
+        ],
+      ),
+    );
+  }
+}
+
+class _QuickAction extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+  const _QuickAction({required this.icon, required this.label, required this.color, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: color.withValues(alpha: 0.2)),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: color, size: 24),
+              const SizedBox(height: 6),
+              Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color),
+                  overflow: TextOverflow.ellipsis),
+            ],
+          ),
         ),
       ),
     );
