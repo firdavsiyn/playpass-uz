@@ -200,7 +200,7 @@ const Map<String, String> stringsRu = {
   // ── Gaming Features ──────────────────────
   'home_lfg': 'Тиммейты',
   'home_leaderboard': 'Рейтинг',
-  'home_stats': 'Стата',
+  'home_stats': 'Профили',
   'home_happy': 'Скидки',
 
   'player_stats_title': 'Игровые профили',

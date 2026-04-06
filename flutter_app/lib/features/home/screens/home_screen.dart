@@ -276,7 +276,7 @@ class _QuickActions extends ConsumerWidget {
     return Column(
       children: [
         SizedBox(
-          height: 80,
+          height: 84,
           child: Row(
             children: [
               _QuickAction(icon: Icons.emoji_events, label: t['home_tournaments'] ?? 'Турниры',
@@ -295,7 +295,7 @@ class _QuickActions extends ConsumerWidget {
         ),
         const SizedBox(height: 8),
         SizedBox(
-          height: 80,
+          height: 84,
           child: Row(
             children: [
               _QuickAction(icon: Icons.map, label: t['home_map'] ?? 'Карта',
@@ -304,7 +304,7 @@ class _QuickActions extends ConsumerWidget {
               _QuickAction(icon: Icons.star, label: t['home_loyalty'] ?? 'XP',
                   color: const Color(0xFFF59E0B), onTap: () => context.push('/loyalty')),
               const SizedBox(width: 10),
-              _QuickAction(icon: Icons.sports_esports, label: t['home_stats'] ?? 'Стата',
+              _QuickAction(icon: Icons.sports_esports, label: t['home_stats'] ?? 'Профили',
                   color: const Color(0xFFEC4899), onTap: () => context.push('/player-stats')),
               const SizedBox(width: 10),
               _QuickAction(icon: Icons.local_offer, label: t['home_happy'] ?? 'Скидки',
