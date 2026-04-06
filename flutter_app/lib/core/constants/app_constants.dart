@@ -21,7 +21,7 @@ class AppConstants {
   static const int checkinCooldownMinutes = 30;
   static const int maxDailyCheckins = 8;
   static const int checkinRadiusMeters = 500;
-  static const int freezeMaxDays = 14;
+  static const int freezeMaxDaysPerMonth = 5;
   static const int referralBonusHours = 3;
 
   // ── 3 тайм-слота ───────────────────────────────────────────

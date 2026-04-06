@@ -58,7 +58,74 @@ class SupabaseService {
     return Subscription.fromJson(res);
   }
 
-  // ── Freeze / Unfreeze ────────────────────────────────────
+  // ── Freeze / Unfreeze (calendar-based, 5 days/month) ─────
+  /// Get freeze dates for a subscription in a given month
+  Future<List<DateTime>> getFreezeDates(String subscriptionId, {int? year, int? month}) async {
+    final userId = currentUser!.id;
+    final y = year ?? DateTime.now().year;
+    final m = month ?? DateTime.now().month;
+    final from = '$y-${m.toString().padLeft(2, '0')}-01';
+    final to = DateTime(y, m + 1, 0); // last day of month
+    final toStr = '$y-${m.toString().padLeft(2, '0')}-${to.day.toString().padLeft(2, '0')}';
+
+    final res = await _client.from('subscription_freezes')
+        .select('freeze_date')
+        .eq('subscription_id', subscriptionId)
+        .eq('user_id', userId)
+        .gte('freeze_date', from)
+        .lte('freeze_date', toStr)
+        .order('freeze_date');
+    return (res as List).map((r) => DateTime.parse(r['freeze_date'] as String)).toList();
+  }
+
+  /// Count freeze days used this month
+  Future<int> getFreezeDaysUsedThisMonth(String subscriptionId) async {
+    final dates = await getFreezeDates(subscriptionId);
+    return dates.length;
+  }
+
+  /// Toggle a freeze date (add or remove)
+  Future<bool> toggleFreezeDate(String subscriptionId, DateTime date) async {
+    final userId = currentUser!.id;
+    final dateStr = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+
+    // Check if already exists
+    final existing = await _client.from('subscription_freezes')
+        .select('id')
+        .eq('subscription_id', subscriptionId)
+        .eq('freeze_date', dateStr)
+        .maybeSingle();
+
+    if (existing != null) {
+      // Remove freeze
+      await _client.from('subscription_freezes')
+          .delete()
+          .eq('id', existing['id'] as String);
+      // Shrink end_date by 1 day
+      final sub = await _client.from('subscriptions').select('end_date').eq('id', subscriptionId).single();
+      final oldEnd = DateTime.parse(sub['end_date'] as String);
+      await _client.from('subscriptions').update({
+        'end_date': oldEnd.subtract(const Duration(days: 1)).toIso8601String().split('T')[0],
+      }).eq('id', subscriptionId).eq('user_id', userId);
+      return false; // removed
+    } else {
+      // Add freeze
+      await _client.from('subscription_freezes').insert({
+        'subscription_id': subscriptionId,
+        'user_id': userId,
+        'freeze_date': dateStr,
+      });
+      // Extend end_date by 1 day
+      final sub = await _client.from('subscriptions').select('end_date').eq('id', subscriptionId).single();
+      final oldEnd = DateTime.parse(sub['end_date'] as String);
+      await _client.from('subscriptions').update({
+        'end_date': oldEnd.add(const Duration(days: 1)).toIso8601String().split('T')[0],
+      }).eq('id', subscriptionId).eq('user_id', userId);
+      return true; // added
+    }
+  }
+
+  // Legacy freeze methods kept for backward compat
   Future<void> freezeSubscription(String subscriptionId, int days) async {
     final userId = currentUser!.id;
     await _client.from('subscriptions').update({
@@ -69,30 +136,9 @@ class SupabaseService {
 
   Future<void> unfreezeSubscription(String subscriptionId) async {
     final userId = currentUser!.id;
-    final sub = await _client.from('subscriptions')
-        .select()
-        .eq('id', subscriptionId)
-        .eq('user_id', userId)
-        .single();
-
-    if (sub['frozen_since'] == null) {
-      await _client.from('subscriptions').update({
-        'status': 'active',
-        'frozen_since': null,
-      }).eq('id', subscriptionId);
-      return;
-    }
-    final frozenSince = DateTime.parse(sub['frozen_since'] as String);
-    final frozenDays = DateTime.now().difference(frozenSince).inDays;
-    final oldEnd = DateTime.parse(sub['end_date'] as String);
-    final newEnd = oldEnd.add(Duration(days: frozenDays));
-    final oldUsed = sub['frozen_days_used'] as int? ?? 0;
-
     await _client.from('subscriptions').update({
       'status': 'active',
       'frozen_since': null,
-      'frozen_days_used': oldUsed + frozenDays,
-      'end_date': newEnd.toIso8601String().split('T')[0],
     }).eq('id', subscriptionId).eq('user_id', userId);
   }
 

@@ -36,7 +36,7 @@ class Subscription {
   bool get hasHours => isUnlimited || (hoursBalance != null && hoursBalance! > 0);
 
   int get daysRemaining => endDate.difference(DateTime.now()).inDays.clamp(0, 999);
-  int get freezeDaysLeft => AppConstants.freezeMaxDays - frozenDaysUsed;
+  int get freezeDaysLeft => AppConstants.freezeMaxDaysPerMonth - frozenDaysUsed;
   bool get canFreeze => isActive && freezeDaysLeft > 0;
 
   String get planName => switch (plan) {
