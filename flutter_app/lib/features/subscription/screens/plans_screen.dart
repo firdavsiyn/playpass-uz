@@ -30,18 +30,18 @@ class PlansScreen extends StatelessWidget {
                 child: Text(
                   'Начните играть сегодня',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        color: AppTheme.textPrimary,
+                        color: context.text1,
                       ),
                 ),
               ),
             ),
-            const SliverToBoxAdapter(
+            SliverToBoxAdapter(
               child: Padding(
-                padding: EdgeInsets.only(bottom: 24),
+                padding: const EdgeInsets.only(bottom: 24),
                 child: Text(
                   'Выберите тариф и оплатите удобным способом. '
                   'Подписка будет активирована в течение 30 минут.',
-                  style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+                  style: TextStyle(color: context.text2, fontSize: 14),
                 ),
               ),
             ),
@@ -149,7 +149,7 @@ class _PlanCard extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.bgSurface,
+        color: context.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isPopular ? color : color.withValues(alpha: 0.2),
@@ -172,8 +172,8 @@ class _PlanCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         plan.name,
-                        style: const TextStyle(
-                          color: AppTheme.textPrimary,
+                        style: TextStyle(
+                          color: context.text1,
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                         ),
@@ -213,8 +213,8 @@ class _PlanCard extends StatelessWidget {
                 ),
                 Text(
                   'в месяц (~\$$usdEquiv)',
-                  style: const TextStyle(
-                    color: AppTheme.textMuted,
+                  style: TextStyle(
+                    color: context.text3,
                     fontSize: 13,
                   ),
                 ),
@@ -238,9 +238,9 @@ class _PlanCard extends StatelessWidget {
                     onPressed: onSelect,
                     style: ElevatedButton.styleFrom(
                       backgroundColor:
-                          isPopular ? AppTheme.primary : AppTheme.bgSurface,
+                          isPopular ? AppTheme.primary : context.surface,
                       foregroundColor:
-                          isPopular ? Colors.white : AppTheme.textPrimary,
+                          isPopular ? Colors.white : context.text1,
                       side: isPopular
                           ? null
                           : const BorderSide(color: AppTheme.primary),
@@ -313,17 +313,17 @@ class _FeatureRow extends StatelessWidget {
         Icon(
           included ? Icons.check_circle_outline : Icons.cancel_outlined,
           size: 18,
-          color: included ? AppTheme.success : AppTheme.textMuted,
+          color: included ? AppTheme.success : context.text3,
         ),
         const SizedBox(width: 10),
         Expanded(
           child: Text(
             text,
             style: TextStyle(
-              color: included ? AppTheme.textSecondary : AppTheme.textMuted,
+              color: included ? context.text2 : context.text3,
               fontSize: 14,
               decoration: included ? null : TextDecoration.lineThrough,
-              decorationColor: AppTheme.textMuted,
+              decorationColor: context.text3,
             ),
           ),
         ),

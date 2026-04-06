@@ -30,10 +30,10 @@ class StoriesScreen extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.article_outlined, size: 64, color: AppTheme.textMuted),
+                  Icon(Icons.article_outlined, size: 64, color: context.text3),
                   const SizedBox(height: 12),
                   Text(t['stories_empty'] ?? 'Пока нет новостей',
-                      style: const TextStyle(color: AppTheme.textSecondary)),
+                      style: TextStyle(color: context.text2)),
                 ],
               ),
             );
@@ -62,9 +62,9 @@ class _StoryCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: AppTheme.cardDark,
+        color: context.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.border),
+        border: Border.all(color: context.border),
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -79,7 +79,7 @@ class _StoryCard extends StatelessWidget {
               fit: BoxFit.cover,
               placeholder: (_, __) => Container(
                 height: 180,
-                color: AppTheme.cardDark,
+                color: context.card,
                 child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
               ),
               errorWidget: (_, __, ___) => const SizedBox.shrink(),
@@ -114,10 +114,10 @@ class _StoryCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         story.clubName ?? 'PlayPass',
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: context.text1),
                       ),
                     ),
-                    Text(story.timeAgo, style: const TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                    Text(story.timeAgo, style: TextStyle(fontSize: 12, color: context.text3)),
                     if (story.isPinned) ...[
                       const SizedBox(width: 6),
                       const Icon(Icons.push_pin, size: 14, color: AppTheme.warning),
@@ -127,8 +127,8 @@ class _StoryCard extends StatelessWidget {
                 const SizedBox(height: 12),
 
                 // Title
-                Text(story.title, style: const TextStyle(
-                  fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textPrimary, height: 1.3)),
+                Text(story.title, style: TextStyle(
+                  fontSize: 16, fontWeight: FontWeight.w600, color: context.text1, height: 1.3)),
 
                 // Body
                 if (story.body != null) ...[
@@ -136,7 +136,7 @@ class _StoryCard extends StatelessWidget {
                   Text(story.body!,
                     maxLines: 4,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 14, color: AppTheme.textSecondary, height: 1.5)),
+                    style: TextStyle(fontSize: 14, color: context.text2, height: 1.5)),
                 ],
 
                 // Link button
@@ -167,9 +167,9 @@ class _StoryCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Icon(Icons.visibility_outlined, size: 14, color: AppTheme.textMuted),
+                    Icon(Icons.visibility_outlined, size: 14, color: context.text3),
                     const SizedBox(width: 4),
-                    Text('${story.viewsCount}', style: const TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                    Text('${story.viewsCount}', style: TextStyle(fontSize: 12, color: context.text3)),
                   ],
                 ),
               ],
@@ -216,13 +216,13 @@ class StoryBubbles extends ConsumerWidget {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: s.isViewed ? AppTheme.textMuted : AppTheme.primary,
+                            color: s.isViewed ? context.text3 : AppTheme.primary,
                             width: 2,
                           ),
                         ),
                         child: CircleAvatar(
                           radius: 27,
-                          backgroundColor: AppTheme.cardDark,
+                          backgroundColor: context.card,
                           backgroundImage: s.clubLogo != null ? CachedNetworkImageProvider(s.clubLogo!) : null,
                           child: s.clubLogo == null
                               ? Icon(s.authorType == 'platform' ? Icons.star : Icons.storefront,
@@ -240,7 +240,7 @@ class StoryBubbles extends ConsumerWidget {
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 10,
-                            color: s.isViewed ? AppTheme.textMuted : AppTheme.textPrimary,
+                            color: s.isViewed ? context.text3 : context.text1,
                           ),
                         ),
                       ),
@@ -315,7 +315,7 @@ class _StoryViewerDialogState extends State<_StoryViewerDialog> {
                     width: _current == j ? 16 : 6, height: 4,
                     margin: const EdgeInsets.symmetric(horizontal: 2),
                     decoration: BoxDecoration(
-                      color: _current == j ? AppTheme.primary : AppTheme.textMuted,
+                      color: _current == j ? AppTheme.primary : context.text3,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   )),

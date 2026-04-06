@@ -35,7 +35,7 @@ class AchievementsScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: AppTheme.bgCard,
+                  color: context.card,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: AppTheme.primary.withValues(alpha: 0.15)),
                   boxShadow: AppTheme.neonGlow(radius: 16),
@@ -51,14 +51,14 @@ class AchievementsScreen extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    const Text('достижений разблокировано',
-                        style: TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
+                    Text('достижений разблокировано',
+                        style: TextStyle(color: context.text2, fontSize: 14)),
                     const SizedBox(height: 12),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(4),
                       child: LinearProgressIndicator(
                         value: achievements.isEmpty ? 0 : unlockedCount / achievements.length,
-                        backgroundColor: AppTheme.bgSurface,
+                        backgroundColor: context.surface,
                         valueColor: const AlwaysStoppedAnimation(AppTheme.primary),
                         minHeight: 6,
                       ),
@@ -100,17 +100,17 @@ class _AchievementCard extends StatelessWidget {
       'explorer' => AppTheme.neonCyan,
       'time' => AppTheme.neonPurple,
       'social' => AppTheme.neonPink,
-      _ => AppTheme.textMuted,
+      _ => context.text3,
     };
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: isUnlocked ? AppTheme.bgCard : AppTheme.bgSurface,
+        color: isUnlocked ? context.card : context.surface,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isUnlocked ? categoryColor.withValues(alpha: 0.25) : AppTheme.bgSurface,
+          color: isUnlocked ? categoryColor.withValues(alpha: 0.25) : context.surface,
         ),
         boxShadow: isUnlocked
             ? [BoxShadow(color: categoryColor.withValues(alpha: 0.1), blurRadius: 12)]
@@ -123,7 +123,7 @@ class _AchievementCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: isUnlocked
                   ? categoryColor.withValues(alpha: 0.15)
-                  : AppTheme.textMuted.withValues(alpha: 0.1),
+                  : context.text3.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             alignment: Alignment.center,
@@ -131,7 +131,7 @@ class _AchievementCard extends StatelessWidget {
               icon,
               style: TextStyle(
                 fontSize: 24,
-                color: isUnlocked ? null : AppTheme.textMuted,
+                color: isUnlocked ? null : context.text3,
               ),
             ),
           ),
@@ -143,7 +143,7 @@ class _AchievementCard extends StatelessWidget {
                 Text(
                   name,
                   style: TextStyle(
-                    color: isUnlocked ? AppTheme.textPrimary : AppTheme.textMuted,
+                    color: isUnlocked ? context.text1 : context.text3,
                     fontWeight: FontWeight.w600,
                     fontSize: 15,
                   ),
@@ -152,7 +152,7 @@ class _AchievementCard extends StatelessWidget {
                 Text(
                   desc,
                   style: TextStyle(
-                    color: isUnlocked ? AppTheme.textSecondary : AppTheme.textMuted,
+                    color: isUnlocked ? context.text2 : context.text3,
                     fontSize: 12,
                   ),
                 ),
@@ -169,7 +169,7 @@ class _AchievementCard extends StatelessWidget {
               child: Icon(Icons.check_rounded, color: categoryColor, size: 16),
             )
           else
-            Icon(Icons.lock_outline_rounded, color: AppTheme.textMuted.withValues(alpha: 0.3), size: 20),
+            Icon(Icons.lock_outline_rounded, color: context.text3.withValues(alpha: 0.3), size: 20),
         ],
       ),
     );

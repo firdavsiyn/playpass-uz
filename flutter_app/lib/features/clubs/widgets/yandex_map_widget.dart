@@ -78,7 +78,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         ),
         if (!_mapReady)
           Container(
-            color: AppTheme.bgDark,
+            color: context.bg,
             child: const Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -87,7 +87,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
                   SizedBox(height: 16),
                   Text(
                     'Загрузка карты...',
-                    style: TextStyle(color: AppTheme.textMuted, fontSize: 14),
+                    style: TextStyle(color: context.text3, fontSize: 14),
                   ),
                 ],
               ),

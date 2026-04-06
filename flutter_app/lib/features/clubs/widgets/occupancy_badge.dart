@@ -47,7 +47,7 @@ class OccupancyBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: AppTheme.bgCard,
+        color: context.card,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: _color.withValues(alpha: 0.2)),
       ),
@@ -72,7 +72,7 @@ class OccupancyBadge extends StatelessWidget {
               borderRadius: BorderRadius.circular(2),
               child: LinearProgressIndicator(
                 value: _ratio,
-                backgroundColor: AppTheme.bgSurface,
+                backgroundColor: context.surface,
                 valueColor: AlwaysStoppedAnimation(_color),
               ),
             ),

@@ -25,9 +25,9 @@ class ClubMapBottomSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
-        color: AppTheme.bgCard,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      decoration: BoxDecoration(
+        color: context.card,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -38,7 +38,7 @@ class ClubMapBottomSheet extends StatelessWidget {
             height: 4,
             margin: const EdgeInsets.only(bottom: 16),
             decoration: BoxDecoration(
-              color: AppTheme.textMuted.withValues(alpha: 0.3),
+              color: context.text3.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -60,9 +60,9 @@ class ClubMapBottomSheet extends StatelessWidget {
                     : Container(
                         width: 80,
                         height: 80,
-                        color: AppTheme.bgSurface,
-                        child: const Icon(Icons.sports_esports,
-                            color: AppTheme.textMuted, size: 32),
+                        color: context.surface,
+                        child: Icon(Icons.sports_esports,
+                            color: context.text3, size: 32),
                       ),
               ),
               const SizedBox(width: 14),
@@ -78,8 +78,8 @@ class ClubMapBottomSheet extends StatelessWidget {
                             club.name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: AppTheme.textPrimary,
+                            style: TextStyle(
+                              color: context.text1,
                               fontWeight: FontWeight.w700,
                               fontSize: 16,
                             ),
@@ -105,15 +105,15 @@ class ClubMapBottomSheet extends StatelessWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(Icons.location_on_outlined,
-                            size: 13, color: AppTheme.textMuted),
+                        Icon(Icons.location_on_outlined,
+                            size: 13, color: context.text3),
                         const SizedBox(width: 2),
                         Expanded(
                           child: Text(club.address,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                  color: AppTheme.textMuted, fontSize: 12)),
+                              style: TextStyle(
+                                  color: context.text3, fontSize: 12)),
                         ),
                       ],
                     ),
@@ -124,15 +124,15 @@ class ClubMapBottomSheet extends StatelessWidget {
                             size: 14, color: Color(0xFFFBBF24)),
                         const SizedBox(width: 2),
                         Text(club.rating.toStringAsFixed(1),
-                            style: const TextStyle(
-                                color: AppTheme.textSecondary, fontSize: 12)),
+                            style: TextStyle(
+                                color: context.text2, fontSize: 12)),
                         const SizedBox(width: 10),
-                        const Icon(Icons.computer,
-                            size: 14, color: AppTheme.textMuted),
+                        Icon(Icons.computer,
+                            size: 14, color: context.text3),
                         const SizedBox(width: 2),
                         Text('${club.pcCount} ПК',
-                            style: const TextStyle(
-                                color: AppTheme.textMuted, fontSize: 12)),
+                            style: TextStyle(
+                                color: context.text3, fontSize: 12)),
                         const Spacer(),
                         Container(
                           width: 7,

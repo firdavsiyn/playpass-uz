@@ -74,7 +74,7 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
                 if (_prefs['push_enabled'] == true) ...[
                   const SizedBox(height: 8),
                   Text(t['notif_categories'] ?? 'Категории',
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textMuted)),
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: context.text3)),
                   const SizedBox(height: 12),
 
                   _ToggleCard(
@@ -135,10 +135,10 @@ class _ToggleCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.cardDark,
+        color: context.card,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isPrimary && value ? AppTheme.primary.withValues(alpha: 0.3) : AppTheme.border,
+          color: isPrimary && value ? AppTheme.primary.withValues(alpha: 0.3) : context.border,
         ),
       ),
       child: Row(
@@ -146,10 +146,10 @@ class _ToggleCard extends StatelessWidget {
           Container(
             width: 40, height: 40,
             decoration: BoxDecoration(
-              color: (value ? AppTheme.primary : AppTheme.textMuted).withValues(alpha: 0.15),
+              color: (value ? AppTheme.primary : context.text3).withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: value ? AppTheme.primary : AppTheme.textMuted, size: 20),
+            child: Icon(icon, color: value ? AppTheme.primary : context.text3, size: 20),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -157,9 +157,9 @@ class _ToggleCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title, style: const TextStyle(
-                  fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+                  fontSize: 14, fontWeight: FontWeight.w600, color: context.text1)),
                 const SizedBox(height: 2),
-                Text(subtitle, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                Text(subtitle, style: TextStyle(fontSize: 12, color: context.text2)),
               ],
             ),
           ),

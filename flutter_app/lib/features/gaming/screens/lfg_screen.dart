@@ -53,15 +53,15 @@ class LfgScreen extends ConsumerWidget {
               error: (e, _) => Center(child: Text('$e')),
               data: (posts) {
                 if (posts.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.people_outline, size: 64, color: AppTheme.textMuted),
-                        SizedBox(height: 12),
-                        Text('Нет активных запросов', style: TextStyle(color: AppTheme.textSecondary)),
-                        SizedBox(height: 4),
-                        Text('Создайте первый!', style: TextStyle(color: AppTheme.textMuted, fontSize: 13)),
+                        Icon(Icons.people_outline, size: 64, color: context.text3),
+                        const SizedBox(height: 12),
+                        Text('Нет активных запросов', style: TextStyle(color: context.text2)),
+                        const SizedBox(height: 4),
+                        Text('Создайте первый!', style: TextStyle(color: context.text3, fontSize: 13)),
                       ],
                     ),
                   );
@@ -92,7 +92,7 @@ class LfgScreen extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppTheme.cardDark,
+      backgroundColor: context.cardDark,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setState) => Padding(
@@ -101,11 +101,11 @@ class LfgScreen extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Найти тиммейтов', style: TextStyle(
-                fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+              Text('Найти тиммейтов', style: TextStyle(
+                fontSize: 18, fontWeight: FontWeight.w600, color: context.text1)),
               const SizedBox(height: 16),
 
-              const Text('Игра', style: TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
+              Text('Игра', style: TextStyle(fontSize: 13, color: context.text2)),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8, runSpacing: 8,
@@ -114,12 +114,12 @@ class LfgScreen extends ConsumerWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                      color: game == g ? AppTheme.primary : AppTheme.bgDark,
+                      color: game == g ? AppTheme.primary : context.bg,
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: game == g ? AppTheme.primary : AppTheme.border),
+                      border: Border.all(color: game == g ? AppTheme.primary : context.border),
                     ),
                     child: Text(g, style: TextStyle(fontSize: 13,
-                      color: game == g ? Colors.white : AppTheme.textSecondary)),
+                      color: game == g ? Colors.white : context.text2)),
                   ),
                 )).toList(),
               ),
@@ -127,10 +127,10 @@ class LfgScreen extends ConsumerWidget {
 
               Row(
                 children: [
-                  const Text('Нужно игроков: ', style: TextStyle(color: AppTheme.textSecondary)),
-                  IconButton(icon: const Icon(Icons.remove_circle_outline, color: AppTheme.textMuted),
+                  Text('Нужно игроков: ', style: TextStyle(color: context.text2)),
+                  IconButton(icon: Icon(Icons.remove_circle_outline, color: context.text3),
                       onPressed: playersNeeded > 1 ? () => setState(() => playersNeeded--) : null),
-                  Text('$playersNeeded', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
+                  Text('$playersNeeded', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: context.text1)),
                   IconButton(icon: const Icon(Icons.add_circle_outline, color: AppTheme.primary),
                       onPressed: playersNeeded < 9 ? () => setState(() => playersNeeded++) : null),
                 ],
@@ -140,13 +140,13 @@ class LfgScreen extends ConsumerWidget {
                 children: [
                   Checkbox(value: micRequired, onChanged: (v) => setState(() => micRequired = v ?? false),
                       activeColor: AppTheme.primary),
-                  const Text('Микрофон обязателен', style: TextStyle(color: AppTheme.textSecondary)),
+                  Text('Микрофон обязателен', style: TextStyle(color: context.text2)),
                 ],
               ),
 
               TextField(
                 controller: msgCtrl,
-                style: const TextStyle(color: AppTheme.textPrimary),
+                style: TextStyle(color: context.text1),
                 maxLines: 2,
                 decoration: const InputDecoration(labelText: 'Сообщение', hintText: 'Ищу в рейт, ранг Faceit 7+...'),
               ),
@@ -186,12 +186,12 @@ class _GameChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? AppTheme.primary : AppTheme.cardDark,
+          color: selected ? AppTheme.primary : context.cardDark,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: selected ? AppTheme.primary : AppTheme.border),
+          border: Border.all(color: selected ? AppTheme.primary : context.border),
         ),
         child: Text(label, style: TextStyle(
-          fontSize: 13, color: selected ? Colors.white : AppTheme.textSecondary,
+          fontSize: 13, color: selected ? Colors.white : context.text2,
           fontWeight: selected ? FontWeight.w600 : FontWeight.normal)),
       ),
     );
@@ -215,9 +215,9 @@ class _LfgCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.cardDark,
+        color: context.cardDark,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.border),
+        border: Border.all(color: context.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -239,10 +239,10 @@ class _LfgCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(user?['name'] ?? 'Игрок', style: const TextStyle(
-                      fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
-                    if (club != null) Text(club['name'] as String? ?? '', style: const TextStyle(
-                      fontSize: 12, color: AppTheme.textMuted)),
+                    Text(user?['name'] ?? 'Игрок', style: TextStyle(
+                      fontWeight: FontWeight.w600, color: context.text1)),
+                    if (club != null) Text(club['name'] as String? ?? '', style: TextStyle(
+                      fontSize: 12, color: context.text3)),
                   ],
                 ),
               ),
@@ -263,8 +263,8 @@ class _LfgCard extends StatelessWidget {
           if (post['message'] != null)
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              child: Text(post['message'] as String, style: const TextStyle(
-                color: AppTheme.textSecondary, height: 1.4)),
+              child: Text(post['message'] as String, style: TextStyle(
+                color: context.text2, height: 1.4)),
             ),
 
           // Info row
@@ -313,15 +313,15 @@ class _InfoBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: AppTheme.bgDark,
+        color: context.bg,
         borderRadius: BorderRadius.circular(6),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 13, color: AppTheme.textMuted),
+          Icon(icon, size: 13, color: context.text3),
           const SizedBox(width: 4),
-          Text(text, style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+          Text(text, style: TextStyle(fontSize: 11, color: context.text2)),
         ],
       ),
     );

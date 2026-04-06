@@ -24,7 +24,7 @@ class SubscriptionWidget extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: AppTheme.bgGlass,
+          color: context.glass,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: AppTheme.primary.withValues(alpha: 0.15)),
         ),
@@ -55,13 +55,13 @@ class SubscriptionWidget extends StatelessWidget {
                     children: [
                       Text('Нет активной подписки',
                           style: TextStyle(
-                              color: AppTheme.textPrimary,
+                              color: context.text1,
                               fontWeight: FontWeight.w600,
                               fontSize: 16)),
                       SizedBox(height: 4),
                       Text('Купите тариф и начните играть',
                           style:
-                              TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
+                              TextStyle(color: context.text2, fontSize: 13)),
                     ],
                   ),
                 ),
@@ -110,7 +110,7 @@ class _ActiveSubscription extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppTheme.bgGlass,
+        color: context.glass,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isFrozen
@@ -210,7 +210,7 @@ class _ActiveSubscription extends StatelessWidget {
                   const Spacer(),
                   Text(
                     '${subscription.daysRemaining} дн.',
-                    style: const TextStyle(color: AppTheme.textMuted, fontSize: 13),
+                    style: TextStyle(color: context.text3, fontSize: 13),
                   ),
                 ],
               ),
@@ -232,7 +232,7 @@ class _ActiveSubscription extends StatelessWidget {
                           painter: _NeonProgressPainter(
                             progress: subscription.isUnlimited ? 1.0 : subscription.hoursProgress,
                             color: isFrozen ? Colors.blueGrey : color,
-                            bgColor: AppTheme.bgSurface,
+                            bgColor: context.surface,
                             glowEnabled: false,
                           ),
                         ),
@@ -243,7 +243,7 @@ class _ActiveSubscription extends StatelessWidget {
                             Text(
                               subscription.isUnlimited ? '∞' : subscription.hoursText,
                               style: TextStyle(
-                                color: isFrozen ? Colors.blueGrey : AppTheme.textPrimary,
+                                color: isFrozen ? Colors.blueGrey : context.text1,
                                 fontSize: subscription.isUnlimited ? 28 : 22,
                                 fontWeight: FontWeight.w800,
                               ),
@@ -252,7 +252,7 @@ class _ActiveSubscription extends StatelessWidget {
                               Text(
                                 'ч',
                                 style: TextStyle(
-                                  color: isFrozen ? Colors.blueGrey.withValues(alpha: 0.6) : AppTheme.textMuted,
+                                  color: isFrozen ? Colors.blueGrey.withValues(alpha: 0.6) : context.text3,
                                   fontSize: 11,
                                 ),
                               ),
@@ -272,7 +272,7 @@ class _ActiveSubscription extends StatelessWidget {
                           style: TextStyle(
                             color: isFrozen
                                 ? Colors.blueGrey.withValues(alpha: 0.7)
-                                : AppTheme.textSecondary,
+                                : context.text2,
                             fontSize: 14,
                           ),
                         ),
@@ -283,7 +283,7 @@ class _ActiveSubscription extends StatelessWidget {
                             style: TextStyle(
                               color: isFrozen
                                   ? Colors.blueGrey.withValues(alpha: 0.5)
-                                  : AppTheme.textMuted,
+                                  : context.text3,
                               fontSize: 12,
                             ),
                           ),
@@ -294,7 +294,7 @@ class _ActiveSubscription extends StatelessWidget {
                             child: Container(
                               height: 6,
                               decoration: BoxDecoration(
-                                color: AppTheme.bgSurface,
+                                color: context.surface,
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: FractionallySizedBox(

@@ -29,10 +29,10 @@ class TournamentsScreen extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.emoji_events_outlined, size: 64, color: AppTheme.textMuted),
+                  Icon(Icons.emoji_events_outlined, size: 64, color: context.text3),
                   const SizedBox(height: 12),
                   Text(t['tournaments_empty'] ?? 'Пока нет турниров',
-                      style: const TextStyle(color: AppTheme.textSecondary)),
+                      style: TextStyle(color: context.text2)),
                 ],
               ),
             );
@@ -103,10 +103,10 @@ class _TournamentCard extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
-          color: AppTheme.cardDark,
+          color: context.cardDark,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: t.status == 'ongoing' ? AppTheme.error.withValues(alpha: 0.5) : AppTheme.border,
+            color: t.status == 'ongoing' ? AppTheme.error.withValues(alpha: 0.5) : context.border,
           ),
         ),
         child: Column(
@@ -131,15 +131,15 @@ class _TournamentCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(t.title, style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+                        Text(t.title, style: TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w600, color: context.text1)),
                         const SizedBox(height: 4),
                         Row(children: [
                           _GameBadge(t.game),
                           const SizedBox(width: 8),
                           if (t.clubName != null)
-                            Text(t.clubName!, style: const TextStyle(
-                              fontSize: 12, color: AppTheme.textSecondary)),
+                            Text(t.clubName!, style: TextStyle(
+                              fontSize: 12, color: context.text2)),
                         ]),
                       ],
                     ),
@@ -185,7 +185,7 @@ class _TournamentCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
                     value: t.participantCount / t.maxPlayers,
-                    backgroundColor: AppTheme.border,
+                    backgroundColor: context.border,
                     color: t.isFull ? AppTheme.error : AppTheme.primary,
                     minHeight: 4,
                   ),
@@ -228,11 +228,11 @@ class _StatusBadge extends StatelessWidget {
   final String status;
   const _StatusBadge(this.status);
 
-  Color get _color => switch (status) {
+  Color _getColor(BuildContext context) => switch (status) {
     'ongoing' => AppTheme.error,
     'upcoming' || 'registration' => AppTheme.primary,
     'finished' => AppTheme.success,
-    _ => AppTheme.textMuted,
+    _ => context.text3,
   };
 
   String get _label => switch (status) {
@@ -246,14 +246,15 @@ class _StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final color = _getColor(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: _color.withValues(alpha: 0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(_label, style: TextStyle(
-        fontSize: 11, fontWeight: FontWeight.w700, color: _color)),
+        fontSize: 11, fontWeight: FontWeight.w700, color: color)),
     );
   }
 }
@@ -268,9 +269,9 @@ class _InfoChip extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 14, color: AppTheme.textMuted),
+        Icon(icon, size: 14, color: context.text3),
         const SizedBox(width: 4),
-        Text(text, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+        Text(text, style: TextStyle(fontSize: 12, color: context.text2)),
       ],
     );
   }

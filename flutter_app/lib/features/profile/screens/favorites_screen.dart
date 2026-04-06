@@ -31,13 +31,13 @@ class FavoritesScreen extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.favorite_border_rounded,
-                        size: 64, color: AppTheme.textMuted.withValues(alpha: 0.3)),
+                        size: 64, color: context.text3.withValues(alpha: 0.3)),
                     const SizedBox(height: 16),
-                    const Text('Нет избранных клубов',
-                        style: TextStyle(color: AppTheme.textMuted, fontSize: 16)),
+                    Text('Нет избранных клубов',
+                        style: TextStyle(color: context.text3, fontSize: 16)),
                     const SizedBox(height: 8),
-                    const Text('Нажмите на сердечко на карточке клуба',
-                        style: TextStyle(color: AppTheme.textMuted, fontSize: 13)),
+                    Text('Нажмите на сердечко на карточке клуба',
+                        style: TextStyle(color: context.text3, fontSize: 13)),
                   ],
                 ),
               ),
@@ -68,7 +68,7 @@ class _FavClubCard extends ConsumerWidget {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppTheme.bgCard,
+          color: context.card,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: AppTheme.primary.withValues(alpha: 0.06)),
           boxShadow: AppTheme.cardGlow(),
@@ -92,11 +92,11 @@ class _FavClubCard extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(club.name,
-                      style: const TextStyle(
-                          color: AppTheme.textPrimary, fontWeight: FontWeight.w600, fontSize: 15)),
+                      style: TextStyle(
+                          color: context.text1, fontWeight: FontWeight.w600, fontSize: 15)),
                   const SizedBox(height: 2),
                   Text(club.address, maxLines: 1, overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(color: AppTheme.textMuted, fontSize: 12)),
+                      style: TextStyle(color: context.text3, fontSize: 12)),
                 ],
               ),
             ),

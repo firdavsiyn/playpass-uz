@@ -190,7 +190,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
               Text(
                 'Добро пожаловать\nв PlayPass',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      color: AppTheme.textPrimary,
+                      color: context.text1,
                       height: 1.3,
                     ),
               ),
@@ -204,7 +204,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
               // Tabs
               Container(
                 decoration: BoxDecoration(
-                  color: AppTheme.bgSurface,
+                  color: context.surface,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: AppTheme.primary.withValues(alpha: 0.1)),
                 ),
@@ -224,7 +224,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                   ),
                   indicatorSize: TabBarIndicatorSize.tab,
                   labelColor: Colors.white,
-                  unselectedLabelColor: AppTheme.textSecondary,
+                  unselectedLabelColor: context.text2,
                   dividerHeight: 0,
                   tabs: const [
                     Tab(text: 'Войти'),
@@ -264,7 +264,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
             controller: _loginEmail,
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.next,
-            style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16),
+            style: TextStyle(color: context.text1, fontSize: 16),
             decoration: const InputDecoration(
               hintText: 'your@email.com',
               prefixIcon: Icon(Icons.email_outlined, size: 20),
@@ -279,7 +279,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
             controller: _loginPassword,
             obscureText: !_loginPasswordVisible,
             textInputAction: TextInputAction.done,
-            style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16),
+            style: TextStyle(color: context.text1, fontSize: 16),
             decoration: InputDecoration(
               hintText: 'Минимум 8 символов',
               prefixIcon: const Icon(Icons.lock_outline, size: 20),
@@ -354,7 +354,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
             controller: _regName,
             textInputAction: TextInputAction.next,
             textCapitalization: TextCapitalization.words,
-            style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16),
+            style: TextStyle(color: context.text1, fontSize: 16),
             decoration: const InputDecoration(
               hintText: 'Ваше имя',
               prefixIcon: Icon(Icons.person_outline, size: 20),
@@ -369,7 +369,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
             controller: _regEmail,
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.next,
-            style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16),
+            style: TextStyle(color: context.text1, fontSize: 16),
             decoration: const InputDecoration(
               hintText: 'your@email.com',
               prefixIcon: Icon(Icons.email_outlined, size: 20),
@@ -384,7 +384,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
             controller: _regPassword,
             obscureText: !_regPasswordVisible,
             textInputAction: TextInputAction.done,
-            style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16),
+            style: TextStyle(color: context.text1, fontSize: 16),
             decoration: InputDecoration(
               hintText: 'Минимум 8 символов',
               prefixIcon: const Icon(Icons.lock_outline, size: 20),

@@ -80,7 +80,7 @@ class _ClubDetail extends ConsumerWidget {
         SliverAppBar(
           expandedHeight: 260,
           pinned: true,
-          backgroundColor: AppTheme.bgDark,
+          backgroundColor: context.bg,
           flexibleSpace: FlexibleSpaceBar(
             background: club.photos.isNotEmpty
                 ? PageView.builder(
@@ -91,9 +91,9 @@ class _ClubDetail extends ConsumerWidget {
                     ),
                   )
                 : Container(
-                    color: AppTheme.bgCard,
-                    child: const Icon(Icons.sports_esports,
-                        size: 80, color: AppTheme.textMuted),
+                    color: context.card,
+                    child: Icon(Icons.sports_esports,
+                        size: 80, color: context.text3),
                   ),
           ),
           leading: IconButton(
@@ -170,7 +170,7 @@ class _ClubDetail extends ConsumerWidget {
                   const SizedBox(width: 4),
                   Text(
                     '${club.rating.toStringAsFixed(1)}  ·  ${club.reviewCount} отзывов  ·  ${club.pcCount} ПК',
-                    style: const TextStyle(color: AppTheme.textSecondary),
+                    style: TextStyle(color: context.text2),
                   ),
                 ],
               ),
@@ -210,8 +210,8 @@ class _ClubDetail extends ConsumerWidget {
                 const SizedBox(height: 8),
                 Text(
                   club.description!,
-                  style: const TextStyle(
-                      color: AppTheme.textSecondary, fontSize: 14),
+                  style: TextStyle(
+                      color: context.text2, fontSize: 14),
                 ),
               ],
 
@@ -274,10 +274,10 @@ class _ClubDetail extends ConsumerWidget {
 
               reviewsAsync.when(
                 data: (reviews) => reviews.isEmpty
-                    ? const Padding(
-                        padding: EdgeInsets.all(16),
+                    ? Padding(
+                        padding: const EdgeInsets.all(16),
                         child: Text('Пока нет отзывов',
-                            style: TextStyle(color: AppTheme.textMuted)),
+                            style: TextStyle(color: context.text3)),
                       )
                     : Column(
                         children: reviews.take(5).map((r) => _ReviewCard(review: r)).toList(),
@@ -292,7 +292,7 @@ class _ClubDetail extends ConsumerWidget {
                 onPressed: () {
                   showModalBottomSheet(
                     context: context,
-                    backgroundColor: AppTheme.bgCard,
+                    backgroundColor: context.card,
                     isScrollControlled: true,
                     shape: const RoundedRectangleBorder(
                       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -347,10 +347,10 @@ class _ClubDetail extends ConsumerWidget {
   }
 
   Widget _buildSingleZone() {
-    return Container(
+    return Builder(builder: (context) => Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppTheme.bgCard,
+        color: context.card,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppTheme.success.withValues(alpha: 0.3)),
       ),
@@ -374,21 +374,21 @@ class _ClubDetail extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('${club.pcCount} ПК',
-                    style: const TextStyle(
-                        color: AppTheme.textPrimary,
+                    style: TextStyle(
+                        color: context.text1,
                         fontWeight: FontWeight.w600)),
                 if (club.pricePerHour > 0)
                   Text(
                     '${club.pricePerHour} UZS/ч',
-                    style: const TextStyle(
-                        color: AppTheme.textMuted, fontSize: 12),
+                    style: TextStyle(
+                        color: context.text3, fontSize: 12),
                   ),
               ],
             ),
           ),
         ],
       ),
-    );
+    ));
   }
 
   String _getTodayHours(Club club) {
@@ -419,7 +419,7 @@ class _ZoneCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppTheme.bgCard,
+        color: context.card,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: _zoneColor.withValues(alpha: 0.25)),
         boxShadow: [
@@ -450,18 +450,18 @@ class _ZoneCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(zone.name,
-                    style: const TextStyle(
-                        color: AppTheme.textPrimary,
+                    style: TextStyle(
+                        color: context.text1,
                         fontWeight: FontWeight.w600)),
                 Text(
                   '${zone.capacity} мест · $price UZS/ч',
-                  style: const TextStyle(
-                      color: AppTheme.textMuted, fontSize: 12),
+                  style: TextStyle(
+                      color: context.text3, fontSize: 12),
                 ),
                 if (zone.description != null)
                   Text(zone.description!,
-                      style: const TextStyle(
-                          color: AppTheme.textSecondary, fontSize: 12)),
+                      style: TextStyle(
+                          color: context.text2, fontSize: 12)),
               ],
             ),
           ),
@@ -487,7 +487,7 @@ class _WorkingHoursTable extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppTheme.bgCard,
+        color: context.card,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppTheme.primary.withValues(alpha: 0.06)),
         boxShadow: AppTheme.cardGlow(),
@@ -504,7 +504,7 @@ class _WorkingHoursTable extends StatelessWidget {
                   width: 30,
                   child: Text(entry.value,
                       style: TextStyle(
-                        color: isToday ? AppTheme.primary : AppTheme.textSecondary,
+                        color: isToday ? AppTheme.primary : context.text2,
                         fontWeight: isToday ? FontWeight.w700 : FontWeight.normal,
                         fontSize: 13,
                       )),
@@ -512,7 +512,7 @@ class _WorkingHoursTable extends StatelessWidget {
                 const SizedBox(width: 16),
                 Text(h,
                     style: TextStyle(
-                      color: isToday ? AppTheme.textPrimary : AppTheme.textMuted,
+                      color: isToday ? context.text1 : context.text3,
                       fontWeight: isToday ? FontWeight.w600 : FontWeight.normal,
                       fontSize: 13,
                     )),
@@ -536,7 +536,7 @@ class _ReviewCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppTheme.bgCard,
+        color: context.card,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppTheme.primary.withValues(alpha: 0.05)),
       ),
@@ -546,8 +546,8 @@ class _ReviewCard extends StatelessWidget {
           Row(
             children: [
               Text(review.userName ?? 'Пользователь',
-                  style: const TextStyle(
-                      color: AppTheme.textPrimary,
+                  style: TextStyle(
+                      color: context.text1,
                       fontWeight: FontWeight.w600,
                       fontSize: 13)),
               const Spacer(),
@@ -561,8 +561,8 @@ class _ReviewCard extends StatelessWidget {
           if (review.text != null && review.text!.isNotEmpty) ...[
             const SizedBox(height: 6),
             Text(review.text!,
-                style: const TextStyle(
-                    color: AppTheme.textSecondary, fontSize: 13)),
+                style: TextStyle(
+                    color: context.text2, fontSize: 13)),
           ],
           // Review photos
           if (review.photoUrls.isNotEmpty) ...[
@@ -583,9 +583,9 @@ class _ReviewCard extends StatelessWidget {
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => Container(
                         width: 72, height: 72,
-                        color: AppTheme.bgSurface,
-                        child: const Icon(Icons.broken_image_outlined,
-                            color: AppTheme.textMuted, size: 20),
+                        color: context.surface,
+                        child: Icon(Icons.broken_image_outlined,
+                            color: context.text3, size: 20),
                       ),
                     ),
                   ),
@@ -649,12 +649,12 @@ class _InfoRow extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, color: AppTheme.textMuted, size: 18),
+        Icon(icon, color: context.text3, size: 18),
         const SizedBox(width: 8),
         Expanded(
             child: Text(text,
-                style: const TextStyle(
-                    color: AppTheme.textSecondary, fontSize: 14))),
+                style: TextStyle(
+                    color: context.text2, fontSize: 14))),
       ],
     );
   }

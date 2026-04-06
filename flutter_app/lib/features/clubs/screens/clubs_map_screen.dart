@@ -24,7 +24,7 @@ class ClubsMapScreen extends ConsumerWidget {
         error: (e, _) => Center(child: Text('$e')),
         data: (clubs) {
           if (clubs.isEmpty) {
-            return const Center(child: Text('Нет клубов', style: TextStyle(color: AppTheme.textMuted)));
+            return Center(child: Text('Нет клубов', style: TextStyle(color: context.text3)));
           }
 
           return Column(
@@ -34,8 +34,8 @@ class ClubsMapScreen extends ConsumerWidget {
                 flex: 3,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: AppTheme.cardDark,
-                    border: Border(bottom: BorderSide(color: AppTheme.border)),
+                    color: context.cardDark,
+                    border: Border(bottom: BorderSide(color: context.border)),
                   ),
                   child: Stack(
                     children: [
@@ -45,15 +45,15 @@ class ClubsMapScreen extends ConsumerWidget {
                         painter: _MapGridPainter(),
                       ),
                       // City label
-                      const Positioned(
+                      Positioned(
                         top: 16, left: 16,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text('📍 Ташкент', style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
+                              fontSize: 20, fontWeight: FontWeight.w700, color: context.text1)),
                             Text('Интерактивная карта скоро', style: TextStyle(
-                              fontSize: 12, color: AppTheme.textMuted)),
+                              fontSize: 12, color: context.text3)),
                           ],
                         ),
                       ),
@@ -83,12 +83,12 @@ class ClubsMapScreen extends ConsumerWidget {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: AppTheme.bgDark.withValues(alpha: 0.9),
+                                    color: context.bg.withValues(alpha: 0.9),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: Text(
                                     c['name'] as String? ?? '',
-                                    style: const TextStyle(fontSize: 9, color: AppTheme.textPrimary, fontWeight: FontWeight.w600),
+                                    style: TextStyle(fontSize: 9, color: context.text1, fontWeight: FontWeight.w600),
                                   ),
                                 ),
                               ],
@@ -102,7 +102,7 @@ class ClubsMapScreen extends ConsumerWidget {
                         child: Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: AppTheme.bgDark.withValues(alpha: 0.9),
+                            color: context.bg.withValues(alpha: 0.9),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text('${clubs.length} клубов', style: const TextStyle(
@@ -134,11 +134,11 @@ class ClubsMapScreen extends ConsumerWidget {
                                 child: Image.network(c['logo_url'], fit: BoxFit.cover))
                             : const Icon(Icons.sports_esports, color: AppTheme.primary),
                       ),
-                      title: Text(c['name'] ?? '', style: const TextStyle(
-                        fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
-                      subtitle: Text(c['address'] ?? '', style: const TextStyle(
-                        fontSize: 12, color: AppTheme.textMuted)),
-                      trailing: const Icon(Icons.chevron_right, color: AppTheme.textMuted),
+                      title: Text(c['name'] ?? '', style: TextStyle(
+                        fontWeight: FontWeight.w600, color: context.text1)),
+                      subtitle: Text(c['address'] ?? '', style: TextStyle(
+                        fontSize: 12, color: context.text3)),
+                      trailing: Icon(Icons.chevron_right, color: context.text3),
                       onTap: () => context.push('/clubs/${c['id']}'),
                     );
                   },

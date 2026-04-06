@@ -218,7 +218,7 @@ class _ScanButton extends ConsumerWidget {
                   end: Alignment.centerRight,
                 )
               : null,
-          color: canScan ? null : AppTheme.bgSurface,
+          color: canScan ? null : context.surface,
           borderRadius: BorderRadius.circular(16),
           boxShadow: canScan
               ? [
@@ -244,7 +244,7 @@ class _ScanButton extends ConsumerWidget {
                   : hasActiveSubscription
                       ? Icons.qr_code_scanner_rounded
                       : Icons.shopping_cart_outlined,
-              color: canScan ? Colors.white : AppTheme.textMuted,
+              color: canScan ? Colors.white : context.text3,
               size: 28,
             ),
             const SizedBox(width: 12),
@@ -255,7 +255,7 @@ class _ScanButton extends ConsumerWidget {
                       ? ref.lang('home.scan_qr')
                       : ref.lang('home.buy_sub'),
               style: TextStyle(
-                color: canScan ? Colors.white : AppTheme.textMuted,
+                color: canScan ? Colors.white : context.text3,
                 fontSize: 17,
                 fontWeight: FontWeight.w600,
               ),
@@ -358,7 +358,7 @@ class _SubscriptionSkeleton extends StatelessWidget {
     return Container(
       height: 120,
       decoration: BoxDecoration(
-        color: AppTheme.bgCard,
+        color: context.card,
         borderRadius: BorderRadius.circular(16),
       ),
     );
@@ -373,7 +373,7 @@ class _SubscriptionError extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.bgCard,
+        color: context.card,
         borderRadius: BorderRadius.circular(16),
       ),
       child: const Text('Ошибка загрузки подписки', style: TextStyle(color: AppTheme.error)),

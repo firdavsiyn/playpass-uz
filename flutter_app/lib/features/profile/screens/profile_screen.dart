@@ -82,7 +82,7 @@ class _ProfileContent extends ConsumerWidget {
                       decoration: BoxDecoration(
                         color: AppTheme.primary,
                         shape: BoxShape.circle,
-                        border: Border.all(color: AppTheme.bgDark, width: 2),
+                        border: Border.all(color: context.bg, width: 2),
                       ),
                       child: const Icon(Icons.camera_alt_rounded, size: 12, color: Colors.white),
                     ),
@@ -98,8 +98,8 @@ class _ProfileContent extends ConsumerWidget {
                   Text(name, style: Theme.of(context).textTheme.titleLarge),
                   const SizedBox(height: 4),
                   Text(email,
-                      style: const TextStyle(
-                          color: AppTheme.textMuted, fontSize: 13)),
+                      style: TextStyle(
+                          color: context.text3, fontSize: 13)),
                 ],
               ),
             ),
@@ -112,7 +112,7 @@ class _ProfileContent extends ConsumerWidget {
         Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: AppTheme.bgCard,
+            color: context.card,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: AppTheme.primary.withValues(alpha: 0.1)),
             boxShadow: AppTheme.cardGlow(),
@@ -127,15 +127,15 @@ class _ProfileContent extends ConsumerWidget {
                   children: [
                     Text(
                       AppConstants.levelLabel(level),
-                      style: const TextStyle(
-                        color: AppTheme.textPrimary,
+                      style: TextStyle(
+                        color: context.text1,
                         fontWeight: FontWeight.w700,
                         fontSize: 16,
                       ),
                     ),
                     Text(
                       '$totalVisits ${ref.lang('profile.visits_total')}',
-                      style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                      style: TextStyle(color: context.text3, fontSize: 12),
                     ),
                   ],
                 ),
@@ -168,7 +168,7 @@ class _ProfileContent extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: AppTheme.bgCard,
+              color: context.card,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(color: AppTheme.primary.withValues(alpha: 0.2)),
               boxShadow: AppTheme.neonGlow(radius: 16),
@@ -179,13 +179,13 @@ class _ProfileContent extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('Подписка: ${subscription!.planName}',
-                        style: const TextStyle(
-                            color: AppTheme.textPrimary,
+                        style: TextStyle(
+                            color: context.text1,
                             fontWeight: FontWeight.w600)),
                     const SizedBox(height: 4),
                     Text(
                       'До ${subscription!.endDate.day}.${subscription!.endDate.month.toString().padLeft(2, '0')}.${subscription!.endDate.year}',
-                      style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                      style: TextStyle(color: context.text3, fontSize: 12),
                     ),
                   ],
                 ),
@@ -317,7 +317,7 @@ class _ProfileContent extends ConsumerWidget {
           child: Text(
             'PlayPass v1.0',
             style: TextStyle(
-              color: AppTheme.textMuted.withValues(alpha: 0.5),
+              color: context.text3.withValues(alpha: 0.5),
               fontSize: 12,
             ),
           ),
@@ -369,18 +369,18 @@ class _ProfileContent extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: AppTheme.bgCard,
+        backgroundColor: context.card,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(color: AppTheme.primary.withValues(alpha: 0.15)),
         ),
-        title: const Text('Изменить имя',
-            style: TextStyle(color: AppTheme.textPrimary)),
+        title: Text('Изменить имя',
+            style: TextStyle(color: context.text1)),
         content: TextField(
           controller: controller,
           autofocus: true,
           textCapitalization: TextCapitalization.words,
-          style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16),
+          style: TextStyle(color: context.text1, fontSize: 16),
           decoration: const InputDecoration(
             hintText: 'Ваше имя',
             prefixIcon: Icon(Icons.person_outline, size: 20),
@@ -438,7 +438,7 @@ class _ProfileContent extends ConsumerWidget {
   void _showSupportSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.bgCard,
+      backgroundColor: context.card,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -451,7 +451,7 @@ class _ProfileContent extends ConsumerWidget {
               width: 40, height: 4,
               margin: const EdgeInsets.only(bottom: 20),
               decoration: BoxDecoration(
-                color: AppTheme.textMuted.withValues(alpha: 0.3),
+                color: context.text3.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -472,18 +472,18 @@ class _ProfileContent extends ConsumerWidget {
                   color: AppTheme.primaryLight, size: 28),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Служба поддержки',
               style: TextStyle(
-                color: AppTheme.textPrimary,
+                color: context.text1,
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Мы на связи ежедневно с 10:00 до 22:00',
-              style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+              style: TextStyle(color: context.text2, fontSize: 14),
             ),
             const SizedBox(height: 24),
             _SupportOption(
@@ -557,7 +557,7 @@ class _SupportOption extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: AppTheme.bgSurface,
+          color: context.surface,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: color.withValues(alpha: 0.15)),
         ),
@@ -584,13 +584,13 @@ class _SupportOption extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(title,
-                      style: const TextStyle(
-                          color: AppTheme.textPrimary,
+                      style: TextStyle(
+                          color: context.text1,
                           fontWeight: FontWeight.w600,
                           fontSize: 15)),
                   Text(subtitle,
-                      style: const TextStyle(
-                          color: AppTheme.textMuted, fontSize: 13)),
+                      style: TextStyle(
+                          color: context.text3, fontSize: 13)),
                 ],
               ),
             ),
@@ -618,21 +618,21 @@ class _LanguageToggle extends ConsumerWidget {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: AppTheme.bgCard,
+          color: context.card,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: AppTheme.primary.withValues(alpha: 0.05)),
         ),
         child: Row(
           children: [
-            const Icon(Icons.language_rounded, color: AppTheme.textPrimary, size: 22),
+            Icon(Icons.language_rounded, color: context.text1, size: 22),
             const SizedBox(width: 14),
-            const Expanded(
-              child: Text('Язык / Til', style: TextStyle(color: AppTheme.textPrimary, fontSize: 15)),
+            Expanded(
+              child: Text('Язык / Til', style: TextStyle(color: context.text1, fontSize: 15)),
             ),
             Container(
               padding: const EdgeInsets.all(2),
               decoration: BoxDecoration(
-                color: AppTheme.bgSurface,
+                color: context.surface,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Row(
@@ -703,7 +703,7 @@ class _LangChip extends StatelessWidget {
       child: Text(
         label,
         style: TextStyle(
-          color: selected ? Colors.white : AppTheme.textMuted,
+          color: selected ? Colors.white : context.text3,
           fontSize: 12,
           fontWeight: FontWeight.w700,
         ),
@@ -729,14 +729,14 @@ class _MenuItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = color ?? AppTheme.textPrimary;
+    final c = color ?? context.text1;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: AppTheme.bgCard,
+          color: context.card,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: AppTheme.primary.withValues(alpha: 0.05)),
         ),
@@ -751,14 +751,14 @@ class _MenuItem extends StatelessWidget {
                   Text(title, style: TextStyle(color: c, fontSize: 15)),
                   if (subtitle != null)
                     Text(subtitle!,
-                        style: const TextStyle(
-                            color: AppTheme.textMuted, fontSize: 12)),
+                        style: TextStyle(
+                            color: context.text3, fontSize: 12)),
                 ],
               ),
             ),
             if (color == null)
-              const Icon(Icons.chevron_right_rounded,
-                  color: AppTheme.textMuted),
+              Icon(Icons.chevron_right_rounded,
+                  color: context.text3),
           ],
         ),
       ),

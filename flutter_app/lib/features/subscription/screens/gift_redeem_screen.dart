@@ -93,19 +93,19 @@ class _GiftRedeemScreenState extends State<GiftRedeemScreen> {
                 color: AppTheme.primaryLight, size: 36),
           ),
           const SizedBox(height: 24),
-          const Text(
+          Text(
             'Введите код подарочного сертификата',
             style: TextStyle(
-              color: AppTheme.textPrimary,
+              color: context.text1,
               fontSize: 18,
               fontWeight: FontWeight.w700,
             ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Код можно получить от друга или приобрести в разделе "Подарить подписку"',
-            style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+            style: TextStyle(color: context.text2, fontSize: 14),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),
@@ -122,13 +122,13 @@ class _GiftRedeemScreenState extends State<GiftRedeemScreen> {
             decoration: InputDecoration(
               hintText: 'ABCD1234',
               hintStyle: TextStyle(
-                color: AppTheme.textMuted.withValues(alpha: 0.3),
+                color: context.text3.withValues(alpha: 0.3),
                 fontSize: 24,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 4,
               ),
               filled: true,
-              fillColor: AppTheme.bgSurface,
+              fillColor: context.surface,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
                 borderSide: BorderSide(color: AppTheme.primary.withValues(alpha: 0.2)),
@@ -148,7 +148,7 @@ class _GiftRedeemScreenState extends State<GiftRedeemScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppTheme.bgCard,
+                color: context.card,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: AppTheme.success.withValues(alpha: 0.2)),
               ),
@@ -156,12 +156,12 @@ class _GiftRedeemScreenState extends State<GiftRedeemScreen> {
                 children: [
                   Text(
                     'Тариф: ${_giftInfo!['plan'] ?? ''}',
-                    style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w600),
+                    style: TextStyle(color: context.text1, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     '${_giftInfo!['amount_uzs'] ?? 0} UZS',
-                    style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+                    style: TextStyle(color: context.text2, fontSize: 14),
                   ),
                 ],
               ),
@@ -223,18 +223,18 @@ class _GiftRedeemScreenState extends State<GiftRedeemScreen> {
                   color: AppTheme.success, size: 36),
             ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'Сертификат активирован!',
               style: TextStyle(
-                color: AppTheme.textPrimary,
+                color: context.text1,
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Подписка добавлена к вашему аккаунту',
-              style: TextStyle(color: AppTheme.textSecondary),
+              style: TextStyle(color: context.text2),
             ),
             const SizedBox(height: 32),
             ElevatedButton(

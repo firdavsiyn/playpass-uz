@@ -67,7 +67,7 @@ class _ActiveSessionWidgetState extends State<ActiveSessionWidget> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.bgGlass,
+        color: context.glass,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppTheme.success.withValues(alpha: 0.3)),
         boxShadow: AppTheme.neonGlow(color: AppTheme.success, radius: 16),
@@ -109,7 +109,7 @@ class _ActiveSessionWidgetState extends State<ActiveSessionWidget> {
           ),
           const SizedBox(height: 12),
           Text(_clubName,
-              style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+              style: TextStyle(color: context.text1, fontSize: 16, fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
           Row(
             children: [

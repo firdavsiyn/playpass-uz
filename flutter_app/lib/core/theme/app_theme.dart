@@ -1,6 +1,33 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
+/// Theme-aware colors via BuildContext extension.
+/// Use `context.card`, `context.surface`, etc. instead of hardcoded AppTheme.bgCard
+extension ThemeColors on BuildContext {
+  bool get isDark => Theme.of(this).brightness == Brightness.dark;
+
+  // Backgrounds
+  Color get bg => isDark ? AppTheme.bgDark : AppTheme.lightBg;
+  Color get card => isDark ? AppTheme.bgCard : AppTheme.lightCard;
+  Color get cardDark => isDark ? AppTheme.bgCard : const Color(0xFFF1F3F5);
+  Color get surface => isDark ? AppTheme.bgSurface : AppTheme.lightSurface;
+
+  // Text
+  Color get text1 => isDark ? AppTheme.textPrimary : AppTheme.lightTextPrimary;
+  Color get text2 => isDark ? AppTheme.textSecondary : AppTheme.lightTextSecondary;
+  Color get text3 => isDark ? AppTheme.textMuted : AppTheme.lightTextMuted;
+
+  // Borders
+  Color get border => isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB);
+  Color get borderSubtle => isDark ? const Color(0xFF1F2937) : const Color(0xFFF0F0F0);
+
+  // Glass
+  Color get glass => isDark ? const Color(0x1AFFFFFF) : const Color(0x0A000000);
+
+  // Nav bar bg
+  Color get navBg => isDark ? const Color(0xFF0D0D1A) : Colors.white;
+}
+
 class AppTheme {
   // Brand colors
   static const Color primary = Color(0xFF6366F1);       // Indigo
@@ -17,8 +44,10 @@ class AppTheme {
   // Background (dark theme)
   static const Color bgDark = Color(0xFF0A0A14);
   static const Color bgCard = Color(0xFF141428);
+  static const Color cardDark = Color(0xFF141428); // alias for bgCard
   static const Color bgSurface = Color(0xFF12122A);
   static const Color bgGlass = Color(0x1AFFFFFF);  // 10% white for glassmorphism
+  static const Color border = Color(0xFF374151);
 
   // Text
   static const Color textPrimary = Color(0xFFF8F9FA);

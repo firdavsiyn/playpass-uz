@@ -21,8 +21,8 @@ class LeaderboardScreen extends ConsumerWidget {
         error: (e, _) => Center(child: Text('$e')),
         data: (players) {
           if (players.isEmpty) {
-            return const Center(
-              child: Text('Пока нет данных', style: TextStyle(color: AppTheme.textMuted)),
+            return Center(
+              child: Text('Пока нет данных', style: TextStyle(color: context.text3)),
             );
           }
 
@@ -104,7 +104,7 @@ class _PodiumItem extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Text(player['name'] as String? ?? '', maxLines: 1, overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: context.text1)),
         Text('${player['xp'] ?? 0} XP', style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w700)),
         const SizedBox(height: 8),
         Container(
@@ -136,7 +136,7 @@ class _LeaderboardRow extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: isMe ? AppTheme.primary.withValues(alpha: 0.1) : AppTheme.cardDark,
+        color: isMe ? AppTheme.primary.withValues(alpha: 0.1) : context.cardDark,
         borderRadius: BorderRadius.circular(12),
         border: isMe ? Border.all(color: AppTheme.primary.withValues(alpha: 0.3)) : null,
       ),
@@ -146,15 +146,15 @@ class _LeaderboardRow extends StatelessWidget {
             width: 32,
             child: Text('#$rank', style: TextStyle(
               fontSize: 14, fontWeight: FontWeight.w700,
-              color: isMe ? AppTheme.primary : AppTheme.textMuted)),
+              color: isMe ? AppTheme.primary : context.text3)),
           ),
           CircleAvatar(
             radius: 18,
-            backgroundColor: AppTheme.bgDark,
+            backgroundColor: context.bg,
             backgroundImage: player['avatar_url'] != null ? NetworkImage(player['avatar_url'] as String) : null,
             child: player['avatar_url'] == null
                 ? Text((player['name'] as String? ?? '?')[0].toUpperCase(),
-                    style: const TextStyle(color: AppTheme.textMuted, fontSize: 14))
+                    style: TextStyle(color: context.text3, fontSize: 14))
                 : null,
           ),
           const SizedBox(width: 12),
@@ -164,14 +164,14 @@ class _LeaderboardRow extends StatelessWidget {
               children: [
                 Text(player['name'] as String? ?? '', style: TextStyle(
                   fontWeight: FontWeight.w600,
-                  color: isMe ? AppTheme.primary : AppTheme.textPrimary)),
+                  color: isMe ? AppTheme.primary : context.text1)),
                 Text(_levelLabel(player['loyalty_level'] as String? ?? 'bronze'),
-                    style: const TextStyle(fontSize: 11, color: AppTheme.textMuted)),
+                    style: TextStyle(fontSize: 11, color: context.text3)),
               ],
             ),
           ),
-          Text('${player['xp'] ?? 0} XP', style: const TextStyle(
-            fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.textSecondary)),
+          Text('${player['xp'] ?? 0} XP', style: TextStyle(
+            fontSize: 14, fontWeight: FontWeight.w700, color: context.text2)),
         ],
       ),
     );

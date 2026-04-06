@@ -49,8 +49,8 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Активные бронирования',
-                      style: TextStyle(color: AppTheme.textPrimary,
+                  Text('Активные бронирования',
+                      style: TextStyle(color: context.text1,
                           fontWeight: FontWeight.w700, fontSize: 16)),
                   const SizedBox(height: 8),
                   ...active.map((b) => _BookingCard(booking: b, onCancel: () async {
@@ -66,31 +66,31 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
           ),
 
           // New booking form
-          const Text('Новое бронирование',
-              style: TextStyle(color: AppTheme.textPrimary,
+          Text('Новое бронирование',
+              style: TextStyle(color: context.text1,
                   fontWeight: FontWeight.w700, fontSize: 18)),
           const SizedBox(height: 16),
 
           // Club selector
-          const Text('Клуб', style: TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
+          Text('Клуб', style: TextStyle(color: context.text2, fontSize: 13)),
           const SizedBox(height: 6),
           clubsAsync.when(
             data: (clubs) => Container(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
-                color: AppTheme.bgCard,
+                color: context.card,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFF374151)),
+                border: Border.all(color: context.border),
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<Club>(
                   value: _selectedClub,
-                  hint: const Text('Выберите клуб', style: TextStyle(color: AppTheme.textMuted)),
+                  hint: Text('Выберите клуб', style: TextStyle(color: context.text3)),
                   isExpanded: true,
-                  dropdownColor: AppTheme.bgCard,
+                  dropdownColor: context.card,
                   items: clubs.map((c) => DropdownMenuItem(
                     value: c,
-                    child: Text(c.name, style: const TextStyle(color: AppTheme.textPrimary)),
+                    child: Text(c.name, style: TextStyle(color: context.text1)),
                   )).toList(),
                   onChanged: (c) => setState(() => _selectedClub = c),
                 ),
@@ -102,7 +102,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
           const SizedBox(height: 16),
 
           // Zone selector
-          const Text('Зона', style: TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
+          Text('Зона', style: TextStyle(color: context.text2, fontSize: 13)),
           const SizedBox(height: 6),
           Row(
             children: ['basic', 'pro', 'vip'].map((zone) {
@@ -117,14 +117,14 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                     margin: const EdgeInsets.only(right: 8),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
-                      color: selected ? color.withValues(alpha: 0.15) : AppTheme.bgCard,
+                      color: selected ? color.withValues(alpha: 0.15) : context.card,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: selected ? color : const Color(0xFF374151)),
+                      border: Border.all(color: selected ? color : context.border),
                     ),
                     child: Text(label,
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: selected ? color : AppTheme.textMuted,
+                          color: selected ? color : context.text3,
                           fontWeight: selected ? FontWeight.w700 : FontWeight.normal,
                           fontSize: 14,
                         )),
@@ -136,7 +136,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
           const SizedBox(height: 16),
 
           // Date picker
-          const Text('Дата', style: TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
+          Text('Дата', style: TextStyle(color: context.text2, fontSize: 13)),
           const SizedBox(height: 6),
           GestureDetector(
             onTap: () async {
@@ -151,17 +151,17 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
             child: Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: AppTheme.bgCard,
+                color: context.card,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFF374151)),
+                border: Border.all(color: context.border),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.calendar_today_rounded, color: AppTheme.textMuted, size: 18),
+                  Icon(Icons.calendar_today_rounded, color: context.text3, size: 18),
                   const SizedBox(width: 10),
                   Text(
                     '${_selectedDate.day.toString().padLeft(2, '0')}.${_selectedDate.month.toString().padLeft(2, '0')}.${_selectedDate.year}',
-                    style: const TextStyle(color: AppTheme.textPrimary, fontSize: 15),
+                    style: TextStyle(color: context.text1, fontSize: 15),
                   ),
                 ],
               ),
@@ -170,7 +170,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
           const SizedBox(height: 16),
 
           // Time picker
-          const Text('Время', style: TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
+          Text('Время', style: TextStyle(color: context.text2, fontSize: 13)),
           const SizedBox(height: 6),
           GestureDetector(
             onTap: () async {
@@ -183,17 +183,17 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
             child: Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: AppTheme.bgCard,
+                color: context.card,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFF374151)),
+                border: Border.all(color: context.border),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.access_time_rounded, color: AppTheme.textMuted, size: 18),
+                  Icon(Icons.access_time_rounded, color: context.text3, size: 18),
                   const SizedBox(width: 10),
                   Text(
                     '${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}',
-                    style: const TextStyle(color: AppTheme.textPrimary, fontSize: 15),
+                    style: TextStyle(color: context.text1, fontSize: 15),
                   ),
                 ],
               ),
@@ -202,7 +202,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
           const SizedBox(height: 16),
 
           // Duration
-          const Text('Длительность', style: TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
+          Text('Длительность', style: TextStyle(color: context.text2, fontSize: 13)),
           const SizedBox(height: 6),
           Row(
             children: [1, 2, 3, 4, 5].map((h) {
@@ -214,14 +214,14 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                     margin: const EdgeInsets.only(right: 6),
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
-                      color: selected ? AppTheme.primary.withValues(alpha: 0.15) : AppTheme.bgCard,
+                      color: selected ? AppTheme.primary.withValues(alpha: 0.15) : context.card,
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: selected ? AppTheme.primary : const Color(0xFF374151)),
+                      border: Border.all(color: selected ? AppTheme.primary : context.border),
                     ),
                     child: Text('$h ч',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: selected ? AppTheme.primary : AppTheme.textMuted,
+                          color: selected ? AppTheme.primary : context.text3,
                           fontWeight: selected ? FontWeight.w700 : FontWeight.normal,
                         )),
                   ),
@@ -311,7 +311,7 @@ class _BookingCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppTheme.bgCard,
+        color: context.card,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: zoneColor.withValues(alpha: 0.2)),
       ),
@@ -330,12 +330,12 @@ class _BookingCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(clubName, style: const TextStyle(
-                    color: AppTheme.textPrimary, fontWeight: FontWeight.w600)),
+                Text(clubName, style: TextStyle(
+                    color: context.text1, fontWeight: FontWeight.w600)),
                 if (time != null)
                   Text(
                     '${time.day}.${time.month.toString().padLeft(2, '0')} в ${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')} · $duration ч',
-                    style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                    style: TextStyle(color: context.text3, fontSize: 12),
                   ),
               ],
             ),

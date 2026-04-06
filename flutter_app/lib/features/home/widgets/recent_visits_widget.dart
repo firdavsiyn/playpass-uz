@@ -17,13 +17,13 @@ class RecentVisitsWidget extends StatelessWidget {
           return Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: AppTheme.bgCard,
+              color: context.card,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Center(
+            child: Center(
               child: Text(
                 'Визитов ещё нет. Сканируйте QR в клубе!',
-                style: TextStyle(color: AppTheme.textMuted),
+                style: TextStyle(color: context.text3),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -45,22 +45,22 @@ class _VisitTile extends StatelessWidget {
   final Visit visit;
   const _VisitTile({required this.visit});
 
-  Color get _zoneBadgeColor => switch (visit.zoneType) {
+  Color _zoneBadgeColor(BuildContext context) => switch (visit.zoneType) {
     'pro' => const Color(0xFF3B82F6),
     'vip' => const Color(0xFFF59E0B),
-    _ => AppTheme.textMuted,
+    _ => context.text3,
   };
 
   @override
   Widget build(BuildContext context) {
     final dateStr = DateFormat('d MMM, HH:mm', 'ru').format(visit.createdAt);
-    final zoneColor = _zoneBadgeColor;
+    final zoneColor = _zoneBadgeColor(context);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: AppTheme.bgCard,
+        color: context.card,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppTheme.primary.withValues(alpha: 0.06)),
         boxShadow: AppTheme.cardGlow(),
@@ -98,8 +98,8 @@ class _VisitTile extends StatelessWidget {
                       child: Text(
                         visit.clubName,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppTheme.textPrimary,
+                        style: TextStyle(
+                          color: context.text1,
                           fontWeight: FontWeight.w500,
                           fontSize: 14,
                         ),
@@ -122,7 +122,7 @@ class _VisitTile extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   '$dateStr · ${visit.timeSlotLabel}',
-                  style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                  style: TextStyle(color: context.text3, fontSize: 12),
                 ),
               ],
             ),
@@ -157,7 +157,7 @@ class _VisitTileSkeleton extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       height: 64,
       decoration: BoxDecoration(
-        color: AppTheme.bgCard,
+        color: context.card,
         borderRadius: BorderRadius.circular(12),
       ),
     );

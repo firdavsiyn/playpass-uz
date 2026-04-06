@@ -86,7 +86,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         Text(
           'Введите новый пароль',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: AppTheme.textPrimary,
+                color: context.text1,
               ),
         ),
         const SizedBox(height: 32),
@@ -96,7 +96,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         TextField(
           controller: _passwordController,
           obscureText: _obscure1,
-          style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16),
+          style: TextStyle(color: context.text1, fontSize: 16),
           decoration: InputDecoration(
             hintText: 'Минимум 8 символов',
             prefixIcon: const Icon(Icons.lock_outline, size: 20),
@@ -114,7 +114,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         TextField(
           controller: _confirmController,
           obscureText: _obscure2,
-          style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16),
+          style: TextStyle(color: context.text1, fontSize: 16),
           decoration: InputDecoration(
             hintText: 'Повторите пароль',
             prefixIcon: const Icon(Icons.lock_outline, size: 20),
@@ -153,14 +153,14 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         Text(
           'Пароль обновлён!',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: AppTheme.textPrimary,
+                color: context.text1,
               ),
         ),
         const SizedBox(height: 12),
-        const Text(
+        Text(
           'Теперь вы можете войти с новым паролем.',
           textAlign: TextAlign.center,
-          style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+          style: TextStyle(color: context.text2, fontSize: 14),
         ),
         const SizedBox(height: 32),
         ElevatedButton(

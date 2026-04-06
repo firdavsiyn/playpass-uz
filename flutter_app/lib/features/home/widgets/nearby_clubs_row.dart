@@ -14,7 +14,7 @@ class NearbyClubsRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return clubsAsync.when(
       data: (clubs) => clubs.isEmpty
-          ? const Text('Клубы не найдены', style: TextStyle(color: AppTheme.textMuted))
+          ? Text('Клубы не найдены', style: TextStyle(color: context.text3))
           : SizedBox(
               height: 160,
               child: ListView.separated(
@@ -49,7 +49,7 @@ class _ClubCard extends StatelessWidget {
       child: Container(
         width: 140,
         decoration: BoxDecoration(
-          color: AppTheme.bgCard,
+          color: context.card,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: AppTheme.primary.withValues(alpha: 0.08)),
           boxShadow: AppTheme.cardGlow(),
@@ -68,20 +68,20 @@ class _ClubCard extends StatelessWidget {
                       fit: BoxFit.cover,
                       placeholder: (_, __) => Container(
                         height: 90,
-                        color: AppTheme.bgSurface,
-                        child: const Icon(Icons.image_outlined, color: AppTheme.textMuted),
+                        color: context.surface,
+                        child: Icon(Icons.image_outlined, color: context.text3),
                       ),
                       errorWidget: (_, __, ___) => Container(
                         height: 90,
-                        color: AppTheme.bgSurface,
-                        child: const Icon(Icons.sports_esports, color: AppTheme.textMuted),
+                        color: context.surface,
+                        child: Icon(Icons.sports_esports, color: context.text3),
                       ),
                     )
                   : Container(
                       height: 90,
-                      color: AppTheme.bgSurface,
-                      child: const Center(
-                        child: Icon(Icons.sports_esports, color: AppTheme.textMuted, size: 32),
+                      color: context.surface,
+                      child: Center(
+                        child: Icon(Icons.sports_esports, color: context.text3, size: 32),
                       ),
                     ),
             ),
@@ -94,8 +94,8 @@ class _ClubCard extends StatelessWidget {
                     club.name,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: AppTheme.textPrimary,
+                    style: TextStyle(
+                      color: context.text1,
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
@@ -121,7 +121,7 @@ class _ClubCard extends StatelessWidget {
                       const SizedBox(width: 2),
                       Text(
                         club.rating.toStringAsFixed(1),
-                        style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11),
+                        style: TextStyle(color: context.text2, fontSize: 11),
                       ),
                     ],
                   ),
@@ -144,7 +144,7 @@ class _ClubCardSkeleton extends StatelessWidget {
       width: 140,
       height: 160,
       decoration: BoxDecoration(
-        color: AppTheme.bgCard,
+        color: context.card,
         borderRadius: BorderRadius.circular(12),
       ),
     );

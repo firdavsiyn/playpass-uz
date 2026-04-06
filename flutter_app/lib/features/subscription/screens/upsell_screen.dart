@@ -66,8 +66,8 @@ class UpsellScreen extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 16),
                 child: Text(
                   clubName,
-                  style: const TextStyle(
-                    color: AppTheme.textSecondary,
+                  style: TextStyle(
+                    color: context.text2,
                     fontSize: 14,
                   ),
                 ),
@@ -78,7 +78,7 @@ class UpsellScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppTheme.bgCard,
+                color: context.card,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
@@ -86,20 +86,20 @@ class UpsellScreen extends StatelessWidget {
                   _PlanRow(
                     label: 'Ваш тариф',
                     planName: currentPlanName,
-                    color: AppTheme.textMuted,
+                    color: context.text3,
                     icon: Icons.close_rounded,
                     iconColor: AppTheme.error,
                   ),
                   const SizedBox(height: 16),
                   Container(
                     height: 1,
-                    color: AppTheme.bgSurface,
+                    color: context.surface,
                   ),
                   const SizedBox(height: 16),
                   _PlanRow(
                     label: 'Требуется для зоны "$zoneName"',
                     planName: requiredPlanName,
-                    color: AppTheme.textPrimary,
+                    color: context.text1,
                     icon: Icons.check_circle_rounded,
                     iconColor: AppTheme.success,
                   ),
@@ -134,9 +134,9 @@ class UpsellScreen extends StatelessWidget {
               width: double.infinity,
               child: TextButton(
                 onPressed: () => context.pop(),
-                child: const Text(
+                child: Text(
                   'Назад',
-                  style: TextStyle(color: AppTheme.textSecondary),
+                  style: TextStyle(color: context.text2),
                 ),
               ),
             ),
@@ -186,8 +186,8 @@ class _PlanRow extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: const TextStyle(
-                  color: AppTheme.textMuted,
+                style: TextStyle(
+                  color: context.text3,
                   fontSize: 12,
                 ),
               ),

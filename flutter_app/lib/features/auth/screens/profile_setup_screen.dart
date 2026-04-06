@@ -66,12 +66,12 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                   controller: _nameController,
                   autofocus: true,
                   textCapitalization: TextCapitalization.words,
-                  style: const TextStyle(
-                      color: AppTheme.textPrimary, fontSize: 18),
-                  decoration: const InputDecoration(
+                  style: TextStyle(
+                      color: context.text1, fontSize: 18),
+                  decoration: InputDecoration(
                     hintText: 'Введите имя',
                     prefixIcon:
-                        Icon(Icons.person_outline, color: AppTheme.textMuted),
+                        Icon(Icons.person_outline, color: context.text3),
                   ),
                   validator: (v) {
                     if (v == null || v.trim().isEmpty) return 'Введите имя';

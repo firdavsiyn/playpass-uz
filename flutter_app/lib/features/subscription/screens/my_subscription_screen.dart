@@ -29,10 +29,10 @@ class MySubscriptionScreen extends ConsumerWidget {
               bottom: false,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                child: const Text(
+                child: Text(
                   'Мой абонемент',
                   style: TextStyle(
-                    color: AppTheme.textPrimary,
+                    color: context.text1,
                     fontSize: 28,
                     fontWeight: FontWeight.w800,
                   ),
@@ -54,13 +54,13 @@ class MySubscriptionScreen extends ConsumerWidget {
           ),
 
           // ── Actions section ─────────────────────────
-          const SliverToBoxAdapter(
+          SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.fromLTRB(20, 28, 20, 12),
+              padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
               child: Text(
                 'Купить абонемент и допуслуги',
                 style: TextStyle(
-                  color: AppTheme.textMuted,
+                  color: context.text3,
                   fontSize: 14,
                 ),
               ),
@@ -72,7 +72,7 @@ class MySubscriptionScreen extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Container(
                 decoration: BoxDecoration(
-                  color: AppTheme.bgCard,
+                  color: context.card,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: AppTheme.primary.withValues(alpha: 0.08)),
                   boxShadow: AppTheme.cardGlow(),
@@ -118,12 +118,12 @@ class MySubscriptionScreen extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
               child: Container(
                 decoration: BoxDecoration(
-                  color: AppTheme.bgCard,
+                  color: context.card,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: _ActionTile(
                   icon: Icons.help_outline_rounded,
-                  iconColor: AppTheme.textMuted,
+                  iconColor: context.text3,
                   title: 'Вопросы и ответы',
                   onTap: () => _showFAQ(context),
                 ),
@@ -132,13 +132,13 @@ class MySubscriptionScreen extends ConsumerWidget {
           ),
 
           // ── Plan comparison ─────────────────────────
-          const SliverToBoxAdapter(
+          SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.fromLTRB(20, 28, 20, 12),
+              padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
               child: Text(
                 'Сравнение тарифов',
                 style: TextStyle(
-                  color: AppTheme.textMuted,
+                  color: context.text3,
                   fontSize: 14,
                 ),
               ),
@@ -189,7 +189,7 @@ class MySubscriptionScreen extends ConsumerWidget {
   void _showFAQ(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.bgCard,
+      backgroundColor: context.card,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -208,14 +208,14 @@ class MySubscriptionScreen extends ConsumerWidget {
                 width: 40, height: 4,
                 margin: const EdgeInsets.only(bottom: 20),
                 decoration: BoxDecoration(
-                  color: AppTheme.textMuted.withValues(alpha: 0.3),
+                  color: context.text3.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
-            const Text('Вопросы и ответы',
+            Text('Вопросы и ответы',
                 style: TextStyle(
-                    color: AppTheme.textPrimary,
+                    color: context.text1,
                     fontSize: 22,
                     fontWeight: FontWeight.w700)),
             const SizedBox(height: 20),
@@ -238,23 +238,25 @@ class MySubscriptionScreen extends ConsumerWidget {
   }
 
   Widget _faqItem(String q, String a) {
-    return Padding(
+    // Note: This method doesn't have BuildContext, but it's called inside
+    // a builder that provides context. We need to convert to a widget.
+    return Builder(builder: (context) => Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(q,
-              style: const TextStyle(
-                  color: AppTheme.textPrimary,
+              style: TextStyle(
+                  color: context.text1,
                   fontWeight: FontWeight.w600,
                   fontSize: 15)),
           const SizedBox(height: 6),
           Text(a,
-              style: const TextStyle(
-                  color: AppTheme.textSecondary, fontSize: 14, height: 1.4)),
+              style: TextStyle(
+                  color: context.text2, fontSize: 14, height: 1.4)),
         ],
       ),
-    );
+    ));
   }
 }
 
@@ -269,7 +271,7 @@ class _SubscriptionCard extends StatelessWidget {
     final sub = subscription;
     final hasActive = sub != null && (sub.isActive || sub.isFrozen);
 
-    final glowColor = hasActive ? _glowForPlan(sub!.plan) : AppTheme.textMuted;
+    final glowColor = hasActive ? _glowForPlan(sub!.plan) : context.text3;
 
     return Container(
       width: double.infinity,
@@ -486,7 +488,7 @@ class _SubscriptionCardSkeleton extends StatelessWidget {
       width: double.infinity,
       height: 180,
       decoration: BoxDecoration(
-        color: AppTheme.bgCard,
+        color: context.card,
         borderRadius: BorderRadius.circular(20),
       ),
       child: const Center(
@@ -533,15 +535,15 @@ class _ActionTile extends StatelessWidget {
             Expanded(
               child: Text(
                 title,
-                style: const TextStyle(
-                  color: AppTheme.textPrimary,
+                style: TextStyle(
+                  color: context.text1,
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ),
             Icon(Icons.chevron_right_rounded,
-                color: AppTheme.textMuted.withValues(alpha: 0.5), size: 24),
+                color: context.text3.withValues(alpha: 0.5), size: 24),
           ],
         ),
       ),
@@ -558,7 +560,7 @@ class _Divider extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Divider(
         height: 1,
-        color: AppTheme.textMuted.withValues(alpha: 0.15),
+        color: context.text3.withValues(alpha: 0.15),
       ),
     );
   }
@@ -610,9 +612,9 @@ class _PromoDialogState extends State<_PromoDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: AppTheme.bgCard,
-      title: const Text('Промокод',
-          style: TextStyle(color: AppTheme.textPrimary)),
+      backgroundColor: context.card,
+      title: Text('Промокод',
+          style: TextStyle(color: context.text1)),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -620,7 +622,7 @@ class _PromoDialogState extends State<_PromoDialog> {
             controller: widget.controller,
             autofocus: true,
             textCapitalization: TextCapitalization.characters,
-            style: const TextStyle(color: AppTheme.textPrimary, letterSpacing: 2),
+            style: TextStyle(color: context.text1, letterSpacing: 2),
             decoration: InputDecoration(
               hintText: 'Введите промокод',
               errorText: _error,
@@ -702,7 +704,7 @@ class _MiniPlanCard extends StatelessWidget {
         width: 160,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppTheme.bgCard,
+          color: context.card,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: _color.withValues(alpha: 0.25)),
           boxShadow: [
@@ -729,21 +731,21 @@ class _MiniPlanCard extends StatelessWidget {
             // Hours
             Text(
               plan.isUnlimited ? '1 визит/день' : '${plan.hours} ч/мес',
-              style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+              style: TextStyle(color: context.text2, fontSize: 13),
             ),
             const Spacer(),
             // Price
             Text(
               _formatPrice(plan.priceUzs),
-              style: const TextStyle(
-                color: AppTheme.textPrimary,
+              style: TextStyle(
+                color: context.text1,
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 4),
-            const Text('в месяц',
-                style: TextStyle(color: AppTheme.textMuted, fontSize: 12)),
+            Text('в месяц',
+                style: TextStyle(color: context.text3, fontSize: 12)),
             const SizedBox(height: 10),
             // Button
             Container(

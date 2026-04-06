@@ -40,7 +40,7 @@ class ReferralScreen extends ConsumerWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: AppTheme.bgCard,
+              color: context.card,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: AppTheme.primary.withValues(alpha: 0.1)),
               boxShadow: AppTheme.cardGlow(),
@@ -67,21 +67,21 @@ class ReferralScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   'Пригласи друга — вы оба получите +3 часа к подписке',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: AppTheme.textPrimary,
+                    color: context.text1,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'Поделитесь кодом с другом. После его первой подписки вы оба получите бонусные часы.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: AppTheme.textSecondary,
+                    color: context.text2,
                     fontSize: 13,
                   ),
                 ),
@@ -144,7 +144,7 @@ class ReferralScreen extends ConsumerWidget {
                     const Text(
                       'Последние приглашения',
                       style: TextStyle(
-                        color: AppTheme.textPrimary,
+                        color: context.text1,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
@@ -164,7 +164,7 @@ class ReferralScreen extends ConsumerWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 14),
                         decoration: BoxDecoration(
-                          color: AppTheme.bgCard,
+                          color: context.card,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
@@ -191,7 +191,7 @@ class ReferralScreen extends ConsumerWidget {
                                   Text(
                                     inviteeName,
                                     style: const TextStyle(
-                                      color: AppTheme.textPrimary,
+                                      color: context.text1,
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -200,7 +200,7 @@ class ReferralScreen extends ConsumerWidget {
                                   Text(
                                     date,
                                     style: const TextStyle(
-                                      color: AppTheme.textMuted,
+                                      color: context.text3,
                                       fontSize: 12,
                                     ),
                                   ),
@@ -252,13 +252,13 @@ class _ReferralCodeCard extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: AppTheme.bgCard,
+          color: context.card,
           borderRadius: BorderRadius.circular(16),
         ),
         child: const Text(
           'Реферальный код пока не назначен',
           textAlign: TextAlign.center,
-          style: TextStyle(color: AppTheme.textMuted, fontSize: 14),
+          style: TextStyle(color: context.text3, fontSize: 14),
         ),
       );
     }
@@ -266,7 +266,7 @@ class _ReferralCodeCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppTheme.bgCard,
+        color: context.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppTheme.primary.withValues(alpha: 0.2)),
         boxShadow: AppTheme.neonGlow(radius: 20),
@@ -275,7 +275,7 @@ class _ReferralCodeCard extends StatelessWidget {
         children: [
           const Text(
             'Ваш реферальный код',
-            style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+            style: TextStyle(color: context.text2, fontSize: 13),
           ),
           const SizedBox(height: 12),
           Text(
@@ -343,7 +343,7 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.bgCard,
+        color: context.card,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppTheme.primary.withValues(alpha: 0.08)),
         boxShadow: AppTheme.cardGlow(),
@@ -355,7 +355,7 @@ class _StatCard extends StatelessWidget {
           Text(
             value,
             style: const TextStyle(
-              color: AppTheme.textPrimary,
+              color: context.text1,
               fontSize: 28,
               fontWeight: FontWeight.w700,
             ),
@@ -365,7 +365,7 @@ class _StatCard extends StatelessWidget {
             label,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              color: AppTheme.textMuted,
+              color: context.text3,
               fontSize: 12,
             ),
           ),

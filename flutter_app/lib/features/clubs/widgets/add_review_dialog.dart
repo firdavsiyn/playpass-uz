@@ -115,21 +115,21 @@ class _AddReviewDialogState extends State<AddReviewDialog> {
               width: 40, height: 4,
               margin: const EdgeInsets.only(bottom: 20),
               decoration: BoxDecoration(
-                color: AppTheme.textMuted.withValues(alpha: 0.3),
+                color: context.text3.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
             Text(
               widget.clubName,
-              style: const TextStyle(
-                color: AppTheme.textPrimary,
+              style: TextStyle(
+                color: context.text1,
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 4),
-            const Text('Оцените ваш визит',
-                style: TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
+            Text('Оцените ваш визит',
+                style: TextStyle(color: context.text2, fontSize: 14)),
             const SizedBox(height: 20),
 
             // Star rating
@@ -146,7 +146,7 @@ class _AddReviewDialogState extends State<AddReviewDialog> {
                       size: 40,
                       color: starIndex <= _rating
                           ? const Color(0xFFFBBF24)
-                          : AppTheme.textMuted,
+                          : context.text3,
                     ),
                   ),
                 );
@@ -159,12 +159,12 @@ class _AddReviewDialogState extends State<AddReviewDialog> {
               controller: _textController,
               maxLines: 3,
               maxLength: 500,
-              style: const TextStyle(color: AppTheme.textPrimary),
+              style: TextStyle(color: context.text1),
               decoration: InputDecoration(
                 hintText: 'Расскажите о вашем опыте (необязательно)',
-                hintStyle: const TextStyle(color: AppTheme.textMuted, fontSize: 14),
+                hintStyle: TextStyle(color: context.text3, fontSize: 14),
                 filled: true,
-                fillColor: AppTheme.bgSurface,
+                fillColor: context.surface,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(color: AppTheme.primary.withValues(alpha: 0.1)),
@@ -229,10 +229,10 @@ class _PhotoPickerSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(Icons.camera_alt_outlined, size: 16, color: AppTheme.textMuted),
+            Icon(Icons.camera_alt_outlined, size: 16, color: context.text3),
             const SizedBox(width: 6),
             Text('Фото (${photos.length}/$maxPhotos)',
-                style: const TextStyle(color: AppTheme.textMuted, fontSize: 13)),
+                style: TextStyle(color: context.text3, fontSize: 13)),
           ],
         ),
         const SizedBox(height: 8),
@@ -262,8 +262,8 @@ class _PhotoPickerSection extends StatelessWidget {
                               width: 80, height: 80, fit: BoxFit.cover,
                               errorBuilder: (_, __, ___) => Container(
                                 width: 80, height: 80,
-                                color: AppTheme.bgSurface,
-                                child: const Icon(Icons.image, color: AppTheme.textMuted),
+                                color: context.surface,
+                                child: Icon(Icons.image, color: context.text3),
                               ),
                             ),
                     ),
@@ -292,7 +292,7 @@ class _PhotoPickerSection extends StatelessWidget {
                   child: Container(
                     width: 80, height: 80,
                     decoration: BoxDecoration(
-                      color: AppTheme.bgSurface,
+                      color: context.surface,
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: AppTheme.primary.withValues(alpha: 0.3),

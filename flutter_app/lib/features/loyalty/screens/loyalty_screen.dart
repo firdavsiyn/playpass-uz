@@ -50,10 +50,10 @@ class LoyaltyScreen extends ConsumerWidget {
 
                 // XP History
                 Text(t['loyalty_history'] ?? 'История XP',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: context.text1)),
                 const SizedBox(height: 12),
                 if (history.isEmpty)
-                  const Center(child: Text('Пока нет XP', style: TextStyle(color: AppTheme.textMuted)))
+                  Center(child: Text('Пока нет XP', style: TextStyle(color: context.text3)))
                 else
                   ...history.map((h) => _XpHistoryItem(
                     amount: h['amount'] as int,
@@ -113,9 +113,9 @@ class _StreakWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.cardDark,
+        color: context.cardDark,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: days > 0 ? AppTheme.warning.withValues(alpha: 0.3) : AppTheme.border),
+        border: Border.all(color: days > 0 ? AppTheme.warning.withValues(alpha: 0.3) : context.border),
       ),
       child: Row(
         children: [
@@ -126,9 +126,9 @@ class _StreakWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('$days ${days == 1 ? 'день' : 'дней'} подряд',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: context.text1)),
                 Text(days > 0 ? 'Продолжайте в том же духе!' : 'Посетите клуб чтобы начать серию',
-                    style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
+                    style: TextStyle(fontSize: 13, color: context.text2)),
               ],
             ),
           ),
@@ -174,9 +174,9 @@ class _XpProgressCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.cardDark,
+        color: context.cardDark,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppTheme.border),
+        border: Border.all(color: context.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -184,8 +184,8 @@ class _XpProgressCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('До $nextLevel', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
-              if (remaining > 0) Text('$remaining XP', style: const TextStyle(fontSize: 13, color: AppTheme.textMuted)),
+              Text('До $nextLevel', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: context.text1)),
+              if (remaining > 0) Text('$remaining XP', style: TextStyle(fontSize: 13, color: context.text3)),
             ],
           ),
           const SizedBox(height: 12),
@@ -193,13 +193,13 @@ class _XpProgressCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(6),
             child: LinearProgressIndicator(
               value: progress.clamp(0.0, 1.0),
-              backgroundColor: AppTheme.border,
+              backgroundColor: context.border,
               color: AppTheme.primary,
               minHeight: 8,
             ),
           ),
           const SizedBox(height: 8),
-          Text('${(progress * 100).toInt()}%', style: const TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+          Text('${(progress * 100).toInt()}%', style: TextStyle(fontSize: 12, color: context.text3)),
         ],
       ),
     );
@@ -228,7 +228,7 @@ class _PerksSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Привилегии', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+        Text('Привилегии', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: context.text1)),
         const SizedBox(height: 12),
         ...allPerks.map((p) {
           final unlocked = levels.indexOf(p.level) <= currentIdx;
@@ -236,9 +236,9 @@ class _PerksSection extends StatelessWidget {
             margin: const EdgeInsets.only(bottom: 8),
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: unlocked ? AppTheme.cardDark : AppTheme.bgDark,
+              color: unlocked ? context.cardDark : context.bg,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: unlocked ? AppTheme.primary.withValues(alpha: 0.3) : AppTheme.border),
+              border: Border.all(color: unlocked ? AppTheme.primary.withValues(alpha: 0.3) : context.border),
             ),
             child: Row(
               children: [
@@ -250,15 +250,15 @@ class _PerksSection extends StatelessWidget {
                     children: [
                       Text(p.title, style: TextStyle(
                         fontSize: 14, fontWeight: FontWeight.w600,
-                        color: unlocked ? AppTheme.textPrimary : AppTheme.textMuted)),
+                        color: unlocked ? context.text1 : context.text3)),
                       Text(p.desc, style: TextStyle(
-                        fontSize: 12, color: unlocked ? AppTheme.textSecondary : AppTheme.textMuted)),
+                        fontSize: 12, color: unlocked ? context.text2 : context.text3)),
                     ],
                   ),
                 ),
                 unlocked
                     ? const Icon(Icons.check_circle, color: AppTheme.success, size: 20)
-                    : const Icon(Icons.lock_outlined, color: AppTheme.textMuted, size: 20),
+                    : Icon(Icons.lock_outlined, color: context.text3, size: 20),
               ],
             ),
           );
@@ -290,12 +290,12 @@ class _XpHistoryItem extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: AppTheme.cardDark,
+        color: context.cardDark,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
         children: [
-          Expanded(child: Text(_reasonLabel, style: const TextStyle(fontSize: 13, color: AppTheme.textPrimary))),
+          Expanded(child: Text(_reasonLabel, style: TextStyle(fontSize: 13, color: context.text1))),
           Text('+$amount XP', style: const TextStyle(
             fontSize: 13, fontWeight: FontWeight.w700, color: AppTheme.success)),
         ],

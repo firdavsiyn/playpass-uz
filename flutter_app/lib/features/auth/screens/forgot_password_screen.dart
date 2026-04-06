@@ -78,14 +78,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         Text(
           'Забыли пароль?',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: AppTheme.textPrimary,
+                color: context.text1,
               ),
         ),
         const SizedBox(height: 8),
-        const Text(
+        Text(
           'Введите email, указанный при регистрации. '
           'Мы отправим ссылку для сброса пароля.',
-          style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+          style: TextStyle(color: context.text2, fontSize: 14),
         ),
         const SizedBox(height: 32),
 
@@ -94,7 +94,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         TextField(
           controller: _emailController,
           keyboardType: TextInputType.emailAddress,
-          style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16),
+          style: TextStyle(color: context.text1, fontSize: 16),
           decoration: const InputDecoration(
             hintText: 'your@email.com',
             prefixIcon: Icon(Icons.email_outlined, size: 20),
@@ -135,7 +135,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         Text(
           'Письмо отправлено!',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: AppTheme.textPrimary,
+                color: context.text1,
               ),
         ),
         const SizedBox(height: 12),
@@ -143,7 +143,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           'Проверьте почту ${_emailController.text.trim()} '
           'и перейдите по ссылке для сброса пароля.',
           textAlign: TextAlign.center,
-          style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+          style: TextStyle(color: context.text2, fontSize: 14),
         ),
         const SizedBox(height: 32),
         OutlinedButton(

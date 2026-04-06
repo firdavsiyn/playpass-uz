@@ -186,7 +186,7 @@ class AppAvatarGroup extends StatelessWidget {
                 imageUrl: visible[i].imageUrl,
                 name: visible[i].name,
                 size: size,
-                borderColor: AppTheme.bgDark,
+                borderColor: context.bg,
                 borderWidth: 2,
               ),
             ),
@@ -198,14 +198,14 @@ class AppAvatarGroup extends StatelessWidget {
                 height: size,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppTheme.bgCard,
-                  border: Border.all(color: AppTheme.bgDark, width: 2),
+                  color: context.card,
+                  border: Border.all(color: context.bg, width: 2),
                 ),
                 child: Center(
                   child: Text(
                     '+$extra',
                     style: TextStyle(
-                      color: AppTheme.textSecondary,
+                      color: context.text2,
                       fontSize: size * 0.3,
                       fontWeight: FontWeight.w600,
                     ),

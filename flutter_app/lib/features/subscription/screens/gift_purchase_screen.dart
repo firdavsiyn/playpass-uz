@@ -62,7 +62,7 @@ class _GiftPurchaseScreenState extends State<GiftPurchaseScreen> {
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
       children: [
         // Plan selector
-        const Text('Выберите тариф', style: TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+        Text('Выберите тариф', style: TextStyle(color: context.text1, fontSize: 16, fontWeight: FontWeight.w600)),
         const SizedBox(height: 12),
         Wrap(
           spacing: 10,
@@ -74,12 +74,12 @@ class _GiftPurchaseScreenState extends State<GiftPurchaseScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
-                  color: selected ? color.withValues(alpha: 0.15) : AppTheme.bgSurface,
+                  color: selected ? color.withValues(alpha: 0.15) : context.surface,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: selected ? color : AppTheme.bgSurface),
+                  border: Border.all(color: selected ? color : context.surface),
                   boxShadow: selected ? [BoxShadow(color: color.withValues(alpha: 0.2), blurRadius: 8)] : [],
                 ),
-                child: Text(p.name, style: TextStyle(color: selected ? color : AppTheme.textMuted, fontWeight: FontWeight.w600)),
+                child: Text(p.name, style: TextStyle(color: selected ? color : context.text3, fontWeight: FontWeight.w600)),
               ),
             );
           }).toList(),
@@ -87,26 +87,26 @@ class _GiftPurchaseScreenState extends State<GiftPurchaseScreen> {
         const SizedBox(height: 8),
         Text(
           '${_formatPrice(_plan.priceUzs)} UZS  ·  ${_plan.isUnlimited ? "Безлимит" : "${_plan.hours} ч"}',
-          style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+          style: TextStyle(color: context.text2, fontSize: 14),
         ),
         const SizedBox(height: 24),
 
         // Recipient info
-        const Text('Для кого подарок?', style: TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+        Text('Для кого подарок?', style: TextStyle(color: context.text1, fontSize: 16, fontWeight: FontWeight.w600)),
         const SizedBox(height: 8),
-        const Text('Необязательно — можно просто скопировать код',
-            style: TextStyle(color: AppTheme.textMuted, fontSize: 13)),
+        Text('Необязательно — можно просто скопировать код',
+            style: TextStyle(color: context.text3, fontSize: 13)),
         const SizedBox(height: 12),
         TextField(
           controller: _nameCtrl,
-          style: const TextStyle(color: AppTheme.textPrimary),
+          style: TextStyle(color: context.text1),
           decoration: const InputDecoration(hintText: 'Имя получателя', prefixIcon: Icon(Icons.person_outline, size: 20)),
         ),
         const SizedBox(height: 12),
         TextField(
           controller: _phoneCtrl,
           keyboardType: TextInputType.phone,
-          style: const TextStyle(color: AppTheme.textPrimary),
+          style: TextStyle(color: context.text1),
           decoration: const InputDecoration(hintText: 'Телефон (необязательно)', prefixIcon: Icon(Icons.phone_outlined, size: 20)),
         ),
         const SizedBox(height: 32),
@@ -147,15 +147,15 @@ class _GiftPurchaseScreenState extends State<GiftPurchaseScreen> {
               child: const Icon(Icons.card_giftcard_rounded, color: AppTheme.success, size: 36),
             ),
             const SizedBox(height: 24),
-            const Text('Подарочный сертификат создан!',
-                style: TextStyle(color: AppTheme.textPrimary, fontSize: 20, fontWeight: FontWeight.w700)),
+            Text('Подарочный сертификат создан!',
+                style: TextStyle(color: context.text1, fontSize: 20, fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
-            const Text('Поделитесь кодом с другом', style: TextStyle(color: AppTheme.textSecondary)),
+            Text('Поделитесь кодом с другом', style: TextStyle(color: context.text2)),
             const SizedBox(height: 24),
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppTheme.bgCard,
+                color: context.card,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: AppTheme.primary.withValues(alpha: 0.2)),
                 boxShadow: AppTheme.neonGlow(radius: 16),
@@ -168,7 +168,7 @@ class _GiftPurchaseScreenState extends State<GiftPurchaseScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text('${_plan.name} · ${_formatPrice(_plan.priceUzs)} UZS',
-                      style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
+                      style: TextStyle(color: context.text2, fontSize: 14)),
                 ],
               ),
             ),

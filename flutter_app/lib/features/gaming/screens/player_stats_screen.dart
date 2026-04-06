@@ -36,10 +36,10 @@ class PlayerStatsScreen extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.sports_esports_outlined, size: 64, color: AppTheme.textMuted),
+                  Icon(Icons.sports_esports_outlined, size: 64, color: context.text3),
                   const SizedBox(height: 12),
-                  const Text('Добавьте свой игровой профиль',
-                      style: TextStyle(color: AppTheme.textSecondary)),
+                  Text('Добавьте свой игровой профиль',
+                      style: TextStyle(color: context.text2)),
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
                     onPressed: () => _showAddProfileDialog(context, ref),
@@ -72,7 +72,7 @@ class PlayerStatsScreen extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppTheme.cardDark,
+      backgroundColor: context.cardDark,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setState) => Padding(
@@ -81,12 +81,12 @@ class PlayerStatsScreen extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Добавить игровой профиль',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+              Text('Добавить игровой профиль',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: context.text1)),
               const SizedBox(height: 20),
 
               // Game selector
-              const Text('Игра', style: TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
+              Text('Игра', style: TextStyle(fontSize: 13, color: context.text2)),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8, runSpacing: 8,
@@ -95,12 +95,12 @@ class PlayerStatsScreen extends ConsumerWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                      color: selectedGame == g ? AppTheme.primary : AppTheme.bgDark,
+                      color: selectedGame == g ? AppTheme.primary : context.bg,
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: selectedGame == g ? AppTheme.primary : AppTheme.border),
+                      border: Border.all(color: selectedGame == g ? AppTheme.primary : context.border),
                     ),
                     child: Text(g, style: TextStyle(
-                      fontSize: 13, color: selectedGame == g ? Colors.white : AppTheme.textSecondary,
+                      fontSize: 13, color: selectedGame == g ? Colors.white : context.text2,
                       fontWeight: selectedGame == g ? FontWeight.w600 : FontWeight.normal)),
                   ),
                 )).toList(),
@@ -109,13 +109,13 @@ class PlayerStatsScreen extends ConsumerWidget {
 
               TextField(
                 controller: nicknameCtrl,
-                style: const TextStyle(color: AppTheme.textPrimary),
+                style: TextStyle(color: context.text1),
                 decoration: const InputDecoration(labelText: 'Никнейм', hintText: 'Ваш ник в игре'),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: rankCtrl,
-                style: const TextStyle(color: AppTheme.textPrimary),
+                style: TextStyle(color: context.text1),
                 decoration: const InputDecoration(labelText: 'Ранг', hintText: 'Global Elite, Immortal...'),
               ),
               const SizedBox(height: 20),
@@ -176,7 +176,7 @@ class _GameProfileCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: AppTheme.cardDark,
+        color: context.cardDark,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
@@ -201,8 +201,8 @@ class _GameProfileCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(game, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: color)),
-                      Text(profile['nickname'] as String? ?? '', style: const TextStyle(
-                        fontSize: 14, color: AppTheme.textSecondary)),
+                      Text(profile['nickname'] as String? ?? '', style: TextStyle(
+                        fontSize: 14, color: context.text2)),
                     ],
                   ),
                 ),
@@ -260,10 +260,10 @@ class _StatItem extends StatelessWidget {
     return Expanded(
       child: Column(
         children: [
-          Icon(icon, size: 16, color: AppTheme.textMuted),
+          Icon(icon, size: 16, color: context.text3),
           const SizedBox(height: 4),
-          Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
-          Text(label, style: const TextStyle(fontSize: 11, color: AppTheme.textMuted)),
+          Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: context.text1)),
+          Text(label, style: TextStyle(fontSize: 11, color: context.text3)),
         ],
       ),
     );

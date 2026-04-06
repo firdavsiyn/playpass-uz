@@ -85,12 +85,12 @@ class ClubsListScreen extends ConsumerWidget {
                             onChanged: (v) =>
                                 ref.read(searchQueryProvider.notifier).state = v,
                             style: const TextStyle(fontSize: 14),
-                            decoration: const InputDecoration(
+                            decoration: InputDecoration(
                               hintText: 'Поиск клуба...',
                               prefixIcon:
-                                  Icon(Icons.search, color: AppTheme.textMuted, size: 20),
+                                  Icon(Icons.search, color: context.text3, size: 20),
                               contentPadding:
-                                  EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                                  const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
                             ),
                           ),
                         ),
@@ -158,7 +158,7 @@ class ClubsListScreen extends ConsumerWidget {
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                   child: Row(
                     children: [
-                      const Icon(Icons.sort_rounded, size: 14, color: AppTheme.textMuted),
+                      Icon(Icons.sort_rounded, size: 14, color: context.text3),
                       const SizedBox(width: 6),
                       ...['rating', 'price', 'name'].map((mode) {
                         final sortMode = ref.watch(sortModeProvider);
@@ -177,7 +177,7 @@ class ClubsListScreen extends ConsumerWidget {
                               ),
                               child: Text(label,
                                   style: TextStyle(
-                                    color: selected ? AppTheme.primary : AppTheme.textMuted,
+                                    color: selected ? AppTheme.primary : context.text3,
                                     fontSize: 11,
                                     fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
                                   )),
@@ -239,9 +239,9 @@ class _ViewToggle extends StatelessWidget {
         height: 42,
         padding: const EdgeInsets.all(2),
         decoration: BoxDecoration(
-          color: AppTheme.bgCard,
+          color: context.card,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFF374151)),
+          border: Border.all(color: context.border),
         ),
         child: Row(
           children: [
@@ -280,12 +280,12 @@ class _ToggleItem extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(icon, size: 16, color: selected ? Colors.white : AppTheme.textMuted),
+          Icon(icon, size: 16, color: selected ? Colors.white : context.text3),
           const SizedBox(width: 4),
           Text(
             label,
             style: TextStyle(
-              color: selected ? Colors.white : AppTheme.textMuted,
+              color: selected ? Colors.white : context.text3,
               fontSize: 12,
               fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
             ),
@@ -334,14 +334,14 @@ class _ListView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (clubs.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.search_off, color: AppTheme.textMuted, size: 48),
-            SizedBox(height: 12),
+            Icon(Icons.search_off, color: context.text3, size: 48),
+            const SizedBox(height: 12),
             Text('Клубы не найдены',
-                style: TextStyle(color: AppTheme.textMuted)),
+                style: TextStyle(color: context.text3)),
           ],
         ),
       );
@@ -363,15 +363,15 @@ class _ListView extends ConsumerWidget {
                   children: [
                     const Icon(Icons.near_me_rounded, size: 18, color: AppTheme.primary),
                     const SizedBox(width: 6),
-                    const Text('Ближайшие клубы',
+                    Text('Ближайшие клубы',
                         style: TextStyle(
-                          color: AppTheme.textPrimary,
+                          color: context.text1,
                           fontWeight: FontWeight.w700,
                           fontSize: 16,
                         )),
                     const Spacer(),
                     Text('${nearby.length} клубов',
-                        style: const TextStyle(color: AppTheme.textMuted, fontSize: 12)),
+                        style: TextStyle(color: context.text3, fontSize: 12)),
                   ],
                 ),
                 const SizedBox(height: 10),
@@ -401,9 +401,9 @@ class _ListView extends ConsumerWidget {
         ),
 
         // All clubs
-        const Text('Все клубы',
+        Text('Все клубы',
             style: TextStyle(
-              color: AppTheme.textPrimary,
+              color: context.text1,
               fontWeight: FontWeight.w700,
               fontSize: 16,
             )),
@@ -437,9 +437,9 @@ class _NearbyClubChip extends StatelessWidget {
       child: Container(
         width: 120,
         decoration: BoxDecoration(
-          color: AppTheme.bgCard,
+          color: context.card,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppTheme.border),
+          border: Border.all(color: context.border),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -457,8 +457,8 @@ class _NearbyClubChip extends StatelessWidget {
                   : Container(
                       width: 120,
                       height: 65,
-                      color: AppTheme.bgSurface,
-                      child: const Icon(Icons.sports_esports, color: AppTheme.textMuted, size: 24),
+                      color: context.surface,
+                      child: Icon(Icons.sports_esports, color: context.text3, size: 24),
                     ),
             ),
             Padding(
@@ -469,8 +469,8 @@ class _NearbyClubChip extends StatelessWidget {
                   Text(name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppTheme.textPrimary,
+                      style: TextStyle(
+                        color: context.text1,
                         fontWeight: FontWeight.w600,
                         fontSize: 12,
                       )),
@@ -478,11 +478,11 @@ class _NearbyClubChip extends StatelessWidget {
                   Row(
                     children: [
                       Icon(Icons.near_me, size: 10,
-                          color: isOpen ? AppTheme.success : AppTheme.textMuted),
+                          color: isOpen ? AppTheme.success : context.text3),
                       const SizedBox(width: 3),
                       Text(distanceStr,
                           style: TextStyle(
-                            color: isOpen ? AppTheme.success : AppTheme.textMuted,
+                            color: isOpen ? AppTheme.success : context.text3,
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
                           )),
@@ -521,22 +521,22 @@ class _FilterChip extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? AppTheme.primary : AppTheme.bgCard,
+          color: selected ? AppTheme.primary : context.card,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: selected ? AppTheme.primary : const Color(0xFF374151),
+            color: selected ? AppTheme.primary : context.border,
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon,
-                size: 14, color: selected ? Colors.white : AppTheme.textMuted),
+                size: 14, color: selected ? Colors.white : context.text3),
             const SizedBox(width: 5),
             Text(
               label,
               style: TextStyle(
-                color: selected ? Colors.white : AppTheme.textSecondary,
+                color: selected ? Colors.white : context.text2,
                 fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
                 fontSize: 13,
               ),
@@ -562,7 +562,7 @@ class _ClubListCard extends ConsumerWidget {
       onTap: () => context.push('/clubs/${club.id}'),
       child: Container(
         decoration: BoxDecoration(
-          color: AppTheme.bgCard,
+          color: context.card,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Row(
@@ -581,9 +581,9 @@ class _ClubListCard extends ConsumerWidget {
                   : Container(
                       width: 100,
                       height: 110,
-                      color: AppTheme.bgSurface,
-                      child: const Icon(Icons.sports_esports,
-                          color: AppTheme.textMuted, size: 36),
+                      color: context.surface,
+                      child: Icon(Icons.sports_esports,
+                          color: context.text3, size: 36),
                     ),
             ),
             Expanded(
@@ -601,8 +601,8 @@ class _ClubListCard extends ConsumerWidget {
                             club.name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: AppTheme.textPrimary,
+                            style: TextStyle(
+                              color: context.text1,
                               fontWeight: FontWeight.w600,
                               fontSize: 15,
                             ),
@@ -617,7 +617,7 @@ class _ClubListCard extends ConsumerWidget {
                           onTap: () => ref.read(favoritesProvider.notifier).toggle(club.id),
                           child: Icon(
                             isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                            color: isFav ? AppTheme.error : AppTheme.textMuted,
+                            color: isFav ? AppTheme.error : context.text3,
                             size: 20,
                           ),
                         ),
@@ -627,16 +627,16 @@ class _ClubListCard extends ConsumerWidget {
                     // Address
                     Row(
                       children: [
-                        const Icon(Icons.location_on_outlined,
-                            size: 13, color: AppTheme.textMuted),
+                        Icon(Icons.location_on_outlined,
+                            size: 13, color: context.text3),
                         const SizedBox(width: 2),
                         Expanded(
                           child: Text(
                             club.address,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                                color: AppTheme.textMuted, fontSize: 12),
+                            style: TextStyle(
+                                color: context.text3, fontSize: 12),
                           ),
                         ),
                       ],
@@ -661,17 +661,17 @@ class _ClubListCard extends ConsumerWidget {
                         const SizedBox(width: 2),
                         Text(
                           club.rating.toStringAsFixed(1),
-                          style: const TextStyle(
-                              color: AppTheme.textSecondary, fontSize: 12),
+                          style: TextStyle(
+                              color: context.text2, fontSize: 12),
                         ),
                         const SizedBox(width: 10),
-                        const Icon(Icons.computer,
-                            size: 14, color: AppTheme.textMuted),
+                        Icon(Icons.computer,
+                            size: 14, color: context.text3),
                         const SizedBox(width: 2),
                         Text(
                           '${club.pcCount} ПК',
-                          style: const TextStyle(
-                              color: AppTheme.textMuted, fontSize: 12),
+                          style: TextStyle(
+                              color: context.text3, fontSize: 12),
                         ),
                         // Occupancy indicator
                         Consumer(builder: (_, ref, __) {

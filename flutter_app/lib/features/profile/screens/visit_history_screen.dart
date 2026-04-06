@@ -37,9 +37,9 @@ class VisitHistoryScreen extends ConsumerWidget {
     final monthFmt = DateFormat('MMMM yyyy', 'ru');
 
     return Scaffold(
-      backgroundColor: AppTheme.bgDark,
+      backgroundColor: context.bg,
       appBar: AppBar(
-        backgroundColor: AppTheme.bgDark,
+        backgroundColor: context.bg,
         title: const Text('История визитов'),
       ),
       body: RefreshIndicator(
@@ -64,8 +64,8 @@ class VisitHistoryScreen extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.chevron_left_rounded,
-                      color: AppTheme.textPrimary),
+                  icon: Icon(Icons.chevron_left_rounded,
+                      color: context.text1),
                   onPressed: () {
                     final prev = DateTime(
                         selectedMonth.year, selectedMonth.month - 1);
@@ -74,15 +74,15 @@ class VisitHistoryScreen extends ConsumerWidget {
                 ),
                 Text(
                   monthFmt.format(selectedMonth),
-                  style: const TextStyle(
-                    color: AppTheme.textPrimary,
+                  style: TextStyle(
+                    color: context.text1,
                     fontWeight: FontWeight.w600,
                     fontSize: 16,
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.chevron_right_rounded,
-                      color: AppTheme.textPrimary),
+                  icon: Icon(Icons.chevron_right_rounded,
+                      color: context.text1),
                   onPressed: selectedMonth.month < DateTime.now().month ||
                           selectedMonth.year < DateTime.now().year
                       ? () {
@@ -107,10 +107,10 @@ class VisitHistoryScreen extends ConsumerWidget {
                   if (visits.isEmpty)
                     Container(
                       padding: const EdgeInsets.all(32),
-                      child: const Center(
+                      child: Center(
                         child: Text(
                           'В этом месяце визитов нет',
-                          style: TextStyle(color: AppTheme.textMuted),
+                          style: TextStyle(color: context.text3),
                         ),
                       ),
                     )
@@ -182,7 +182,7 @@ class _AllTimeStats extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: AppTheme.bgCard,
+              color: context.card,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
                   color: const Color(0xFFF59E0B).withValues(alpha: 0.25)),
@@ -220,8 +220,8 @@ class _AllTimeStats extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         favoriteClub['name'] as String? ?? '',
-                        style: const TextStyle(
-                          color: AppTheme.textPrimary,
+                        style: TextStyle(
+                          color: context.text1,
                           fontWeight: FontWeight.w600,
                           fontSize: 15,
                         ),
@@ -230,8 +230,8 @@ class _AllTimeStats extends StatelessWidget {
                         favoriteClub['address'] as String? ?? '',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                            color: AppTheme.textMuted, fontSize: 12),
+                        style: TextStyle(
+                            color: context.text3, fontSize: 12),
                       ),
                     ],
                   ),
@@ -246,10 +246,10 @@ class _AllTimeStats extends StatelessWidget {
                         fontSize: 22,
                       ),
                     ),
-                    const Text(
+                    Text(
                       'визитов',
                       style: TextStyle(
-                          color: AppTheme.textMuted, fontSize: 11),
+                          color: context.text3, fontSize: 11),
                     ),
                   ],
                 ),
@@ -280,7 +280,7 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppTheme.bgCard,
+        color: context.card,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: color.withValues(alpha: 0.1)),
         boxShadow: [
@@ -308,14 +308,14 @@ class _StatCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(value,
-                  style: const TextStyle(
-                    color: AppTheme.textPrimary,
+                  style: TextStyle(
+                    color: context.text1,
                     fontWeight: FontWeight.w700,
                     fontSize: 20,
                   )),
               Text(label,
-                  style: const TextStyle(
-                      color: AppTheme.textMuted, fontSize: 11)),
+                  style: TextStyle(
+                      color: context.text3, fontSize: 11)),
             ],
           ),
         ],
@@ -337,7 +337,7 @@ class _MonthlySummary extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.bgCard,
+        color: context.card,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppTheme.primary.withValues(alpha: 0.1)),
         boxShadow: AppTheme.cardGlow(),
@@ -347,10 +347,10 @@ class _MonthlySummary extends StatelessWidget {
         children: [
           _StatItem(label: 'Визитов', value: '${visits.length}'),
           Container(
-              width: 1, height: 32, color: const Color(0xFF374151)),
+              width: 1, height: 32, color: context.border),
           _StatItem(label: 'Часов', value: '$totalHours'),
           Container(
-              width: 1, height: 32, color: const Color(0xFF374151)),
+              width: 1, height: 32, color: context.border),
           _StatItem(
             label: 'Клубов',
             value: '${visits.map((v) => v.clubId).toSet().length}',
@@ -371,14 +371,14 @@ class _StatItem extends StatelessWidget {
     return Column(
       children: [
         Text(value,
-            style: const TextStyle(
-                color: AppTheme.textPrimary,
+            style: TextStyle(
+                color: context.text1,
                 fontWeight: FontWeight.w700,
                 fontSize: 22)),
         const SizedBox(height: 2),
         Text(label,
             style:
-                const TextStyle(color: AppTheme.textMuted, fontSize: 12)),
+                TextStyle(color: context.text3, fontSize: 12)),
       ],
     );
   }
@@ -390,26 +390,26 @@ class _VisitRow extends StatelessWidget {
   final Visit visit;
   const _VisitRow({required this.visit});
 
-  Color get _zoneBadgeColor {
+  Color _zoneBadgeColor(BuildContext context) {
     switch (visit.zoneType) {
       case 'pro':
         return AppTheme.info;
       case 'vip':
         return const Color(0xFFF59E0B);
       default:
-        return AppTheme.textMuted;
+        return context.text3;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final dateFmt = DateFormat('d MMM · HH:mm', 'ru');
-    final zoneColor = _zoneBadgeColor;
+    final zoneColor = _zoneBadgeColor(context);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: AppTheme.bgCard,
+        color: context.card,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppTheme.primary.withValues(alpha: 0.05)),
       ),
@@ -441,8 +441,8 @@ class _VisitRow extends StatelessWidget {
                       child: Text(
                         visit.clubName,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppTheme.textPrimary,
+                        style: TextStyle(
+                          color: context.text1,
                           fontWeight: FontWeight.w500,
                           fontSize: 14,
                         ),
@@ -470,8 +470,8 @@ class _VisitRow extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   '${dateFmt.format(visit.createdAt)}  ·  ${visit.timeSlotLabel}',
-                  style: const TextStyle(
-                      color: AppTheme.textMuted, fontSize: 12),
+                  style: TextStyle(
+                      color: context.text3, fontSize: 12),
                 ),
               ],
             ),

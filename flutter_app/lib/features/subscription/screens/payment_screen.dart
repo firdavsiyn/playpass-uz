@@ -110,7 +110,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                       Text(
                         'Тариф: ${_plan.name}',
                         style: const TextStyle(
-                          color: AppTheme.textPrimary,
+                          color: context.text1,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -119,7 +119,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                             ? 'Безлимит · 1 визит/день / 30 дней'
                             : '${_plan.hours} часов / 30 дней',
                         style: const TextStyle(
-                            color: AppTheme.textSecondary, fontSize: 13),
+                            color: context.text2, fontSize: 13),
                       ),
                     ],
                   ),
@@ -141,7 +141,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           const Text(
             'Как оплатить',
             style: TextStyle(
-              color: AppTheme.textPrimary,
+              color: context.text1,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -172,16 +172,16 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppTheme.bgSurface,
+              color: context.surface,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
               children: [
-                const Icon(Icons.person_outline, size: 18, color: AppTheme.textMuted),
+                Icon(Icons.person_outline, size: 18, color: context.text3),
                 const SizedBox(width: 10),
                 Text(
                   'Получатель: ${AppConstants.paymentCardHolder}',
-                  style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+                  style: TextStyle(color: context.text2, fontSize: 14),
                 ),
               ],
             ),
@@ -206,7 +206,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                   child: Text(
                     'После перевода нажмите «Я оплатил» и заполните короткую форму. '
                     'Мы активируем подписку в течение 30 минут.',
-                    style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+                    style: TextStyle(color: context.text2, fontSize: 13),
                   ),
                 ),
               ],
@@ -241,7 +241,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           const Text(
             'Подтверждение оплаты',
             style: TextStyle(
-              color: AppTheme.textPrimary,
+              color: context.text1,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -250,7 +250,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           const Text(
             'Заполните форму, чтобы мы могли проверить платёж '
             'и активировать подписку.',
-            style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+            style: TextStyle(color: context.text2, fontSize: 14),
           ),
           const SizedBox(height: 24),
 
@@ -260,7 +260,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           TextField(
             controller: _phoneController,
             keyboardType: TextInputType.phone,
-            style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16),
+            style: TextStyle(color: context.text1, fontSize: 16),
             decoration: const InputDecoration(
               hintText: '+998 90 123 45 67',
               prefixIcon: Icon(Icons.phone_outlined, size: 20),
@@ -275,7 +275,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           TextField(
             controller: _noteController,
             maxLines: 3,
-            style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16),
+            style: TextStyle(color: context.text1, fontSize: 16),
             decoration: const InputDecoration(
               hintText: 'Сумма перевода, время, с какого банка...',
             ),
@@ -335,7 +335,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
             Text(
               'Заявка отправлена!',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: AppTheme.textPrimary,
+                    color: context.text1,
                   ),
             ),
             const SizedBox(height: 12),
@@ -344,7 +344,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
               'в течение 30 минут (в рабочие часы 09:00–22:00).\n\n'
               'Вы получите уведомление, когда подписка будет активна.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+              style: TextStyle(color: context.text2, fontSize: 14),
             ),
             const SizedBox(height: 40),
             SizedBox(
@@ -388,7 +388,7 @@ class _PaymentOption extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppTheme.bgSurface,
+        color: context.surface,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -400,13 +400,13 @@ class _PaymentOption extends StatelessWidget {
               const SizedBox(width: 8),
               Text(title,
                   style: const TextStyle(
-                      color: AppTheme.textPrimary, fontWeight: FontWeight.w600)),
+                      color: context.text1, fontWeight: FontWeight.w600)),
             ],
           ),
           const SizedBox(height: 6),
           Text(subtitle,
               style: const TextStyle(
-                  color: AppTheme.textSecondary, fontSize: 13)),
+                  color: context.text2, fontSize: 13)),
           const SizedBox(height: 8),
           Row(
             children: [
@@ -415,13 +415,13 @@ class _PaymentOption extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: AppTheme.bgDark,
+                    color: context.bg,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     value,
                     style: const TextStyle(
-                      color: AppTheme.textPrimary,
+                      color: context.text1,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                       letterSpacing: 1,

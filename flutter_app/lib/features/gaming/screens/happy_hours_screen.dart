@@ -22,17 +22,17 @@ class HappyHoursScreen extends ConsumerWidget {
         error: (e, _) => Center(child: Text('$e')),
         data: (items) {
           if (items.isEmpty) {
-            return const Center(
+            return Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.local_offer_outlined, size: 64, color: AppTheme.textMuted),
-                  SizedBox(height: 12),
+                  Icon(Icons.local_offer_outlined, size: 64, color: context.text3),
+                  const SizedBox(height: 12),
                   Text('Сейчас нет активных акций',
-                      style: TextStyle(color: AppTheme.textSecondary, fontSize: 16)),
-                  SizedBox(height: 4),
+                      style: TextStyle(color: context.text2, fontSize: 16)),
+                  const SizedBox(height: 4),
                   Text('Заходите позже!',
-                      style: TextStyle(color: AppTheme.textMuted, fontSize: 13)),
+                      style: TextStyle(color: context.text3, fontSize: 13)),
                 ],
               ),
             );
@@ -83,12 +83,12 @@ class _HappyHourCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppTheme.cardDark,
+        color: context.cardDark,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isNowActive
               ? AppTheme.success.withValues(alpha: 0.4)
-              : AppTheme.border,
+              : context.border,
         ),
         boxShadow: isNowActive
             ? [BoxShadow(color: AppTheme.success.withValues(alpha: 0.15), blurRadius: 12)]
@@ -151,7 +151,7 @@ class _HappyHourCard extends StatelessWidget {
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
-                                color: AppTheme.textPrimary,
+                                color: context.text1,
                               )),
                           if (isNowActive) ...[
                             const SizedBox(width: 8),
@@ -172,7 +172,7 @@ class _HappyHourCard extends StatelessWidget {
                                     ),
                                   ),
                                   const SizedBox(width: 4),
-                                  const Text('Активно',
+                                  Text('Активно',
                                       style: TextStyle(
                                         fontSize: 10,
                                         fontWeight: FontWeight.w700,
@@ -187,8 +187,8 @@ class _HappyHourCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       if (description != null)
                         Text(description,
-                            style: const TextStyle(
-                              color: AppTheme.textSecondary,
+                            style: TextStyle(
+                              color: context.text2,
                               fontSize: 13,
                               height: 1.3,
                             )),
@@ -246,15 +246,15 @@ class _InfoTag extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: AppTheme.bgDark,
+        color: context.bg,
         borderRadius: BorderRadius.circular(6),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 13, color: AppTheme.textMuted),
+          Icon(icon, size: 13, color: context.text3),
           const SizedBox(width: 4),
-          Text(text, style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+          Text(text, style: TextStyle(fontSize: 11, color: context.text2)),
         ],
       ),
     );

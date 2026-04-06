@@ -341,8 +341,8 @@ class _ResultOverlay extends StatelessWidget {
                 if (result!['hours_left'] != null)
                   Text(
                     'Осталось: ${result!['hours_left']} ч',
-                    style: const TextStyle(
-                        color: AppTheme.textSecondary, fontSize: 16),
+                    style: TextStyle(
+                        color: context.text2, fontSize: 16),
                   ),
               ],
             ],

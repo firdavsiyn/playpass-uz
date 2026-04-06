@@ -108,7 +108,7 @@ class _TournamentDetailScreenState extends ConsumerState<TournamentDetailScreen>
                 ),
               ),
               const SizedBox(width: 8),
-              if (t.clubName != null) Text(t.clubName!, style: const TextStyle(color: AppTheme.textSecondary)),
+              if (t.clubName != null) Text(t.clubName!, style: TextStyle(color: context.text2)),
             ],
           ),
           const SizedBox(height: 20),
@@ -127,34 +127,34 @@ class _TournamentDetailScreenState extends ConsumerState<TournamentDetailScreen>
 
           // Description
           if (t.description != null) ...[
-            const Text('Описание', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+            Text('Описание', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: context.text1)),
             const SizedBox(height: 8),
-            Text(t.description!, style: const TextStyle(color: AppTheme.textSecondary, height: 1.5)),
+            Text(t.description!, style: TextStyle(color: context.text2, height: 1.5)),
             const SizedBox(height: 20),
           ],
 
           // Rules
           if (t.rules != null) ...[
-            const Text('Правила', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+            Text('Правила', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: context.text1)),
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppTheme.cardDark,
+                color: context.cardDark,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppTheme.border),
+                border: Border.all(color: context.border),
               ),
-              child: Text(t.rules!, style: const TextStyle(color: AppTheme.textSecondary, height: 1.5)),
+              child: Text(t.rules!, style: TextStyle(color: context.text2, height: 1.5)),
             ),
             const SizedBox(height: 20),
           ],
 
           // Participants
-          Text('Участники (${_participants.length})', style: const TextStyle(
-            fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+          Text('Участники (${_participants.length})', style: TextStyle(
+            fontSize: 16, fontWeight: FontWeight.w600, color: context.text1)),
           const SizedBox(height: 12),
           if (_participants.isEmpty)
-            const Text('Пока никто не записался', style: TextStyle(color: AppTheme.textMuted))
+            Text('Пока никто не записался', style: TextStyle(color: context.text3))
           else
             ..._participants.map((p) {
               final user = p['users'] as Map<String, dynamic>?;
@@ -162,7 +162,7 @@ class _TournamentDetailScreenState extends ConsumerState<TournamentDetailScreen>
                 margin: const EdgeInsets.only(bottom: 8),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppTheme.cardDark,
+                  color: context.cardDark,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Row(
@@ -179,10 +179,10 @@ class _TournamentDetailScreenState extends ConsumerState<TournamentDetailScreen>
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(user?['name'] ?? 'Игрок',
-                          style: const TextStyle(color: AppTheme.textPrimary)),
+                          style: TextStyle(color: context.text1)),
                     ),
                     if (p['team_name'] != null)
-                      Text(p['team_name'], style: const TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                      Text(p['team_name'], style: TextStyle(fontSize: 12, color: context.text3)),
                     if (p['status'] == 'winner')
                       const Padding(
                         padding: EdgeInsets.only(left: 8),
@@ -231,17 +231,17 @@ class _InfoCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppTheme.cardDark,
+          color: context.cardDark,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppTheme.border),
+          border: Border.all(color: context.border),
         ),
         child: Column(
           children: [
             Icon(icon, size: 20, color: AppTheme.primary),
             const SizedBox(height: 8),
-            Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
+            Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: context.text1)),
             const SizedBox(height: 4),
-            Text(label, style: const TextStyle(fontSize: 11, color: AppTheme.textMuted)),
+            Text(label, style: TextStyle(fontSize: 11, color: context.text3)),
           ],
         ),
       ),

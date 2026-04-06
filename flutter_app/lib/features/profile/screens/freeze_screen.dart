@@ -94,7 +94,7 @@ class _FreezeScreenState extends State<FreezeScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppTheme.bgCard,
+                color: context.card,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: AppTheme.info.withValues(alpha: 0.1)),
                 boxShadow: AppTheme.cardGlow(color: AppTheme.info),
@@ -125,18 +125,18 @@ class _FreezeScreenState extends State<FreezeScreen> {
                   const SizedBox(height: 16),
                   Text(
                     isFrozen ? 'Подписка заморожена' : 'Заморозка подписки',
-                    style: const TextStyle(
-                      color: AppTheme.textPrimary,
+                    style: TextStyle(
+                      color: context.text1,
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     'Заморозка приостанавливает подписку. Дата окончания сдвигается на срок заморозки.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: AppTheme.textSecondary,
+                      color: context.text2,
                       fontSize: 13,
                     ),
                   ),
@@ -151,20 +151,20 @@ class _FreezeScreenState extends State<FreezeScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppTheme.bgCard,
+                color: context.card,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: AppTheme.primary.withValues(alpha: 0.06)),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.calendar_today_rounded,
-                      color: AppTheme.textSecondary, size: 20),
+                  Icon(Icons.calendar_today_rounded,
+                      color: context.text2, size: 20),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       'Осталось доступных дней: $freezeDaysLeft из ${AppConstants.freezeMaxDays}',
                       style: const TextStyle(
-                        color: AppTheme.textPrimary,
+                        color: context.text1,
                         fontSize: 14,
                       ),
                     ),
@@ -180,7 +180,7 @@ class _FreezeScreenState extends State<FreezeScreen> {
               borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
                 value: freezeDaysLeft / AppConstants.freezeMaxDays,
-                backgroundColor: AppTheme.bgSurface,
+                backgroundColor: context.surface,
                 valueColor:
                     AlwaysStoppedAnimation<Color>(
                   freezeDaysLeft > 3 ? AppTheme.primary : AppTheme.warning,
@@ -212,7 +212,7 @@ class _FreezeScreenState extends State<FreezeScreen> {
                         child: Text(
                           'Заморожена с ${_formatDate(sub.frozenSince!)}',
                           style: const TextStyle(
-                            color: AppTheme.textPrimary,
+                            color: context.text1,
                             fontSize: 14,
                           ),
                         ),
@@ -266,7 +266,7 @@ class _FreezeScreenState extends State<FreezeScreen> {
                         child: Text(
                           'Вы уже использовали все дни заморозки в этом периоде.',
                           style: TextStyle(
-                            color: AppTheme.textPrimary,
+                            color: context.text1,
                             fontSize: 14,
                           ),
                         ),
@@ -278,7 +278,7 @@ class _FreezeScreenState extends State<FreezeScreen> {
                 const Text(
                   'Выберите количество дней',
                   style: TextStyle(
-                    color: AppTheme.textPrimary,
+                    color: context.text1,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
@@ -303,7 +303,7 @@ class _FreezeScreenState extends State<FreezeScreen> {
                 SliderTheme(
                   data: SliderTheme.of(context).copyWith(
                     activeTrackColor: AppTheme.primary,
-                    inactiveTrackColor: AppTheme.bgSurface,
+                    inactiveTrackColor: context.surface,
                     thumbColor: AppTheme.primary,
                     overlayColor: AppTheme.primary.withValues(alpha: 0.2),
                     trackHeight: 6,
@@ -322,10 +322,10 @@ class _FreezeScreenState extends State<FreezeScreen> {
                   children: [
                     const Text('1',
                         style: TextStyle(
-                            color: AppTheme.textMuted, fontSize: 12)),
+                            color: context.text3, fontSize: 12)),
                     Text('$freezeDaysLeft',
                         style: const TextStyle(
-                            color: AppTheme.textMuted, fontSize: 12)),
+                            color: context.text3, fontSize: 12)),
                   ],
                 ),
 
