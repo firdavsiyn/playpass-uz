@@ -21,7 +21,7 @@ final sortModeProvider = StateProvider<String>((ref) => 'rating');
 final filterPsProvider = StateProvider<bool>((ref) => false);
 
 // Nearby clubs (using device location or Tashkent center as default)
-final nearbyClubsListProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+final nearbyClubsListProvider = FutureProvider<List<Club>>((ref) async {
   // Default: Tashkent center coordinates
   return SupabaseService().getNearbyClubs(41.2995, 69.2401, radiusKm: 50);
 });
@@ -383,10 +383,7 @@ class _ListView extends ConsumerWidget {
                     separatorBuilder: (_, __) => const SizedBox(width: 10),
                     itemBuilder: (_, i) => _NearbyClubChip(
                       club: nearby[i],
-                      onTap: () {
-                        final id = nearby[i]['id'] as String?;
-                        if (id != null) context.push('/clubs/$id');
-                      },
+                      onTap: () => context.push('/clubs/${nearby[i].id}'),
                     ),
                   ),
                 ),
@@ -418,19 +415,15 @@ class _ListView extends ConsumerWidget {
 }
 
 class _NearbyClubChip extends StatelessWidget {
-  final Map<String, dynamic> club;
+  final Club club;
   final VoidCallback onTap;
   const _NearbyClubChip({required this.club, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final name = club['name'] as String? ?? '';
-    final distance = club['distance'] as double? ?? 0;
-    final thumbnail = club['thumbnail'] as String?;
-    final isOpen = club['is_open'] as bool? ?? false;
-    final distanceStr = distance < 1
-        ? '${(distance * 1000).round()} м'
-        : '${distance.toStringAsFixed(1)} км';
+    final name = club.name;
+    final thumbnail = club.thumbnail;
+    final isOpen = club.isOpen;
 
     return GestureDetector(
       onTap: onTap,
@@ -477,12 +470,17 @@ class _NearbyClubChip extends StatelessWidget {
                   const SizedBox(height: 2),
                   Row(
                     children: [
-                      Icon(Icons.near_me, size: 10,
-                          color: isOpen ? AppTheme.success : context.text3),
-                      const SizedBox(width: 3),
-                      Text(distanceStr,
+                      Container(
+                        width: 6, height: 6,
+                        decoration: BoxDecoration(
+                          color: isOpen ? AppTheme.success : AppTheme.error,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(isOpen ? 'Открыт' : 'Закрыт',
                           style: TextStyle(
-                            color: isOpen ? AppTheme.success : context.text3,
+                            color: isOpen ? AppTheme.success : AppTheme.error,
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
                           )),

@@ -79,12 +79,12 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         if (!_mapReady)
           Container(
             color: context.bg,
-            child: const Center(
+            child: Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  CircularProgressIndicator(color: AppTheme.primary),
-                  SizedBox(height: 16),
+                  const CircularProgressIndicator(color: AppTheme.primary),
+                  const SizedBox(height: 16),
                   Text(
                     'Загрузка карты...',
                     style: TextStyle(color: context.text3, fontSize: 14),

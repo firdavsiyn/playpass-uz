@@ -156,7 +156,7 @@ class _ToggleCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(
+                Text(title, style: TextStyle(
                   fontSize: 14, fontWeight: FontWeight.w600, color: context.text1)),
                 const SizedBox(height: 2),
                 Text(subtitle, style: TextStyle(fontSize: 12, color: context.text2)),

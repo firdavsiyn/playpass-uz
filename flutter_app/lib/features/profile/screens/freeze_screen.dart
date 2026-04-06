@@ -80,7 +80,7 @@ class _FreezeScreenState extends State<FreezeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Заморозка подписки'),
+        title: Text('Заморозка подписки'),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -163,7 +163,7 @@ class _FreezeScreenState extends State<FreezeScreen> {
                   Expanded(
                     child: Text(
                       'Осталось доступных дней: $freezeDaysLeft из ${AppConstants.freezeMaxDays}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: context.text1,
                         fontSize: 14,
                       ),
@@ -205,13 +205,13 @@ class _FreezeScreenState extends State<FreezeScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.info_outline_rounded,
+                      Icon(Icons.info_outline_rounded,
                           color: AppTheme.info, size: 20),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           'Заморожена с ${_formatDate(sub.frozenSince!)}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: context.text1,
                             fontSize: 14,
                           ),
@@ -239,7 +239,7 @@ class _FreezeScreenState extends State<FreezeScreen> {
                             color: Colors.white,
                           ),
                         )
-                      : const Text('Разморозить'),
+                      : Text('Разморозить'),
                 ),
               ),
             ] else ...[
@@ -257,11 +257,11 @@ class _FreezeScreenState extends State<FreezeScreen> {
                       color: AppTheme.error.withValues(alpha: 0.3),
                     ),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Icon(Icons.warning_rounded,
+                      const Icon(Icons.warning_rounded,
                           color: AppTheme.error, size: 20),
-                      SizedBox(width: 12),
+                      const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           'Вы уже использовали все дни заморозки в этом периоде.',
@@ -275,7 +275,7 @@ class _FreezeScreenState extends State<FreezeScreen> {
                   ),
                 ),
               ] else ...[
-                const Text(
+                Text(
                   'Выберите количество дней',
                   style: TextStyle(
                     color: context.text1,
@@ -320,11 +320,11 @@ class _FreezeScreenState extends State<FreezeScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('1',
+                    Text('1',
                         style: TextStyle(
                             color: context.text3, fontSize: 12)),
                     Text('$freezeDaysLeft',
-                        style: const TextStyle(
+                        style: TextStyle(
                             color: context.text3, fontSize: 12)),
                   ],
                 ),

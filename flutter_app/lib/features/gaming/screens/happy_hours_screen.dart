@@ -148,7 +148,7 @@ class _HappyHourCard extends StatelessWidget {
                       Row(
                         children: [
                           Text(club?['name'] ?? 'Клуб',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
                                 color: context.text1,

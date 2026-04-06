@@ -49,7 +49,7 @@ class SubscriptionWidget extends StatelessWidget {
                       color: AppTheme.primaryLight, size: 28),
                 ),
                 const SizedBox(width: 16),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -58,7 +58,7 @@ class SubscriptionWidget extends StatelessWidget {
                               color: context.text1,
                               fontWeight: FontWeight.w600,
                               fontSize: 16)),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text('Купите тариф и начните играть',
                           style:
                               TextStyle(color: context.text2, fontSize: 13)),

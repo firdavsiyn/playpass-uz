@@ -66,7 +66,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
+          icon: Icon(Icons.arrow_back_ios),
           onPressed: () => context.pop(),
         ),
         title: Text(_step == 2 ? 'Заявка отправлена' : 'Оплата'),
@@ -101,7 +101,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.receipt_long, color: AppTheme.primary),
+                Icon(Icons.receipt_long, color: AppTheme.primary),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -109,7 +109,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                     children: [
                       Text(
                         'Тариф: ${_plan.name}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: context.text1,
                           fontWeight: FontWeight.w600,
                         ),
@@ -118,7 +118,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                         _plan.isUnlimited
                             ? 'Безлимит · 1 визит/день / 30 дней'
                             : '${_plan.hours} часов / 30 дней',
-                        style: const TextStyle(
+                        style: TextStyle(
                             color: context.text2, fontSize: 13),
                       ),
                     ],
@@ -138,7 +138,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           const SizedBox(height: 24),
 
           // Payment instructions
-          const Text(
+          Text(
             'Как оплатить',
             style: TextStyle(
               color: context.text1,
@@ -197,7 +197,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.3)),
             ),
-            child: const Row(
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(Icons.info_outline, color: Color(0xFFF59E0B), size: 18),
@@ -238,7 +238,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Подтверждение оплаты',
             style: TextStyle(
               color: context.text1,
@@ -247,7 +247,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Заполните форму, чтобы мы могли проверить платёж '
             'и активировать подписку.',
             style: TextStyle(color: context.text2, fontSize: 14),
@@ -261,7 +261,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
             controller: _phoneController,
             keyboardType: TextInputType.phone,
             style: TextStyle(color: context.text1, fontSize: 16),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: '+998 90 123 45 67',
               prefixIcon: Icon(Icons.phone_outlined, size: 20),
             ),
@@ -329,7 +329,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.check_circle_rounded,
+            Icon(Icons.check_circle_rounded,
                 color: AppTheme.success, size: 80),
             const SizedBox(height: 24),
             Text(
@@ -339,7 +339,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                   ),
             ),
             const SizedBox(height: 12),
-            const Text(
+            Text(
               'Мы проверим платёж и активируем вашу подписку '
               'в течение 30 минут (в рабочие часы 09:00–22:00).\n\n'
               'Вы получите уведомление, когда подписка будет активна.',
@@ -399,13 +399,13 @@ class _PaymentOption extends StatelessWidget {
               Icon(icon, size: 20, color: AppTheme.primary),
               const SizedBox(width: 8),
               Text(title,
-                  style: const TextStyle(
+                  style: TextStyle(
                       color: context.text1, fontWeight: FontWeight.w600)),
             ],
           ),
           const SizedBox(height: 6),
           Text(subtitle,
-              style: const TextStyle(
+              style: TextStyle(
                   color: context.text2, fontSize: 13)),
           const SizedBox(height: 8),
           Row(
@@ -420,7 +420,7 @@ class _PaymentOption extends StatelessWidget {
                   ),
                   child: Text(
                     value,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: context.text1,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,

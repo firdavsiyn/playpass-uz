@@ -725,11 +725,10 @@ class SupabaseService {
   // ── Tournaments ──────────────────────────────────────────
   Future<List<Tournament>> getTournaments({String? status, String? clubId}) async {
     var q = _client.from('tournaments')
-        .select('*, clubs(name), tournament_participants(id)')
-        .order('starts_at');
+        .select('*, clubs(name), tournament_participants(id)');
     if (status != null) q = q.eq('status', status);
     if (clubId != null) q = q.eq('club_id', clubId);
-    final res = await q;
+    final res = await q.order('starts_at');
     return (res as List).map((j) {
       j['participant_count'] = (j['tournament_participants'] as List?)?.length ?? 0;
       return Tournament.fromJson(j);
@@ -941,10 +940,9 @@ class SupabaseService {
     var q = _client.from('lfg_posts')
         .select('*, users(name, avatar_url), clubs(name)')
         .eq('status', 'active')
-        .gt('expires_at', DateTime.now().toIso8601String())
-        .order('created_at', ascending: false);
+        .gt('expires_at', DateTime.now().toIso8601String());
     if (game != null) q = q.eq('game', game);
-    final res = await q;
+    final res = await q.order('created_at', ascending: false);
     return (res as List).cast<Map<String, dynamic>>();
   }
 

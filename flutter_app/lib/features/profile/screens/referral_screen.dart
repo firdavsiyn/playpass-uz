@@ -28,7 +28,7 @@ class ReferralScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Реферальная программа'),
+        title: Text('Реферальная программа'),
       ),
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -60,7 +60,7 @@ class ReferralScreen extends ConsumerWidget {
                     shape: BoxShape.circle,
                     boxShadow: AppTheme.neonGlow(radius: 16),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.card_giftcard_rounded,
                     color: AppTheme.primaryLight,
                     size: 28,
@@ -141,7 +141,7 @@ class ReferralScreen extends ConsumerWidget {
 
                   if (transactions.isNotEmpty) ...[
                     const SizedBox(height: 24),
-                    const Text(
+                    Text(
                       'Последние приглашения',
                       style: TextStyle(
                         color: context.text1,
@@ -177,7 +177,7 @@ class ReferralScreen extends ConsumerWidget {
                                     AppTheme.success.withValues(alpha: 0.15),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.person_add_rounded,
                                 color: AppTheme.success,
                                 size: 20,
@@ -190,7 +190,7 @@ class ReferralScreen extends ConsumerWidget {
                                 children: [
                                   Text(
                                     inviteeName,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: context.text1,
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500,
@@ -199,7 +199,7 @@ class ReferralScreen extends ConsumerWidget {
                                   const SizedBox(height: 2),
                                   Text(
                                     date,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: context.text3,
                                       fontSize: 12,
                                     ),
@@ -255,7 +255,7 @@ class _ReferralCodeCard extends StatelessWidget {
           color: context.card,
           borderRadius: BorderRadius.circular(16),
         ),
-        child: const Text(
+        child: Text(
           'Реферальный код пока не назначен',
           textAlign: TextAlign.center,
           style: TextStyle(color: context.text3, fontSize: 14),
@@ -273,7 +273,7 @@ class _ReferralCodeCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          const Text(
+          Text(
             'Ваш реферальный код',
             style: TextStyle(color: context.text2, fontSize: 13),
           ),
@@ -354,7 +354,7 @@ class _StatCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               color: context.text1,
               fontSize: 28,
               fontWeight: FontWeight.w700,
@@ -364,7 +364,7 @@ class _StatCard extends StatelessWidget {
           Text(
             label,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               color: context.text3,
               fontSize: 12,
             ),
