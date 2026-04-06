@@ -57,11 +57,39 @@
     <p>Загрузка PlayPass...</p>
   </div>
   <script>
+    // Force unregister ALL old service workers to prevent stale cache
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        registrations.forEach(function(reg) {
+          reg.unregister();
+          console.log('[PlayPass] Unregistered stale service worker');
+        });
+      });
+      // Also clear all caches
+      if ('caches' in window) {
+        caches.keys().then(function(names) {
+          names.forEach(function(name) {
+            caches.delete(name);
+            console.log('[PlayPass] Deleted cache:', name);
+          });
+        });
+      }
+    }
+
     // Hide loading screen once Flutter is ready
     window.addEventListener('flutter-first-frame', function() {
       var el = document.getElementById('loading');
       if (el) el.style.display = 'none';
     });
+
+    // Fallback: hide loading after 20s even if Flutter didn't fire event
+    setTimeout(function() {
+      var el = document.getElementById('loading');
+      if (el && el.style.display !== 'none') {
+        el.innerHTML = '<p style="color:#EF4444;font-size:16px;">Ошибка загрузки. Очистите кэш браузера и перезагрузите страницу.</p>';
+      }
+    }, 20000);
+
     // Global error catcher
     window.onerror = function(msg, src, line, col, err) {
       console.error('[PlayPass crash]', msg, src, line, err);
