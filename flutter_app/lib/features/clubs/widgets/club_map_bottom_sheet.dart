@@ -5,11 +5,13 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../models/club.dart';
 import '../../../core/theme/app_theme.dart';
+import 'occupancy_badge.dart';
 
 /// Bottom sheet shown when a map marker is tapped
 class ClubMapBottomSheet extends StatelessWidget {
   final Club club;
-  const ClubMapBottomSheet({super.key, required this.club});
+  final int occupancy;
+  const ClubMapBottomSheet({super.key, required this.club, this.occupancy = 0});
 
   void _navigate(BuildContext context) async {
     if (club.lat == null || club.lon == null) return;
@@ -152,6 +154,13 @@ class ClubMapBottomSheet extends StatelessWidget {
                         ),
                       ],
                     ),
+                    if (club.pcCount > 0) ...[
+                      const SizedBox(height: 8),
+                      OccupancyBadge(
+                        current: occupancy,
+                        capacity: club.pcCount,
+                      ),
+                    ],
                   ],
                 ),
               ),

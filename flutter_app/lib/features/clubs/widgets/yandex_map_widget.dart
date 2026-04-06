@@ -7,11 +7,13 @@ import '../services/yandex_map_service.dart';
 /// Widget that renders an embedded Yandex Map with club markers
 class YandexMapWidget extends StatefulWidget {
   final List<Club> clubs;
+  final Map<String, int>? occupancy;
   final void Function(String clubId)? onMarkerTapped;
 
   const YandexMapWidget({
     super.key,
     required this.clubs,
+    this.occupancy,
     this.onMarkerTapped,
   });
 
@@ -46,7 +48,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       }
 
       // Add initial markers
-      YandexMapService.setMarkers(widget.clubs);
+      YandexMapService.setMarkers(widget.clubs, occupancy: widget.occupancy);
 
       if (mounted) setState(() => _mapReady = true);
     } catch (e) {
@@ -57,9 +59,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   @override
   void didUpdateWidget(YandexMapWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (_mapReady && widget.clubs != oldWidget.clubs) {
+    if (_mapReady && (widget.clubs != oldWidget.clubs || widget.occupancy != oldWidget.occupancy)) {
       YandexMapService.clearMarkers();
-      YandexMapService.setMarkers(widget.clubs);
+      YandexMapService.setMarkers(widget.clubs, occupancy: widget.occupancy);
     }
   }
 

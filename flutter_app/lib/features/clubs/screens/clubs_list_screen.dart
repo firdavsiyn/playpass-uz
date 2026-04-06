@@ -303,23 +303,27 @@ class _MapView extends ConsumerWidget {
   final List<Club> allClubs;
   const _MapView({required this.clubs, required this.allClubs});
 
-  void _showClubSheet(BuildContext context, String clubId) {
+  void _showClubSheet(BuildContext context, WidgetRef ref, String clubId) {
     final match = allClubs.where((c) => c.id == clubId);
     if (match.isEmpty && clubs.isEmpty) return;
     final club = match.isNotEmpty ? match.first : clubs.first;
+    final occ = ref.read(clubsOccupancyProvider).valueOrNull;
+    final count = occ?[club.id] ?? 0;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: false,
-      builder: (_) => ClubMapBottomSheet(club: club),
+      builder: (_) => ClubMapBottomSheet(club: club, occupancy: count),
     );
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final occ = ref.watch(clubsOccupancyProvider).valueOrNull;
     return YandexMapWidget(
       clubs: clubs,
-      onMarkerTapped: (clubId) => _showClubSheet(context, clubId),
+      occupancy: occ,
+      onMarkerTapped: (clubId) => _showClubSheet(context, ref, clubId),
     );
   }
 }

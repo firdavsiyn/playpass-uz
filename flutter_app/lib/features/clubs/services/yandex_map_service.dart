@@ -35,21 +35,26 @@ class YandexMapService {
   }
 
   /// Add club markers to the map
-  static void setMarkers(List<Club> clubs) {
+  static void setMarkers(List<Club> clubs, {Map<String, int>? occupancy}) {
     final markersData = clubs
         .where((c) => c.lat != null && c.lon != null)
-        .map((c) => {
-              'id': c.id,
-              'name': c.name,
-              'lat': c.lat,
-              'lon': c.lon,
-              'tier': c.tier ?? 'standard',
-              'isOpen': c.isOpen,
-            })
+        .map((c) {
+          final occ = occupancy?[c.id] ?? 0;
+          final pct = c.pcCount > 0 ? (occ / c.pcCount * 100).round() : 0;
+          return {
+            'id': c.id,
+            'name': c.name,
+            'lat': c.lat,
+            'lon': c.lon,
+            'tier': c.tier ?? 'standard',
+            'isOpen': c.isOpen,
+            'occupancy': occ,
+            'capacity': c.pcCount,
+            'occupancyPct': pct,
+          };
+        })
         .toList();
-    // Use single quotes in the JSON to avoid escaping issues with eval
     final jsonStr = jsonEncode(markersData);
-    // Pass via a temp global variable to avoid quote escaping issues
     _eval('window.__tempMarkers = $jsonStr');
     _eval('addClubMarkers(JSON.stringify(window.__tempMarkers))');
   }
