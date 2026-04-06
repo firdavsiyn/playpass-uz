@@ -273,23 +273,46 @@ class _QuickActions extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = tr(ref.watch(localeProvider));
-    return SizedBox(
-      height: 80,
-      child: Row(
-        children: [
-          _QuickAction(icon: Icons.emoji_events, label: t['home_tournaments'] ?? 'Турниры',
-              color: AppTheme.warning, onTap: () => context.push('/tournaments')),
-          const SizedBox(width: 10),
-          _QuickAction(icon: Icons.map, label: t['home_map'] ?? 'Карта',
-              color: AppTheme.neonBlue, onTap: () => context.push('/clubs-map')),
-          const SizedBox(width: 10),
-          _QuickAction(icon: Icons.star, label: t['home_loyalty'] ?? 'XP',
-              color: AppTheme.neonPurple, onTap: () => context.push('/loyalty')),
-          const SizedBox(width: 10),
-          _QuickAction(icon: Icons.newspaper, label: t['home_news'] ?? 'Новости',
-              color: AppTheme.success, onTap: () => context.push('/stories')),
-        ],
-      ),
+    return Column(
+      children: [
+        SizedBox(
+          height: 80,
+          child: Row(
+            children: [
+              _QuickAction(icon: Icons.emoji_events, label: t['home_tournaments'] ?? 'Турниры',
+                  color: AppTheme.warning, onTap: () => context.push('/tournaments')),
+              const SizedBox(width: 10),
+              _QuickAction(icon: Icons.people, label: t['home_lfg'] ?? 'Тиммейты',
+                  color: AppTheme.neonBlue, onTap: () => context.push('/lfg')),
+              const SizedBox(width: 10),
+              _QuickAction(icon: Icons.leaderboard, label: t['home_leaderboard'] ?? 'Рейтинг',
+                  color: AppTheme.neonPurple, onTap: () => context.push('/leaderboard')),
+              const SizedBox(width: 10),
+              _QuickAction(icon: Icons.newspaper, label: t['home_news'] ?? 'Новости',
+                  color: AppTheme.success, onTap: () => context.push('/stories')),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 80,
+          child: Row(
+            children: [
+              _QuickAction(icon: Icons.map, label: t['home_map'] ?? 'Карта',
+                  color: const Color(0xFF06B6D4), onTap: () => context.push('/clubs-map')),
+              const SizedBox(width: 10),
+              _QuickAction(icon: Icons.star, label: t['home_loyalty'] ?? 'XP',
+                  color: const Color(0xFFF59E0B), onTap: () => context.push('/loyalty')),
+              const SizedBox(width: 10),
+              _QuickAction(icon: Icons.sports_esports, label: t['home_stats'] ?? 'Стата',
+                  color: const Color(0xFFEC4899), onTap: () => context.push('/player-stats')),
+              const SizedBox(width: 10),
+              _QuickAction(icon: Icons.local_offer, label: t['home_happy'] ?? 'Скидки',
+                  color: const Color(0xFF8B5CF6), onTap: () => context.push('/happy-hours')),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

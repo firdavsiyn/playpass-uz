@@ -235,6 +235,24 @@ class _ProfileContent extends ConsumerWidget {
           onTap: () => context.push('/loyalty'),
         ),
         _MenuItem(
+          icon: Icons.sports_esports_rounded,
+          title: ref.lang('profile.player_stats'),
+          subtitle: ref.lang('profile.player_stats_sub'),
+          onTap: () => context.push('/player-stats'),
+        ),
+        _MenuItem(
+          icon: Icons.people_rounded,
+          title: ref.lang('profile.lfg'),
+          subtitle: ref.lang('profile.lfg_sub'),
+          onTap: () => context.push('/lfg'),
+        ),
+        _MenuItem(
+          icon: Icons.leaderboard_rounded,
+          title: ref.lang('profile.leaderboard'),
+          subtitle: ref.lang('profile.leaderboard_sub'),
+          onTap: () => context.push('/leaderboard'),
+        ),
+        _MenuItem(
           icon: Icons.notifications_rounded,
           title: 'Уведомления',
           subtitle: 'Настройки push-уведомлений',

@@ -196,4 +196,47 @@ const Map<String, String> stringsUz = {
   'notif_subscription_desc': 'Muddati tugashi, muzlatish, uzaytirish',
   'notif_news': 'Klub yangiliklari',
   'notif_news_desc': 'Klublardan yangi nashrlar',
+
+  // ── Gaming Features ──────────────────────
+  'home_lfg': 'Jamoadoshlar',
+  'home_leaderboard': 'Reyting',
+  'home_stats': 'Statistika',
+  'home_happy': 'Chegirmalar',
+
+  'player_stats_title': 'O\'yin profillari',
+  'player_stats_empty': 'Birinchi o\'yin profilingizni qo\'shing',
+  'player_stats_add': 'Profil qo\'shish',
+
+  'lfg_title': 'Jamoadosh qidirish',
+  'lfg_all': 'Hammasi',
+  'lfg_empty': 'Faol so\'rovlar yo\'q',
+  'lfg_create_first': 'Birinchisini yarating!',
+  'lfg_find_team': 'Jamoa topish',
+  'lfg_find_teammates': 'Jamoadosh topish',
+  'lfg_game': 'O\'yin',
+  'lfg_players_needed': 'O\'yinchilar kerak: ',
+  'lfg_mic_required': 'Mikrofon shart',
+  'lfg_message': 'Xabar',
+  'lfg_publish': 'E\'lon qilish',
+  'lfg_join': 'Qo\'shilish',
+  'lfg_request_sent': 'So\'rov yuborildi!',
+
+  'leaderboard_title': 'O\'yinchilar reytingi',
+  'leaderboard_empty': 'Hozircha ma\'lumot yo\'q',
+
+  'happy_hours_title': 'Chegirmalar va aksiyalar',
+  'happy_hours_empty': 'Hozir faol aksiyalar yo\'q',
+  'happy_hours_active': 'Hozir faol!',
+  'happy_hours_discount': 'chegirma',
+
+  'nearby_clubs_title': 'Yaqin klublar',
+  'nearby_clubs_km': 'km',
+
+  // ── Profile Gaming ───────────────────────
+  'profile.player_stats': 'O\'yin profillari',
+  'profile.player_stats_sub': 'CS2, Dota 2, Valorant...',
+  'profile.lfg': 'Jamoadosh qidirish',
+  'profile.lfg_sub': 'O\'yin uchun jamoa topish',
+  'profile.leaderboard': 'O\'yinchilar reytingi',
+  'profile.leaderboard_sub': 'XP bo\'yicha top o\'yinchilar',
 };

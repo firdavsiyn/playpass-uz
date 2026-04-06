@@ -33,6 +33,10 @@ import '../../features/stories/screens/stories_screen.dart';
 import '../../features/loyalty/screens/loyalty_screen.dart';
 import '../../features/clubs/screens/clubs_map_screen.dart';
 import '../../features/profile/screens/notification_settings_screen.dart';
+import '../../features/gaming/screens/player_stats_screen.dart';
+import '../../features/gaming/screens/lfg_screen.dart';
+import '../../features/gaming/screens/leaderboard_screen.dart';
+import '../../features/gaming/screens/happy_hours_screen.dart';
 import '../../models/subscription.dart';
 
 /// Notifier that triggers GoRouter to re-evaluate redirects when auth changes.
@@ -156,6 +160,12 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Notification Settings
       GoRoute(path: '/notifications-settings', builder: (_, __) => const NotificationSettingsScreen()),
+
+      // Gaming
+      GoRoute(path: '/player-stats', builder: (_, __) => const PlayerStatsScreen()),
+      GoRoute(path: '/lfg', builder: (_, __) => const LfgScreen()),
+      GoRoute(path: '/leaderboard', builder: (_, __) => const LeaderboardScreen()),
+      GoRoute(path: '/happy-hours', builder: (_, __) => const HappyHoursScreen()),
     ],
   );
 });

@@ -900,4 +900,139 @@ class SupabaseService {
         .eq('status', 'active');
     return (res as List).cast<Map<String, dynamic>>();
   }
+
+  // ── Player Profiles (Game Stats) ─────────────────────────
+  Future<List<Map<String, dynamic>>> getPlayerProfiles(String userId) async {
+    final res = await _client.from('player_profiles')
+        .select()
+        .eq('user_id', userId)
+        .order('updated_at', ascending: false);
+    return (res as List).cast<Map<String, dynamic>>();
+  }
+
+  Future<void> savePlayerProfile({
+    required String game,
+    required String nickname,
+    String? rank,
+    int? hoursPlayed,
+    double? kdRatio,
+    double? winrate,
+  }) async {
+    final userId = currentUser!.id;
+    await _client.from('player_profiles').upsert({
+      'user_id': userId,
+      'game': game,
+      'nickname': nickname,
+      'rank': rank,
+      'hours_played': hoursPlayed ?? 0,
+      'kd_ratio': kdRatio,
+      'winrate': winrate,
+      'updated_at': DateTime.now().toIso8601String(),
+    }, onConflict: 'user_id,game');
+  }
+
+  Future<void> deletePlayerProfile(String id) async {
+    final userId = currentUser!.id;
+    await _client.from('player_profiles').delete().eq('id', id).eq('user_id', userId);
+  }
+
+  // ── LFG (Looking For Group) ──────────────────────────────
+  Future<List<Map<String, dynamic>>> getLfgPosts({String? game}) async {
+    var q = _client.from('lfg_posts')
+        .select('*, users(name, avatar_url), clubs(name)')
+        .eq('status', 'active')
+        .gt('expires_at', DateTime.now().toIso8601String())
+        .order('created_at', ascending: false);
+    if (game != null) q = q.eq('game', game);
+    final res = await q;
+    return (res as List).cast<Map<String, dynamic>>();
+  }
+
+  Future<void> createLfgPost({
+    required String game,
+    required int playersNeeded,
+    String? message,
+    bool micRequired = false,
+    String? clubId,
+  }) async {
+    final userId = currentUser!.id;
+    await _client.from('lfg_posts').insert({
+      'user_id': userId,
+      'game': game,
+      'players_needed': playersNeeded,
+      'message': message,
+      'mic_required': micRequired,
+      'club_id': clubId,
+    });
+    // XP for creating LFG post
+    await _addXp(userId, 5, 'lfg_post', null);
+  }
+
+  Future<void> respondToLfg(String postId) async {
+    final userId = currentUser!.id;
+    await _client.from('lfg_responses').upsert({
+      'post_id': postId,
+      'user_id': userId,
+    }, onConflict: 'post_id,user_id');
+  }
+
+  // ── Leaderboard ──────────────────────────────────────────
+  Future<List<Map<String, dynamic>>> getLeaderboard({int limit = 50}) async {
+    final res = await _client.from('users')
+        .select('id, name, avatar_url, xp, loyalty_level, total_visits')
+        .order('xp', ascending: false)
+        .limit(limit);
+    return (res as List).cast<Map<String, dynamic>>();
+  }
+
+  // ── Happy Hours ──────────────────────────────────────────
+  Future<List<Map<String, dynamic>>> getClubHappyHours(String clubId) async {
+    final res = await _client.from('happy_hours')
+        .select()
+        .eq('club_id', clubId)
+        .eq('is_active', true)
+        .order('day_of_week');
+    return (res as List).cast<Map<String, dynamic>>();
+  }
+
+  Future<List<Map<String, dynamic>>> getActiveHappyHours() async {
+    final now = DateTime.now();
+    final dayOfWeek = now.weekday == 7 ? 6 : now.weekday - 1;
+    final timeNow = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:00';
+    final res = await _client.from('happy_hours')
+        .select('*, clubs(id, name, logo_url)')
+        .eq('is_active', true)
+        .eq('day_of_week', dayOfWeek)
+        .lte('start_time', timeNow)
+        .gte('end_time', timeNow);
+    return (res as List).cast<Map<String, dynamic>>();
+  }
+
+  // ── Nearby clubs (with distance calculation) ─────────────
+  Future<List<Club>> getNearbyClubs(double userLat, double userLon, {double radiusKm = 10}) async {
+    final clubs = await getActiveClubs();
+    for (final club in clubs) {
+      if (club.lat != null && club.lon != null) {
+        club.distanceMeters = _haversine(userLat, userLon, club.lat!, club.lon!);
+      }
+    }
+    clubs.removeWhere((c) => c.distanceMeters == null || c.distanceMeters! > radiusKm * 1000);
+    clubs.sort((a, b) => (a.distanceMeters ?? 999999).compareTo(b.distanceMeters ?? 999999));
+    return clubs;
+  }
+
+  double _haversine(double lat1, double lon1, double lat2, double lon2) {
+    const r = 6371000.0; // Earth radius in meters
+    final dLat = (lat2 - lat1) * 3.141592653589793 / 180;
+    final dLon = (lon2 - lon1) * 3.141592653589793 / 180;
+    final a = _sin2(dLat / 2) + _cos(lat1 * 3.141592653589793 / 180) * _cos(lat2 * 3.141592653589793 / 180) * _sin2(dLon / 2);
+    return r * 2 * _atan2(_sqrt(a), _sqrt(1 - a));
+  }
+
+  double _sin2(double x) { final s = _sin(x); return s * s; }
+  double _sin(double x) => x - (x*x*x)/6 + (x*x*x*x*x)/120 - (x*x*x*x*x*x*x)/5040;
+  double _cos(double x) => 1 - (x*x)/2 + (x*x*x*x)/24 - (x*x*x*x*x*x)/720;
+  double _sqrt(double x) { double g = x / 2; for (int i = 0; i < 10; i++) g = (g + x / g) / 2; return g; }
+  double _atan2(double y, double x) { if (x > 0) return _atan(y / x); if (x < 0) return _atan(y / x) + 3.141592653589793; return y > 0 ? 1.5707963 : -1.5707963; }
+  double _atan(double x) => x - (x*x*x)/3 + (x*x*x*x*x)/5 - (x*x*x*x*x*x*x)/7;
 }

@@ -20,6 +20,12 @@ final sortModeProvider = StateProvider<String>((ref) => 'rating');
 // Console filters
 final filterPsProvider = StateProvider<bool>((ref) => false);
 
+// Nearby clubs (using device location or Tashkent center as default)
+final nearbyClubsListProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+  // Default: Tashkent center coordinates
+  return SupabaseService().getNearbyClubs(41.2995, 69.2401, radiusKm: 50);
+});
+
 final clubsFilteredProvider = FutureProvider<List<Club>>((ref) async {
   final tier = ref.watch(selectedTierProvider);
   final ps = ref.watch(filterPsProvider);
@@ -321,12 +327,12 @@ class _MapView extends ConsumerWidget {
 
 // ── List view ────────────────────────────────────────────
 
-class _ListView extends StatelessWidget {
+class _ListView extends ConsumerWidget {
   final List<Club> clubs;
   const _ListView({required this.clubs});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (clubs.isEmpty) {
       return const Center(
         child: Column(
@@ -341,11 +347,153 @@ class _ListView extends StatelessWidget {
       );
     }
 
-    return ListView.separated(
+    final nearbyAsync = ref.watch(nearbyClubsListProvider);
+
+    return ListView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
-      itemCount: clubs.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
-      itemBuilder: (_, i) => _ClubListCard(club: clubs[i]),
+      children: [
+        // Nearby clubs horizontal section
+        nearbyAsync.when(
+          data: (nearby) {
+            if (nearby.isEmpty) return const SizedBox.shrink();
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.near_me_rounded, size: 18, color: AppTheme.primary),
+                    const SizedBox(width: 6),
+                    const Text('Ближайшие клубы',
+                        style: TextStyle(
+                          color: AppTheme.textPrimary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        )),
+                    const Spacer(),
+                    Text('${nearby.length} клубов',
+                        style: const TextStyle(color: AppTheme.textMuted, fontSize: 12)),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  height: 130,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: nearby.length > 8 ? 8 : nearby.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 10),
+                    itemBuilder: (_, i) => _NearbyClubChip(
+                      club: nearby[i],
+                      onTap: () {
+                        final id = nearby[i]['id'] as String?;
+                        if (id != null) context.push('/clubs/$id');
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Divider(height: 1),
+                const SizedBox(height: 12),
+              ],
+            );
+          },
+          loading: () => const SizedBox.shrink(),
+          error: (_, __) => const SizedBox.shrink(),
+        ),
+
+        // All clubs
+        const Text('Все клубы',
+            style: TextStyle(
+              color: AppTheme.textPrimary,
+              fontWeight: FontWeight.w700,
+              fontSize: 16,
+            )),
+        const SizedBox(height: 10),
+        ...clubs.map((club) => Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: _ClubListCard(club: club),
+        )),
+      ],
+    );
+  }
+}
+
+class _NearbyClubChip extends StatelessWidget {
+  final Map<String, dynamic> club;
+  final VoidCallback onTap;
+  const _NearbyClubChip({required this.club, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final name = club['name'] as String? ?? '';
+    final distance = club['distance'] as double? ?? 0;
+    final thumbnail = club['thumbnail'] as String?;
+    final isOpen = club['is_open'] as bool? ?? false;
+    final distanceStr = distance < 1
+        ? '${(distance * 1000).round()} м'
+        : '${distance.toStringAsFixed(1)} км';
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 120,
+        decoration: BoxDecoration(
+          color: AppTheme.bgCard,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppTheme.border),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+              child: thumbnail != null
+                  ? CachedNetworkImage(
+                      imageUrl: thumbnail,
+                      width: 120,
+                      height: 65,
+                      fit: BoxFit.cover,
+                    )
+                  : Container(
+                      width: 120,
+                      height: 65,
+                      color: AppTheme.bgSurface,
+                      child: const Icon(Icons.sports_esports, color: AppTheme.textMuted, size: 24),
+                    ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppTheme.textPrimary,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      )),
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      Icon(Icons.near_me, size: 10,
+                          color: isOpen ? AppTheme.success : AppTheme.textMuted),
+                      const SizedBox(width: 3),
+                      Text(distanceStr,
+                          style: TextStyle(
+                            color: isOpen ? AppTheme.success : AppTheme.textMuted,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                          )),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

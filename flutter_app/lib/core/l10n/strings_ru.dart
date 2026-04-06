@@ -196,4 +196,47 @@ const Map<String, String> stringsRu = {
   'notif_subscription_desc': 'Истечение, заморозка, продление',
   'notif_news': 'Новости клубов',
   'notif_news_desc': 'Новые публикации от клубов',
+
+  // ── Gaming Features ──────────────────────
+  'home_lfg': 'Тиммейты',
+  'home_leaderboard': 'Рейтинг',
+  'home_stats': 'Стата',
+  'home_happy': 'Скидки',
+
+  'player_stats_title': 'Игровые профили',
+  'player_stats_empty': 'Добавьте свой первый игровой профиль',
+  'player_stats_add': 'Добавить профиль',
+
+  'lfg_title': 'Поиск тиммейтов',
+  'lfg_all': 'Все',
+  'lfg_empty': 'Нет активных запросов',
+  'lfg_create_first': 'Создайте первый!',
+  'lfg_find_team': 'Найти команду',
+  'lfg_find_teammates': 'Найти тиммейтов',
+  'lfg_game': 'Игра',
+  'lfg_players_needed': 'Нужно игроков: ',
+  'lfg_mic_required': 'Микрофон обязателен',
+  'lfg_message': 'Сообщение',
+  'lfg_publish': 'Опубликовать',
+  'lfg_join': 'Присоединиться',
+  'lfg_request_sent': 'Запрос отправлен!',
+
+  'leaderboard_title': 'Рейтинг игроков',
+  'leaderboard_empty': 'Пока нет данных',
+
+  'happy_hours_title': 'Скидки и акции',
+  'happy_hours_empty': 'Сейчас нет активных акций',
+  'happy_hours_active': 'Сейчас активно!',
+  'happy_hours_discount': 'скидка',
+
+  'nearby_clubs_title': 'Ближайшие клубы',
+  'nearby_clubs_km': 'км',
+
+  // ── Profile Gaming ───────────────────────
+  'profile.player_stats': 'Игровые профили',
+  'profile.player_stats_sub': 'CS2, Dota 2, Valorant...',
+  'profile.lfg': 'Поиск тиммейтов',
+  'profile.lfg_sub': 'Найти команду для игры',
+  'profile.leaderboard': 'Рейтинг игроков',
+  'profile.leaderboard_sub': 'Топ игроков по XP',
 };
