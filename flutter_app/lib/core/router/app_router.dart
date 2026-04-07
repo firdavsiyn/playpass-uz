@@ -39,6 +39,10 @@ import '../../features/gaming/screens/leaderboard_screen.dart';
 import '../../features/gaming/screens/happy_hours_screen.dart';
 import '../../models/subscription.dart';
 
+/// Tracks the currently active bottom-nav tab index.
+/// Scanner screen watches this to stop/start the camera.
+final activeTabIndexProvider = StateProvider<int>((ref) => 0);
+
 /// Notifier that triggers GoRouter to re-evaluate redirects when auth changes.
 class _AuthChangeNotifier extends ChangeNotifier {
   _AuthChangeNotifier() {
@@ -199,10 +203,13 @@ class MainShell extends ConsumerWidget {
         ),
         child: BottomNavigationBar(
           currentIndex: shell.currentIndex,
-          onTap: (index) => shell.goBranch(
-            index,
-            initialLocation: index == shell.currentIndex,
-          ),
+          onTap: (index) {
+            ref.read(activeTabIndexProvider.notifier).state = index;
+            shell.goBranch(
+              index,
+              initialLocation: index == shell.currentIndex,
+            );
+          },
           type: BottomNavigationBarType.fixed,
           items: [
             BottomNavigationBarItem(
