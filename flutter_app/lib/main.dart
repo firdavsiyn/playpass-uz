@@ -108,6 +108,12 @@ class PlayPassApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       locale: const Locale('ru'),
       scrollBehavior: const _AppScrollBehavior(),
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
     );
   }
 }
