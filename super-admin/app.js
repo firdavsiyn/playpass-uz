@@ -76,6 +76,24 @@ function toggleTheme() {
   localStorage.setItem('theme', next);
   const icon = $('theme-icon');
   if (icon) icon.textContent = next === 'dark' ? '☀' : '🌙';
+  // Re-render visible charts with updated grid/tick colors
+  recolorCharts();
+}
+
+function recolorCharts() {
+  const isLight = document.documentElement.dataset.theme === 'light';
+  const gridColor = isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.15)';
+  const tickColor = isLight ? '#9CA3AF' : '#9CA3AF';
+  Object.values(charts).forEach(chart => {
+    if (!chart || !chart.options || !chart.options.scales) return;
+    ['x', 'y'].forEach(axis => {
+      if (chart.options.scales[axis]) {
+        chart.options.scales[axis].grid.color = gridColor;
+        chart.options.scales[axis].ticks.color = tickColor;
+      }
+    });
+    chart.update('none');
+  });
 }
 
 const timeAgo = (d) => {
@@ -287,8 +305,8 @@ function renderChart(canvasId, type, labels, data, label, color, horizontal = fa
   if (!ctx) return;
 
   const isLight = document.documentElement.dataset.theme === 'light';
-  const gridColor = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)';
-  const tickColor = isLight ? '#9CA3AF' : '#6B7280';
+  const gridColor = isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.15)';
+  const tickColor = isLight ? '#9CA3AF' : '#9CA3AF';
   const isArrayColor = Array.isArray(color);
   charts[canvasId] = new Chart(ctx, {
     type,
