@@ -221,6 +221,7 @@ function showTab(tab, el) {
     promos: loadPromos, notifications: loadNotifHistory, logs: loadLogs,
     map: loadMap, tickets: loadTickets,
     banners: loadBanners, finance: loadFinance,
+    bookings: loadAllBookings,
   };
   if (loaders[tab]) loaders[tab]();
 }
@@ -1496,6 +1497,81 @@ async function deleteBanner(id) {
     showToast('Баннер удалён'); logAction('Удалил баннер', 'banner', id);
     loadBanners();
   } catch (e) { showToast(e.message, 'error'); }
+}
+
+/* ═══════════════════════════════════════════════
+   BOOKINGS OVERVIEW (super-admin)
+   ═══════════════════════════════════════════════ */
+async function loadAllBookings() {
+  try {
+    const dateEl = $('bookings-date-filter');
+    const statusEl = $('bookings-status-filter');
+    if (!dateEl.value) dateEl.value = toDateInput(new Date());
+    const date = dateEl.value;
+    const statusFilter = statusEl.value;
+
+    let query = sb.from('bookings')
+      .select('*, clubs(name), users(name)')
+      .eq('date', date)
+      .order('start_time', { ascending: true });
+
+    if (statusFilter) query = query.eq('status', statusFilter);
+
+    const { data, error } = await query.limit(200);
+    if (error) throw error;
+    const bookings = data || [];
+
+    // KPIs
+    const total = bookings.length;
+    const confirmed = bookings.filter(b => b.status === 'confirmed').length;
+    const active = bookings.filter(b => b.status === 'active').length;
+    const noShows = bookings.filter(b => b.status === 'no_show').length;
+    const completed = bookings.filter(b => b.status === 'completed').length;
+
+    $('bookings-kpis').innerHTML = `
+      <div class="kpi-card"><div class="kpi-value">${total}</div><div class="kpi-label">Всего на дату</div></div>
+      <div class="kpi-card"><div class="kpi-value" style="color:var(--primary)">${confirmed}</div><div class="kpi-label">Подтверждённые</div></div>
+      <div class="kpi-card"><div class="kpi-value" style="color:var(--success)">${active + completed}</div><div class="kpi-label">Активные/готовые</div></div>
+      <div class="kpi-card"><div class="kpi-value" style="color:var(--error)">${noShows}</div><div class="kpi-label">Неявки</div></div>
+    `;
+
+    // Table
+    const tbody = $('all-bookings-tbody');
+    if (!bookings.length) {
+      tbody.innerHTML = '<tr><td colspan="7" class="empty-cell">Нет бронирований на эту дату</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = bookings.map(b => {
+      const clubName = b.clubs?.name || '—';
+      const userName = b.users?.name || '—';
+      const zone = b.zone || 'basic';
+      const zoneLabel = zone === 'vip' ? 'VIP' : zone === 'pro' ? 'Про' : 'Базовая';
+      const zoneColor = zone === 'vip' ? '#FBBF24' : zone === 'pro' ? '#A855F7' : '#10B981';
+
+      let statusBadge = '';
+      switch (b.status) {
+        case 'confirmed': statusBadge = '<span class="badge">Подтверждён</span>'; break;
+        case 'active': statusBadge = '<span class="badge badge-success">Активен</span>'; break;
+        case 'completed': statusBadge = '<span class="badge badge-success">✓ Готово</span>'; break;
+        case 'no_show': statusBadge = '<span class="badge badge-error">Неявка</span>'; break;
+        case 'cancelled': statusBadge = '<span class="badge" style="background:rgba(255,255,255,0.1);color:var(--text-sec)">Отменён</span>'; break;
+        default: statusBadge = `<span class="badge">${escHtml(b.status)}</span>`;
+      }
+
+      return `<tr>
+        <td>${b.date}</td>
+        <td>${b.start_time?.slice(0,5)} – ${b.end_time?.slice(0,5)}</td>
+        <td>${escHtml(clubName)}</td>
+        <td>${escHtml(userName)}</td>
+        <td><span style="color:${zoneColor};font-weight:600">${zoneLabel}</span></td>
+        <td>${b.duration_hours || '—'} ч</td>
+        <td>${statusBadge}</td>
+      </tr>`;
+    }).join('');
+  } catch (e) {
+    $('all-bookings-tbody').innerHTML = `<tr><td colspan="7" class="empty-cell">Ошибка: ${escHtml(e.message)}</td></tr>`;
+  }
 }
 
 /* ═══════════════════════════════════════════════

@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../models/club.dart';
+import '../../booking/screens/booking_screen.dart';
 import '../../../models/club_zone.dart';
 import '../../../models/review.dart';
 import '../../../services/supabase_service.dart';
@@ -322,7 +323,31 @@ class _ClubDetail extends ConsumerWidget {
                     text: club.contactPhone!),
               ],
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
+
+              // ── Book button ─────────────────────────
+              SizedBox(
+                height: 48,
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => BookingScreen(preselectedClubId: club.id),
+                    ));
+                  },
+                  icon: const Icon(Icons.event_seat_rounded, size: 20),
+                  label: const Text('Забронировать место',
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
 
               // ── Action buttons row ───────────────────
               Row(

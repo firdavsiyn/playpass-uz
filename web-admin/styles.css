@@ -504,6 +504,10 @@ tbody tr:hover td { background: rgba(255,255,255,.02); }
 }
 .badge-success { background: var(--success); color: #fff; }
 .badge-error { background: var(--error); color: #fff; }
+.badge-warning { background: #FBBF24; color: #1a1a2e; }
+.badge-info { background: var(--primary); color: #fff; }
+.badge-danger { background: var(--error); color: #fff; }
+.badge-muted { background: rgba(255,255,255,0.1); color: var(--text-sec); }
 
 /* ── BTN INLINE ────────────────────────────── */
 .btn-inline { width: auto; padding: 9px 18px; font-size: 13px; }

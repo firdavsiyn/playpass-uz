@@ -599,29 +599,76 @@ async function endSession(pcId) {
 async function loadBookings() {
   if (!currentClub) return;
   const date = $('booking-date').value || toDateInput(new Date());
-  const { data } = await sb.from('bookings').select('*, club_pcs(pc_number, label), users(name)').eq('club_id', currentClub.id).eq('date', date).order('start_time');
+  const { data } = await sb.from('bookings').select('*, users(name)').eq('club_id', currentClub.id).eq('date', date).order('start_time');
   renderBookingsTable(data || []);
 }
 
 function renderBookingsTable(bookings) {
   const tbody = $('bookings-tbody');
-  if (!bookings.length) { tbody.innerHTML = `<tr><td colspan="5" class="empty-cell">${t('book_empty')}</td></tr>`; return; }
-  const statusMap = { pending: t('book_pending'), confirmed: t('book_confirmed'), cancelled: t('book_cancelled'), completed: t('book_completed') };
+  if (!bookings.length) { tbody.innerHTML = `<tr><td colspan="6" class="empty-cell">${t('book_empty')}</td></tr>`; return; }
+  const now = new Date();
   tbody.innerHTML = bookings.map(b => {
-    const pcLabel = b.club_pcs ? `#${b.club_pcs.pc_number} ${b.club_pcs.label || ''}` : '—';
-    const actions = b.status === 'pending' ? `<button class="btn-small btn-approve" onclick="confirmBooking('${b.id}')">${t('book_confirm')}</button><button class="btn-small btn-reject" onclick="cancelBooking('${b.id}')">${t('book_cancel')}</button>` :
-                    b.status === 'confirmed' ? `<button class="btn-small btn-reject" onclick="cancelBooking('${b.id}')">${t('book_cancel')}</button>` : '';
-    return `<tr><td>${b.start_time?.slice(0,5)} – ${b.end_time?.slice(0,5)}</td><td>${escHtml(pcLabel)}</td><td>${escHtml(b.users?.name || '—')}</td><td>${statusMap[b.status] || b.status}</td><td>${actions}</td></tr>`;
+    const zone = b.zone || 'basic';
+    const zoneLabel = zone === 'vip' ? 'VIP' : zone === 'pro' ? 'Про' : 'Базовая';
+    const zoneColor = zone === 'vip' ? '#FBBF24' : zone === 'pro' ? '#A855F7' : '#10B981';
+
+    // Status with grace period
+    let statusHtml = '';
+    let actions = '';
+    const graceExpires = b.grace_expires_at ? new Date(b.grace_expires_at) : null;
+
+    if (b.status === 'confirmed' && graceExpires && now > new Date(b.booking_time) && now < graceExpires) {
+      const minsLeft = Math.ceil((graceExpires - now) / 60000);
+      statusHtml = `<span class="badge badge-warning">⏳ ${minsLeft} мин</span>`;
+      actions = `<button class="btn-small btn-approve" onclick="activateBooking('${b.id}')">Пришёл</button><button class="btn-small btn-reject" onclick="cancelBookingAdmin('${b.id}')">Отмена</button>`;
+    } else if (b.status === 'confirmed') {
+      statusHtml = `<span class="badge badge-info">Подтверждён</span>`;
+      actions = `<button class="btn-small btn-approve" onclick="activateBooking('${b.id}')">Пришёл</button><button class="btn-small btn-reject" onclick="cancelBookingAdmin('${b.id}')">Отмена</button>`;
+    } else if (b.status === 'active') {
+      statusHtml = `<span class="badge badge-success">Активен</span>`;
+      actions = `<button class="btn-small btn-approve" onclick="completeBooking('${b.id}')">Завершить</button>`;
+    } else if (b.status === 'no_show') {
+      statusHtml = `<span class="badge badge-danger">Неявка</span>`;
+    } else if (b.status === 'completed') {
+      statusHtml = `<span class="badge badge-success">✓ Готово</span>`;
+    } else if (b.status === 'cancelled') {
+      statusHtml = `<span class="badge badge-muted">Отменён</span>`;
+    } else if (b.status === 'pending') {
+      statusHtml = `<span class="badge badge-warning">Ожидает</span>`;
+      actions = `<button class="btn-small btn-approve" onclick="confirmBooking('${b.id}')">Принять</button><button class="btn-small btn-reject" onclick="cancelBookingAdmin('${b.id}')">Отмена</button>`;
+    }
+
+    return `<tr>
+      <td>${b.start_time?.slice(0,5)} – ${b.end_time?.slice(0,5)}</td>
+      <td><span style="color:${zoneColor};font-weight:600">${zoneLabel}</span></td>
+      <td>${escHtml(b.users?.name || '—')}</td>
+      <td>${b.duration_hours || '—'} ч</td>
+      <td>${statusHtml}</td>
+      <td>${actions}</td>
+    </tr>`;
   }).join('');
 }
 
 async function confirmBooking(id) {
-  const { error } = await sb.from('bookings').update({ status: 'confirmed' }).eq('id', id);
+  const grace = new Date(Date.now() + 15 * 60000).toISOString();
+  const { error } = await sb.from('bookings').update({ status: 'confirmed', grace_expires_at: grace }).eq('id', id);
   if (error) { showToast(t('error_prefix') + ': ' + error.message, 'error'); return; }
   showToast(t('book_confirmed_toast')); loadBookings();
 }
 
-async function cancelBooking(id) {
+async function activateBooking(id) {
+  const { error } = await sb.from('bookings').update({ status: 'active' }).eq('id', id);
+  if (error) { showToast(t('error_prefix') + ': ' + error.message, 'error'); return; }
+  showToast('Клиент пришёл — сессия активна'); loadBookings();
+}
+
+async function completeBooking(id) {
+  const { error } = await sb.from('bookings').update({ status: 'completed' }).eq('id', id);
+  if (error) { showToast(t('error_prefix') + ': ' + error.message, 'error'); return; }
+  showToast('Бронь завершена'); loadBookings();
+}
+
+async function cancelBookingAdmin(id) {
   const { error } = await sb.from('bookings').update({ status: 'cancelled' }).eq('id', id);
   if (error) { showToast(t('error_prefix') + ': ' + error.message, 'error'); return; }
   showToast(t('book_cancelled_toast')); loadBookings();

@@ -657,6 +657,8 @@ class SupabaseService {
   }
 
   // ── Bookings ──────────────────────────────────────────────
+  static const _gracePeriodMinutes = 15;
+
   Future<void> createBooking({
     required String clubId,
     required String zone,
@@ -664,10 +666,28 @@ class SupabaseService {
     required int durationHours,
   }) async {
     final userId = currentUser!.id;
+
+    // Check if user is blocked from booking (too many no-shows)
+    final userRes = await _client
+        .from('users')
+        .select('booking_no_shows, booking_blocked_until')
+        .eq('id', userId)
+        .maybeSingle();
+    if (userRes != null) {
+      final blockedUntil = userRes['booking_blocked_until'] as String?;
+      if (blockedUntil != null && DateTime.parse(blockedUntil).isAfter(DateTime.now())) {
+        throw Exception('Бронирование заблокировано из-за неявок. Попробуйте позже.');
+      }
+    }
+
     final endTime = bookingTime.add(Duration(hours: durationHours));
     final dateStr = '${bookingTime.year}-${bookingTime.month.toString().padLeft(2, '0')}-${bookingTime.day.toString().padLeft(2, '0')}';
     final startStr = '${bookingTime.hour.toString().padLeft(2, '0')}:${bookingTime.minute.toString().padLeft(2, '0')}:00';
     final endStr = '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}:00';
+
+    // Grace period = booking start time + 15 minutes
+    final graceExpiresAt = bookingTime.add(const Duration(minutes: _gracePeriodMinutes));
+
     await _client.from('bookings').insert({
       'user_id': userId,
       'club_id': clubId,
@@ -678,6 +698,7 @@ class SupabaseService {
       'booking_time': bookingTime.toIso8601String(),
       'duration_hours': durationHours,
       'status': 'confirmed',
+      'grace_expires_at': graceExpiresAt.toIso8601String(),
     });
   }
 
@@ -686,7 +707,7 @@ class SupabaseService {
     if (userId == null) return [];
     final res = await _client
         .from('bookings')
-        .select('*, clubs(name)')
+        .select('*, clubs(name, address, photos)')
         .eq('user_id', userId)
         .order('booking_time', ascending: false)
         .limit(20);
@@ -698,6 +719,17 @@ class SupabaseService {
     await _client.from('bookings').update({
       'status': 'cancelled',
     }).eq('id', bookingId).eq('user_id', userId);
+  }
+
+  Future<int> getUserNoShowCount() async {
+    final userId = currentUser?.id;
+    if (userId == null) return 0;
+    final res = await _client
+        .from('users')
+        .select('booking_no_shows')
+        .eq('id', userId)
+        .maybeSingle();
+    return (res?['booking_no_shows'] as int?) ?? 0;
   }
 
   // ── Banners ──────────────────────────────────────────────
