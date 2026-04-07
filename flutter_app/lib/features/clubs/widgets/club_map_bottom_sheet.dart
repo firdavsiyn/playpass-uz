@@ -23,6 +23,15 @@ class ClubMapBottomSheet extends StatelessWidget {
     }
   }
 
+  void _call() async {
+    if (club.contactPhone == null) return;
+    final cleaned = club.contactPhone!.replaceAll(RegExp(r'[^\d+]'), '');
+    final url = Uri.parse('tel:$cleaned');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -119,6 +128,19 @@ class ClubMapBottomSheet extends StatelessWidget {
                         ),
                       ],
                     ),
+                    if (club.contactPhone != null) ...[
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(Icons.phone_outlined,
+                              size: 13, color: context.text3),
+                          const SizedBox(width: 2),
+                          Text(club.contactPhone!,
+                              style: TextStyle(
+                                  color: context.text2, fontSize: 12)),
+                        ],
+                      ),
+                    ],
                     const SizedBox(height: 6),
                     Row(
                       children: [
@@ -172,6 +194,26 @@ class ClubMapBottomSheet extends StatelessWidget {
           // Action buttons
           Row(
             children: [
+              // Call button
+              if (club.contactPhone != null)
+                Padding(
+                  padding: const EdgeInsets.only(right: 10),
+                  child: SizedBox(
+                    width: 48,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: _call,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.success,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.zero,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: const Icon(Icons.phone_rounded, size: 22),
+                    ),
+                  ),
+                ),
               // Navigate button
               Expanded(
                 child: ElevatedButton.icon(
@@ -187,7 +229,7 @@ class ClubMapBottomSheet extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               // Details button
               Expanded(
                 child: OutlinedButton.icon(

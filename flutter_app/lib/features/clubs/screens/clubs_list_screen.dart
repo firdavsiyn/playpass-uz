@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:geolocator/geolocator.dart';
 
 import '../../../models/club.dart';
 import '../../../services/supabase_service.dart';
@@ -19,11 +20,25 @@ final sortModeProvider = StateProvider<String>((ref) => 'rating');
 final filterPsProvider = StateProvider<bool>((ref) => false);
 final filterXboxProvider = StateProvider<bool>((ref) => false);
 final filterVrProvider = StateProvider<bool>((ref) => false);
-// View mode: 'list' | 'map' | 'favorites'
+// View mode: 'list' | 'map' | 'favorites' | 'zones' | 'nearby'
 final viewModeProvider = StateProvider<String>((ref) => 'list');
+// Filter for "Свободные" — show only clubs with low occupancy
+final filterFreeProvider = StateProvider<bool>((ref) => false);
 
 final nearbyClubsListProvider = FutureProvider<List<Club>>((ref) async {
-  return SupabaseService().getNearbyClubs(41.2995, 69.2401, radiusKm: 50);
+  try {
+    final permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      await Geolocator.requestPermission();
+    }
+    final pos = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.medium,
+    );
+    return SupabaseService().getNearbyClubs(pos.latitude, pos.longitude, radiusKm: 50);
+  } catch (_) {
+    // Fallback to Tashkent center
+    return SupabaseService().getNearbyClubs(41.2995, 69.2401, radiusKm: 50);
+  }
 });
 
 final clubsFilteredProvider = FutureProvider<List<Club>>((ref) async {
@@ -147,12 +162,9 @@ class ClubsListScreen extends ConsumerWidget {
                     iconColor: AppTheme.primary,
                     iconBg: AppTheme.primary.withValues(alpha: 0.12),
                     label: 'По зонам',
-                    selected: false,
-                    onTap: () {
-                      // Scroll down and show zone filters
-                      ref.read(selectedTierProvider.notifier).state = null;
-                      ref.read(viewModeProvider.notifier).state = 'list';
-                    },
+                    selected: viewMode == 'zones',
+                    onTap: () => ref.read(viewModeProvider.notifier).state =
+                        viewMode == 'zones' ? 'list' : 'zones',
                   ),
                   const SizedBox(width: 10),
                   _DiscoveryCard(
@@ -180,9 +192,10 @@ class ClubsListScreen extends ConsumerWidget {
                     icon: Icons.local_fire_department_rounded,
                     label: 'Свободные',
                     color: AppTheme.success,
-                    selected: false,
+                    selected: ref.watch(filterFreeProvider),
                     onTap: () {
-                      ref.read(sortModeProvider.notifier).state = 'rating';
+                      ref.read(filterFreeProvider.notifier).state =
+                          !ref.read(filterFreeProvider);
                       ref.read(viewModeProvider.notifier).state = 'list';
                     },
                   ),
@@ -225,10 +238,9 @@ class ClubsListScreen extends ConsumerWidget {
                     icon: Icons.near_me_rounded,
                     label: 'Рядом',
                     color: AppTheme.info,
-                    selected: false,
-                    onTap: () {
-                      ref.read(viewModeProvider.notifier).state = 'list';
-                    },
+                    selected: viewMode == 'nearby',
+                    onTap: () => ref.read(viewModeProvider.notifier).state =
+                        viewMode == 'nearby' ? 'list' : 'nearby',
                   ),
                 ],
               ),
@@ -237,7 +249,7 @@ class ClubsListScreen extends ConsumerWidget {
             const SizedBox(height: 10),
 
             // ── Sort row ──────────────────────────────────
-            if (viewMode == 'list')
+            if (viewMode == 'list' || viewMode == 'zones' || viewMode == 'nearby')
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
                 child: Row(
@@ -286,18 +298,34 @@ class ClubsListScreen extends ConsumerWidget {
             Expanded(
               child: clubsAsync.when(
                 data: (clubs) {
-                  final filtered = query.isEmpty
+                  var filtered = query.isEmpty
                       ? clubs
                       : clubs
                           .where((c) =>
                               c.name.toLowerCase().contains(query.toLowerCase()))
                           .toList();
 
+                  // Apply "Свободные" filter — hide clubs with >80% occupancy
+                  if (ref.watch(filterFreeProvider)) {
+                    final occ = ref.watch(clubsOccupancyProvider).valueOrNull ?? {};
+                    filtered = filtered.where((c) {
+                      final count = occ[c.id] ?? 0;
+                      if (c.pcCount == 0) return true;
+                      return (count / c.pcCount * 100) < 80;
+                    }).toList();
+                  }
+
                   if (viewMode == 'map') {
                     return _MapView(clubs: filtered, allClubs: clubs);
                   }
                   if (viewMode == 'favorites') {
                     return _FavoritesView(allClubs: clubs);
+                  }
+                  if (viewMode == 'zones') {
+                    return _ZonesView(clubs: filtered);
+                  }
+                  if (viewMode == 'nearby') {
+                    return _NearbyView();
                   }
                   return _ListView(clubs: filtered);
                 },
@@ -702,7 +730,8 @@ class _NearbyClubChip extends StatelessWidget {
 
 class _ClubListCard extends ConsumerWidget {
   final Club club;
-  const _ClubListCard({required this.club});
+  final bool showDistance;
+  const _ClubListCard({required this.club, this.showDistance = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -791,6 +820,21 @@ class _ClubListCard extends ConsumerWidget {
                         ),
                       ],
                     ),
+                    if (showDistance && club.distanceMeters != null) ...[
+                      const SizedBox(height: 3),
+                      Row(
+                        children: [
+                          Icon(Icons.near_me_rounded,
+                              size: 12, color: AppTheme.info),
+                          const SizedBox(width: 3),
+                          Text(club.distanceText,
+                              style: TextStyle(
+                                  color: AppTheme.info,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                    ],
                     const SizedBox(height: 6),
                     if (club.hasPlaystation)
                       Padding(
@@ -878,6 +922,177 @@ class _ClubListCard extends ConsumerWidget {
                 ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Zones view (grouped by tier) ───────────────────────────
+
+class _ZonesView extends StatelessWidget {
+  final List<Club> clubs;
+  const _ZonesView({required this.clubs});
+
+  @override
+  Widget build(BuildContext context) {
+    final vip = clubs.where((c) => c.tier == 'vip').toList();
+    final standard = clubs.where((c) => c.tier == 'standard').toList();
+    final basic = clubs.where((c) => c.tier == 'basic').toList();
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+      children: [
+        if (vip.isNotEmpty) ...[
+          _ZoneSectionHeader(
+            label: 'VIP',
+            count: vip.length,
+            color: const Color(0xFFFBBF24),
+            icon: Icons.star_rounded,
+          ),
+          const SizedBox(height: 8),
+          ...vip.map((c) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _ClubListCard(club: c),
+              )),
+          const SizedBox(height: 8),
+        ],
+        if (standard.isNotEmpty) ...[
+          _ZoneSectionHeader(
+            label: 'Стандарт',
+            count: standard.length,
+            color: AppTheme.primary,
+            icon: Icons.computer_rounded,
+          ),
+          const SizedBox(height: 8),
+          ...standard.map((c) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _ClubListCard(club: c),
+              )),
+          const SizedBox(height: 8),
+        ],
+        if (basic.isNotEmpty) ...[
+          _ZoneSectionHeader(
+            label: 'Базовый',
+            count: basic.length,
+            color: AppTheme.success,
+            icon: Icons.videogame_asset_rounded,
+          ),
+          const SizedBox(height: 8),
+          ...basic.map((c) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _ClubListCard(club: c),
+              )),
+        ],
+      ],
+    );
+  }
+}
+
+class _ZoneSectionHeader extends StatelessWidget {
+  final String label;
+  final int count;
+  final Color color;
+  final IconData icon;
+  const _ZoneSectionHeader({
+    required this.label,
+    required this.count,
+    required this.color,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(width: 8),
+          Text(label,
+              style: TextStyle(
+                  color: color, fontWeight: FontWeight.w700, fontSize: 15)),
+          const Spacer(),
+          Text('$count клубов',
+              style: TextStyle(color: color.withValues(alpha: 0.7), fontSize: 12)),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Nearby view (sorted by distance) ──────────────────────
+
+class _NearbyView extends ConsumerWidget {
+  const _NearbyView();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final nearbyAsync = ref.watch(nearbyClubsListProvider);
+
+    return nearbyAsync.when(
+      data: (clubs) {
+        if (clubs.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.location_off_rounded,
+                    color: context.text3.withValues(alpha: 0.4), size: 56),
+                const SizedBox(height: 12),
+                Text('Клубов поблизости не найдено',
+                    style: TextStyle(color: context.text3, fontSize: 15)),
+                const SizedBox(height: 6),
+                Text('Разрешите доступ к геолокации',
+                    style: TextStyle(
+                        color: context.text3.withValues(alpha: 0.6), fontSize: 12)),
+              ],
+            ),
+          );
+        }
+        return ListView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.near_me_rounded,
+                    size: 18, color: AppTheme.info),
+                const SizedBox(width: 6),
+                Text('Рядом с вами',
+                    style: TextStyle(
+                      color: context.text1,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16,
+                    )),
+                const Spacer(),
+                Text('${clubs.length} клубов',
+                    style: TextStyle(color: context.text3, fontSize: 12)),
+              ],
+            ),
+            const SizedBox(height: 10),
+            ...clubs.map((club) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _ClubListCard(club: club, showDistance: true),
+                )),
+          ],
+        );
+      },
+      loading: () => const Center(
+          child: CircularProgressIndicator(color: AppTheme.primary)),
+      error: (e, _) => Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.location_off_rounded,
+                color: context.text3.withValues(alpha: 0.4), size: 56),
+            const SizedBox(height: 12),
+            Text('Не удалось определить местоположение',
+                style: TextStyle(color: context.text3, fontSize: 14)),
           ],
         ),
       ),
