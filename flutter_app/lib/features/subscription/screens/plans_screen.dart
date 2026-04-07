@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_locale.dart';
 
 /// Экран выбора тарифа v2.0 — 4 плана (Базовый / Стандарт / Про / VIP)
-class PlansScreen extends StatelessWidget {
+class PlansScreen extends ConsumerWidget {
   const PlansScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final plans = AppConstants.plans.values.toList();
 
     return Scaffold(
@@ -18,7 +20,7 @@ class PlansScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back_ios),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Выберите тариф'),
+        title: Text(ref.lang('plans.title')),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -28,7 +30,7 @@ class PlansScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.only(top: 20, bottom: 8),
                 child: Text(
-                  'Начните играть сегодня',
+                  ref.lang('plans.subtitle'),
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                         color: context.text1,
                       ),
@@ -39,8 +41,7 @@ class PlansScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 24),
                 child: Text(
-                  'Выберите тариф и оплатите удобным способом. '
-                  'Подписка будет активирована в течение 30 минут.',
+                  ref.lang('plans.desc'),
                   style: TextStyle(color: context.text2, fontSize: 14),
                 ),
               ),
@@ -72,7 +73,7 @@ class PlansScreen extends StatelessWidget {
   }
 }
 
-class _PlanCard extends StatelessWidget {
+class _PlanCard extends ConsumerWidget {
   final PlanConfig plan;
   final bool isPopular;
   final VoidCallback onSelect;
@@ -93,19 +94,19 @@ class _PlanCard extends StatelessWidget {
     return '${buffer.toString()} UZS';
   }
 
-  String _hoursLabel(PlanConfig p) {
-    if (p.isUnlimited) return '1 визит/день';
-    return '${p.hours} ч/мес';
+  String _hoursLabel(PlanConfig p, WidgetRef ref) {
+    if (p.isUnlimited) return ref.lang('plans.visit_day');
+    return '${p.hours} ${ref.lang('plans.hours_month')}';
   }
 
-  List<_FeatureItem> _buildFeatures(PlanConfig p) {
+  List<_FeatureItem> _buildFeatures(PlanConfig p, WidgetRef ref) {
     final items = <_FeatureItem>[];
 
     // Hours / visits
     if (p.isUnlimited) {
-      items.add(_FeatureItem('Безлимит (1 визит в день)', true));
+      items.add(_FeatureItem(ref.lang('plans.unlimited_desc'), true));
     } else {
-      items.add(_FeatureItem('${p.hours} часов в месяц', true));
+      items.add(_FeatureItem('${p.hours} ${ref.lang('plans.hours_monthly')}', true));
     }
 
     // Zones
@@ -113,9 +114,9 @@ class _PlanCard extends StatelessWidget {
     final hasPro = p.allowedZones.contains('pro');
     final hasVip = p.allowedZones.contains('vip');
 
-    items.add(_FeatureItem('Базовая зона', hasBasic));
-    items.add(_FeatureItem('Про зона', hasPro));
-    items.add(_FeatureItem('VIP зона', hasVip));
+    items.add(_FeatureItem(ref.lang('plans.zone_basic'), hasBasic));
+    items.add(_FeatureItem(ref.lang('plans.zone_pro'), hasPro));
+    items.add(_FeatureItem(ref.lang('plans.zone_vip'), hasVip));
 
     // Time slots
     final hasDay = p.allowedSlots.contains('day');
@@ -124,10 +125,10 @@ class _PlanCard extends StatelessWidget {
     final allDay = hasDay && hasEvening && hasNight;
 
     if (allDay) {
-      items.add(_FeatureItem('Круглосуточный доступ 24/7', true));
+      items.add(_FeatureItem(ref.lang('plans.all_day'), true));
     } else if (hasDay) {
-      items.add(_FeatureItem('Только день (08:00–20:00)', true));
-      items.add(_FeatureItem('Вечерние и ночные часы', false));
+      items.add(_FeatureItem(ref.lang('plans.day_only'), true));
+      items.add(_FeatureItem(ref.lang('plans.no_evening'), false));
     }
 
     return items;
@@ -141,10 +142,10 @@ class _PlanCard extends StatelessWidget {
   };
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final priceFormatted = _formatPrice(plan.priceUzs);
     final usdEquiv = (plan.priceUzs / 12450).toStringAsFixed(0);
-    final features = _buildFeatures(plan);
+    final features = _buildFeatures(plan, ref);
     final color = _planColor;
 
     return Container(
@@ -190,7 +191,7 @@ class _PlanCard extends StatelessWidget {
                         border: Border.all(color: color.withValues(alpha: 0.2)),
                       ),
                       child: Text(
-                        _hoursLabel(plan),
+                        _hoursLabel(plan, ref),
                         style: TextStyle(
                           color: color,
                           fontWeight: FontWeight.w600,
@@ -212,7 +213,7 @@ class _PlanCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'в месяц (~\$$usdEquiv)',
+                  '${ref.lang('plans.per_month')} (~\$$usdEquiv)',
                   style: TextStyle(
                     color: context.text3,
                     fontSize: 13,
@@ -246,9 +247,9 @@ class _PlanCard extends StatelessWidget {
                           : const BorderSide(color: AppTheme.primary),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
-                    child: const Text(
-                      'Оформить',
-                      style: TextStyle(fontWeight: FontWeight.w600),
+                    child: Text(
+                      ref.lang('plans.select'),
+                      style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
@@ -276,9 +277,9 @@ class _PlanCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: const Text(
-                  'Популярный',
-                  style: TextStyle(
+                child: Text(
+                  ref.lang('plans.popular'),
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 11,
                     fontWeight: FontWeight.w700,

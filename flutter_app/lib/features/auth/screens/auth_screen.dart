@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../services/supabase_service.dart';
 
 /// Экран авторизации MVP — Email + Пароль (Tabs: Войти / Создать аккаунт)
@@ -57,7 +58,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     final password = _loginPassword.text;
 
     if (email.isEmpty || password.isEmpty) {
-      setState(() => _loginError = 'Введите email и пароль');
+      setState(() => _loginError = ref.lang('auth.enter_email_pass'));
       return;
     }
 
@@ -79,7 +80,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     } on AuthException catch (e) {
       setState(() => _loginError = _mapAuthError(e.message));
     } catch (e) {
-      setState(() => _loginError = 'Ошибка входа. Попробуйте снова.');
+      setState(() => _loginError = ref.lang('auth.login_error'));
     } finally {
       if (mounted) setState(() => _loginLoading = false);
     }
@@ -92,15 +93,15 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     final password = _regPassword.text;
 
     if (name.length < 2) {
-      setState(() => _regError = 'Имя должно быть не менее 2 символов');
+      setState(() => _regError = ref.lang('auth.name_short'));
       return;
     }
     if (email.isEmpty || !email.contains('@')) {
-      setState(() => _regError = 'Введите корректный email');
+      setState(() => _regError = ref.lang('auth.email_invalid'));
       return;
     }
     if (password.length < 8) {
-      setState(() => _regError = 'Пароль должен быть не менее 8 символов');
+      setState(() => _regError = ref.lang('auth.pass_short'));
       return;
     }
 
@@ -118,7 +119,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
       );
 
       if (response.user == null) {
-        setState(() => _regError = 'Не удалось создать аккаунт');
+        setState(() => _regError = ref.lang('auth.create_error'));
         return;
       }
 
@@ -137,7 +138,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     } on AuthException catch (e) {
       setState(() => _regError = _mapAuthError(e.message));
     } catch (e) {
-      setState(() => _regError = 'Ошибка регистрации. Попробуйте снова.');
+      setState(() => _regError = ref.lang('auth.reg_error'));
     } finally {
       if (mounted) setState(() => _regLoading = false);
     }
@@ -145,16 +146,16 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
 
   String _mapAuthError(String msg) {
     if (msg.contains('Invalid login credentials')) {
-      return 'Неверный email или пароль';
+      return ref.lang('auth.wrong_creds');
     }
     if (msg.contains('User already registered')) {
-      return 'Этот email уже зарегистрирован. Войдите.';
+      return ref.lang('auth.already_reg');
     }
     if (msg.contains('Email not confirmed')) {
-      return 'Подтвердите email (проверьте почту)';
+      return ref.lang('auth.confirm_email');
     }
     if (msg.contains('rate limit')) {
-      return 'Слишком много попыток. Подождите.';
+      return ref.lang('auth.rate_limit');
     }
     return msg;
   }
@@ -188,7 +189,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
               const SizedBox(height: 24),
 
               Text(
-                'Добро пожаловать\nв PlayPass',
+                ref.lang('auth.welcome'),
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       color: context.text1,
                       height: 1.3,
@@ -196,7 +197,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
               ),
               const SizedBox(height: 8),
               Text(
-                'Один абонемент — 50+ клубов Ташкента',
+                ref.lang('auth.tagline'),
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 28),
@@ -226,9 +227,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                   labelColor: Colors.white,
                   unselectedLabelColor: context.text2,
                   dividerHeight: 0,
-                  tabs: const [
-                    Tab(text: 'Войти'),
-                    Tab(text: 'Создать аккаунт'),
+                  tabs: [
+                    Tab(text: ref.lang('auth.tab_login')),
+                    Tab(text: ref.lang('auth.tab_register')),
                   ],
                 ),
               ),
@@ -273,7 +274,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
           ),
           const SizedBox(height: 16),
 
-          Text('Пароль', style: Theme.of(context).textTheme.bodyMedium),
+          Text(ref.lang('auth.password'), style: Theme.of(context).textTheme.bodyMedium),
           const SizedBox(height: 8),
           TextField(
             controller: _loginPassword,
@@ -281,7 +282,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
             textInputAction: TextInputAction.done,
             style: TextStyle(color: context.text1, fontSize: 16),
             decoration: InputDecoration(
-              hintText: 'Минимум 8 символов',
+              hintText: ref.lang('auth.password_hint'),
               prefixIcon: const Icon(Icons.lock_outline, size: 20),
               suffixIcon: IconButton(
                 icon: Icon(
@@ -306,8 +307,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
             alignment: Alignment.centerRight,
             child: TextButton(
               onPressed: () => context.push('/auth/forgot-password'),
-              child: const Text('Забыли пароль?',
-                  style: TextStyle(fontSize: 13)),
+              child: Text(ref.lang('auth.forgot'),
+                  style: const TextStyle(fontSize: 13)),
             ),
           ),
 
@@ -334,7 +335,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: Colors.white),
                     )
-                  : const Text('Войти'),
+                  : Text(ref.lang('auth.login_btn')),
             ),
           ),
         ],
@@ -348,15 +349,15 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Имя', style: Theme.of(context).textTheme.bodyMedium),
+          Text(ref.lang('auth.name'), style: Theme.of(context).textTheme.bodyMedium),
           const SizedBox(height: 8),
           TextField(
             controller: _regName,
             textInputAction: TextInputAction.next,
             textCapitalization: TextCapitalization.words,
             style: TextStyle(color: context.text1, fontSize: 16),
-            decoration: const InputDecoration(
-              hintText: 'Ваше имя',
+            decoration: InputDecoration(
+              hintText: ref.lang('auth.name_hint'),
               prefixIcon: Icon(Icons.person_outline, size: 20),
             ),
             onChanged: (_) => setState(() => _regError = null),
@@ -378,7 +379,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
           ),
           const SizedBox(height: 16),
 
-          Text('Пароль', style: Theme.of(context).textTheme.bodyMedium),
+          Text(ref.lang('auth.password'), style: Theme.of(context).textTheme.bodyMedium),
           const SizedBox(height: 8),
           TextField(
             controller: _regPassword,
@@ -386,7 +387,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
             textInputAction: TextInputAction.done,
             style: TextStyle(color: context.text1, fontSize: 16),
             decoration: InputDecoration(
-              hintText: 'Минимум 8 символов',
+              hintText: ref.lang('auth.password_hint'),
               prefixIcon: const Icon(Icons.lock_outline, size: 20),
               suffixIcon: IconButton(
                 icon: Icon(
@@ -429,14 +430,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: Colors.white),
                     )
-                  : const Text('Зарегистрироваться'),
+                  : Text(ref.lang('auth.register_btn')),
             ),
           ),
 
           const SizedBox(height: 16),
           Center(
             child: Text(
-              'Нажимая кнопку, вы соглашаетесь\nс Условиями использования',
+              ref.lang('auth.terms'),
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodySmall,
             ),

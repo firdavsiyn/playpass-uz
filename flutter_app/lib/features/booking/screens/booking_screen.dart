@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../models/club.dart';
 import '../../../services/supabase_service.dart';
 import '../../../services/notification_service.dart';
@@ -61,7 +62,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
     return Scaffold(
       backgroundColor: context.bg,
       appBar: AppBar(
-        title: const Text('Бронирование'),
+        title: Text(ref.lang('booking.title')),
         backgroundColor: context.bg,
       ),
       body: ListView(
@@ -83,9 +84,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Забронируйте место и приходите вовремя. '
-                    'У вас есть 15 минут после начала брони. '
-                    'Если не придёте — бронь автоматически отменится.',
+                    ref.lang('booking.info'),
                     style: TextStyle(
                         color: context.text2, fontSize: 13, height: 1.4),
                   ),
@@ -108,7 +107,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                 children: [
                   Row(
                     children: [
-                      Text('Мои бронирования',
+                      Text(ref.lang('booking.my'),
                           style: TextStyle(
                               color: context.text1,
                               fontWeight: FontWeight.w700,
@@ -147,11 +146,11 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
           ),
 
           // ── New booking form ────────────────────────────
-          _SectionTitle(title: 'Новое бронирование'),
+          _SectionTitle(title: ref.lang('booking.new')),
           const SizedBox(height: 14),
 
           // Club selector
-          _Label(text: 'Клуб'),
+          _Label(text: ref.lang('booking.club')),
           const SizedBox(height: 6),
           clubsAsync.when(
             data: (clubs) => GestureDetector(
@@ -213,7 +212,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                           Icon(Icons.search_rounded,
                               color: context.text3, size: 20),
                           const SizedBox(width: 10),
-                          Text('Выберите клуб',
+                          Text(ref.lang('booking.select_club'),
                               style: TextStyle(
                                   color: context.text3, fontSize: 15)),
                           const Spacer(),
@@ -224,19 +223,19 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
               ),
             ),
             loading: () => const LinearProgressIndicator(),
-            error: (_, __) => const Text('Ошибка загрузки клубов',
-                style: TextStyle(color: AppTheme.error)),
+            error: (_, __) => Text('${ref.lang('common.error')}',
+                style: const TextStyle(color: AppTheme.error)),
           ),
           const SizedBox(height: 16),
 
           // Zone selector
-          _Label(text: 'Зона'),
+          _Label(text: ref.lang('booking.zone')),
           const SizedBox(height: 6),
           Row(
             children: [
               _ZoneChip(
                   zone: 'basic',
-                  label: 'Базовая',
+                  label: ref.lang('booking.zone_basic'),
                   icon: Icons.computer_rounded,
                   color: AppTheme.success,
                   selected: _selectedZone == 'basic',
@@ -244,7 +243,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
               const SizedBox(width: 8),
               _ZoneChip(
                   zone: 'pro',
-                  label: 'Про',
+                  label: ref.lang('booking.zone_pro'),
                   icon: Icons.speed_rounded,
                   color: AppTheme.neonPurple,
                   selected: _selectedZone == 'pro',
@@ -262,7 +261,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
           const SizedBox(height: 16),
 
           // Date selector — horizontal scroll of 7 days
-          _Label(text: 'Дата'),
+          _Label(text: ref.lang('booking.date')),
           const SizedBox(height: 6),
           SizedBox(
             height: 72,
@@ -274,9 +273,9 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                 final date = DateTime.now().add(Duration(days: i));
                 final selected = _selectedDate.day == date.day &&
                     _selectedDate.month == date.month;
-                final dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+                final dayNames = [ref.lang('booking.day_mon'), ref.lang('booking.day_tue'), ref.lang('booking.day_wed'), ref.lang('booking.day_thu'), ref.lang('booking.day_fri'), ref.lang('booking.day_sat'), ref.lang('booking.day_sun')];
                 final dayName =
-                    i == 0 ? 'Сегодня' : dayNames[date.weekday - 1];
+                    i == 0 ? ref.lang('booking.today') : dayNames[date.weekday - 1];
 
                 return GestureDetector(
                   onTap: () => setState(() => _selectedDate = date),
@@ -318,7 +317,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
           const SizedBox(height: 16),
 
           // Time selector — grid of time slots
-          _Label(text: 'Время начала'),
+          _Label(text: ref.lang('booking.time')),
           const SizedBox(height: 6),
           _TimeSlotGrid(
             selectedTime: _selectedTime,
@@ -328,7 +327,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
           const SizedBox(height: 16),
 
           // Duration
-          _Label(text: 'Длительность'),
+          _Label(text: ref.lang('booking.duration')),
           const SizedBox(height: 6),
           Row(
             children: [1, 2, 3, 4, 5].map((h) {
@@ -348,7 +347,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                           color:
                               selected ? AppTheme.primary : context.border),
                     ),
-                    child: Text('$h ч',
+                    child: Text('$h ${ref.lang('booking.hours_short')}',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: selected ? AppTheme.primary : context.text3,
@@ -387,7 +386,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Приходите в течение 15 мин после начала. 3 неявки = блок на неделю.',
+                    ref.lang('booking.grace_warn'),
                     style: TextStyle(
                         color: context.text2, fontSize: 12, height: 1.3),
                   ),
@@ -414,8 +413,8 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                       height: 22,
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: Colors.white))
-                  : const Text('Забронировать',
-                      style:
+                  : Text(ref.lang('booking.submit'),
+                      style: const
                           TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
             ),
           ),
@@ -435,7 +434,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _SectionTitle(title: 'История'),
+                  _SectionTitle(title: ref.lang('booking.history')),
                   const SizedBox(height: 8),
                   ...past.map((b) => _HistoryCard(booking: b)),
                 ],
@@ -477,7 +476,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
             ),
             Padding(
               padding: const EdgeInsets.all(16),
-              child: Text('Выберите клуб',
+              child: Text(ref.lang('booking.select_club'),
                   style: TextStyle(
                       color: context.text1,
                       fontSize: 18,
@@ -574,7 +573,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
 
       // Don't allow booking in the past
       if (bookingTime.isBefore(DateTime.now())) {
-        throw Exception('Нельзя бронировать на прошедшее время');
+        throw Exception(ref.lang('booking.past_error'));
       }
 
       await SupabaseService().createBooking(
@@ -596,7 +595,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Бронь создана! Приходите вовремя'),
+            content: Text(ref.lang('booking.created')),
             backgroundColor: AppTheme.success,
             behavior: SnackBarBehavior.floating,
             shape:
@@ -756,7 +755,7 @@ class _TimeSlotGrid extends StatelessWidget {
 }
 
 // ── Price estimate ─────────────────────────────────────────
-class _PriceEstimate extends StatelessWidget {
+class _PriceEstimate extends ConsumerWidget {
   final Club club;
   final String zone;
   final int durationHours;
@@ -767,7 +766,7 @@ class _PriceEstimate extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final multiplier = zone == 'vip' ? 2.0 : zone == 'pro' ? 1.5 : 1.0;
     final estimated = (club.pricePerHour * multiplier * durationHours).round();
 
@@ -781,10 +780,10 @@ class _PriceEstimate extends StatelessWidget {
         children: [
           Icon(Icons.receipt_long_rounded, color: context.text3, size: 20),
           const SizedBox(width: 10),
-          Text('Примерная стоимость:',
+          Text('${ref.lang('booking.price')}:',
               style: TextStyle(color: context.text2, fontSize: 14)),
           const Spacer(),
-          Text('~${_formatPrice(estimated)} сум',
+          Text('~${_formatPrice(estimated)} ${ref.lang('booking.sum')}',
               style: TextStyle(
                   color: AppTheme.success,
                   fontWeight: FontWeight.w700,
@@ -803,13 +802,13 @@ class _PriceEstimate extends StatelessWidget {
 }
 
 // ── Active booking card ────────────────────────────────────
-class _BookingCard extends StatelessWidget {
+class _BookingCard extends ConsumerWidget {
   final Map<String, dynamic> booking;
   final VoidCallback onCancel;
   const _BookingCard({required this.booking, required this.onCancel});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final clubData = booking['clubs'] as Map<String, dynamic>?;
     final clubName = clubData?['name'] as String? ?? '';
     final clubPhotos = (clubData?['photos'] as List?)?.cast<String>() ?? [];
@@ -826,7 +825,7 @@ class _BookingCard extends StatelessWidget {
         : zone == 'pro'
             ? AppTheme.neonPurple
             : AppTheme.success;
-    final zoneLabel = zone == 'vip' ? 'VIP' : zone == 'pro' ? 'Про' : 'Базовая';
+    final zoneLabel = zone == 'vip' ? ref.lang('booking.zone_vip') : zone == 'pro' ? ref.lang('booking.zone_pro') : ref.lang('booking.zone_basic');
 
     // Grace period countdown
     final now = DateTime.now();
@@ -920,7 +919,7 @@ class _BookingCard extends StatelessWidget {
                       color: AppTheme.error, size: 16),
                   const SizedBox(width: 6),
                   Text(
-                    'Осталось $graceMinutesLeft мин чтобы прийти',
+                    ref.lang('booking.grace_left').replaceAll('{n}', '$graceMinutesLeft'),
                     style: const TextStyle(
                         color: AppTheme.error,
                         fontSize: 12,
@@ -939,7 +938,7 @@ class _BookingCard extends StatelessWidget {
                   child: OutlinedButton.icon(
                     onPressed: onCancel,
                     icon: const Icon(Icons.close_rounded, size: 16),
-                    label: const Text('Отменить', style: TextStyle(fontSize: 13)),
+                    label: Text(ref.lang('booking.cancel'), style: const TextStyle(fontSize: 13)),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppTheme.error,
                       side: BorderSide(
@@ -959,12 +958,12 @@ class _BookingCard extends StatelessWidget {
 }
 
 // ── History card ───────────────────────────────────────────
-class _HistoryCard extends StatelessWidget {
+class _HistoryCard extends ConsumerWidget {
   final Map<String, dynamic> booking;
   const _HistoryCard({required this.booking});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final clubName =
         (booking['clubs'] as Map<String, dynamic>?)?['name'] ?? '';
     final status = booking['status'] as String? ?? '';
@@ -977,15 +976,15 @@ class _HistoryCard extends StatelessWidget {
     switch (status) {
       case 'completed':
         statusColor = AppTheme.success;
-        statusLabel = 'Завершено';
+        statusLabel = ref.lang('booking.completed');
         statusIcon = Icons.check_circle_outline_rounded;
       case 'no_show':
         statusColor = AppTheme.error;
-        statusLabel = 'Неявка';
+        statusLabel = ref.lang('booking.no_show');
         statusIcon = Icons.warning_amber_rounded;
       default:
         statusColor = context.text3;
-        statusLabel = 'Отменено';
+        statusLabel = ref.lang('booking.cancelled');
         statusIcon = Icons.cancel_outlined;
     }
 

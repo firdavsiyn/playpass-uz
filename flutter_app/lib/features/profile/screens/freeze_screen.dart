@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../models/subscription.dart';
 import '../../../services/supabase_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/l10n/app_locale.dart';
 
-class FreezeScreen extends StatefulWidget {
+class FreezeScreen extends ConsumerStatefulWidget {
   final Subscription subscription;
 
   const FreezeScreen({super.key, required this.subscription});
 
   @override
-  State<FreezeScreen> createState() => _FreezeScreenState();
+  ConsumerState<FreezeScreen> createState() => _FreezeScreenState();
 }
 
-class _FreezeScreenState extends State<FreezeScreen> {
+class _FreezeScreenState extends ConsumerState<FreezeScreen> {
   final _svc = SupabaseService();
   Set<DateTime> _frozenDates = {};
   bool _loading = true;
@@ -58,7 +60,7 @@ class _FreezeScreenState extends State<FreezeScreen> {
     // Can't freeze past dates
     if (normalized.isBefore(todayNorm)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Нельзя заморозить прошедший день')),
+        SnackBar(content: Text(ref.lang('freeze.past_day'))),
       );
       return;
     }
@@ -70,7 +72,7 @@ class _FreezeScreenState extends State<FreezeScreen> {
         _frozenDates.length >= AppConstants.freezeMaxDaysPerMonth) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Лимит ${AppConstants.freezeMaxDaysPerMonth} дней в месяц исчерпан'),
+          content: Text('${ref.lang('freeze.limit_reached')} (${AppConstants.freezeMaxDaysPerMonth})'),
         ),
       );
       return;
@@ -99,7 +101,7 @@ class _FreezeScreenState extends State<FreezeScreen> {
           }
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка: $e')),
+          SnackBar(content: Text('${ref.lang('common.error')}: $e')),
         );
       }
     }
@@ -118,7 +120,7 @@ class _FreezeScreenState extends State<FreezeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Заморозка подписки'),
+        title: Text(ref.lang('freeze.title')),
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator(color: AppTheme.primary))
@@ -157,7 +159,7 @@ class _FreezeScreenState extends State<FreezeScreen> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Выберите дни заморозки',
+                        ref.lang('freeze.choose_days'),
                         style: TextStyle(
                           color: context.text1,
                           fontSize: 18,
@@ -166,8 +168,7 @@ class _FreezeScreenState extends State<FreezeScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Нажмите на дни в календаре, чтобы заморозить или разморозить. '
-                        'Дата окончания подписки сдвигается на каждый замороженный день.',
+                        ref.lang('freeze.desc'),
                         textAlign: TextAlign.center,
                         style: TextStyle(color: context.text2, fontSize: 13),
                       ),
@@ -198,7 +199,7 @@ class _FreezeScreenState extends State<FreezeScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Осталось: $remaining из ${AppConstants.freezeMaxDaysPerMonth} дней',
+                              '${ref.lang('freeze.remaining')}: $remaining ${ref.lang('freeze.of')} ${AppConstants.freezeMaxDaysPerMonth} ${ref.lang('freeze.days')}',
                               style: TextStyle(
                                 color: context.text1,
                                 fontSize: 14,
@@ -207,7 +208,7 @@ class _FreezeScreenState extends State<FreezeScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Выбрано: ${_frozenDates.length} ${_daysWord(_frozenDates.length)}',
+                              '${ref.lang('freeze.selected')}: ${_frozenDates.length} ${ref.lang('freeze.days')}',
                               style: TextStyle(color: context.text3, fontSize: 12),
                             ),
                           ],
@@ -243,11 +244,11 @@ class _FreezeScreenState extends State<FreezeScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _legendDot(AppTheme.info, 'Заморожен'),
+                    _legendDot(AppTheme.info, ref.lang('freeze.frozen_label')),
                     const SizedBox(width: 20),
-                    _legendDot(context.text3.withValues(alpha: 0.3), 'Прошедший'),
+                    _legendDot(context.text3.withValues(alpha: 0.3), ref.lang('freeze.past_label')),
                     const SizedBox(width: 20),
-                    _legendDot(AppTheme.primary, 'Сегодня'),
+                    _legendDot(AppTheme.primary, ref.lang('freeze.today_label')),
                   ],
                 ),
 
@@ -264,7 +265,7 @@ class _FreezeScreenState extends State<FreezeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Замороженные дни',
+                          ref.lang('freeze.frozen_days'),
                           style: TextStyle(
                             color: context.text1,
                             fontSize: 14,
@@ -346,7 +347,7 @@ class _FreezeScreenState extends State<FreezeScreen> {
 
           // Day headers
           Row(
-            children: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
+            children: [ref.lang('booking.day_mon'), ref.lang('booking.day_tue'), ref.lang('booking.day_wed'), ref.lang('booking.day_thu'), ref.lang('booking.day_fri'), ref.lang('booking.day_sat'), ref.lang('booking.day_sun')]
                 .map((d) => Expanded(
                       child: Center(
                         child: Text(d,
@@ -442,14 +443,5 @@ class _FreezeScreenState extends State<FreezeScreen> {
     );
   }
 
-  String _monthName(int month) => const [
-    '', 'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
-    'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь',
-  ][month];
-
-  String _daysWord(int n) {
-    if (n % 10 == 1 && n % 100 != 11) return 'день';
-    if (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) return 'дня';
-    return 'дней';
-  }
+  String _monthName(int month) => ref.lang('freeze.month_$month');
 }

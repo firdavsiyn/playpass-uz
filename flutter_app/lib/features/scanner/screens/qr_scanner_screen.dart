@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../services/supabase_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_locale.dart';
 
 enum ScanState { scanning, processing, success, error }
 
@@ -85,7 +86,7 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen>
       final uri = Uri.parse(raw);
       if ((uri.scheme != 'playpassuz' && uri.scheme != 'gamepassuz') ||
           uri.host != 'checkin') {
-        _setError('Неверный QR-код. Отсканируйте постер PlayPass.');
+        _setError(ref.lang('scan.invalid_qr'));
         return;
       }
 
@@ -93,7 +94,7 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen>
       final qrHmac = uri.queryParameters['h'] ?? uri.queryParameters['t'];
 
       if (zoneId == null || qrHmac == null) {
-        _setError('Недействительный QR-код.');
+        _setError(ref.lang('scan.invalid_code'));
         return;
       }
 
@@ -115,7 +116,7 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen>
         _state = ScanState.success;
         _result = result;
         _message = result['message'] as String? ??
-            'Добро пожаловать! Осталось: ${result['hours_left'] ?? "?"} ч';
+            '${ref.lang('scan.welcome')} ${ref.lang('scan.hours_left')}: ${result['hours_left'] ?? "?"} ${ref.lang('booking.hours_short')}';
       });
 
       // Auto-close after 3 seconds
@@ -171,11 +172,11 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen>
                         const Icon(Icons.arrow_back_ios, color: Colors.white),
                     onPressed: () => context.go('/home'),
                   ),
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'Сканировать QR',
+                      ref.lang('scan.title'),
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 17,
                         fontWeight: FontWeight.w600,
@@ -243,9 +244,9 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen>
                       color: Colors.black54,
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Text(
-                      'Наведите на QR-постер клуба',
-                      style: TextStyle(color: Colors.white, fontSize: 15),
+                    child: Text(
+                      ref.lang('scan.hint'),
+                      style: const TextStyle(color: Colors.white, fontSize: 15),
                     ),
                   ),
                 ],
@@ -299,7 +300,7 @@ class _OverlayPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-class _ResultOverlay extends StatelessWidget {
+class _ResultOverlay extends ConsumerWidget {
   final ScanState state;
   final String message;
   final Map<String, dynamic>? result;
@@ -311,7 +312,7 @@ class _ResultOverlay extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isSuccess = state == ScanState.success;
     final color = isSuccess ? AppTheme.success : AppTheme.error;
     final icon =
@@ -340,7 +341,7 @@ class _ResultOverlay extends StatelessWidget {
                 const SizedBox(height: 16),
                 if (result!['hours_left'] != null)
                   Text(
-                    'Осталось: ${result!['hours_left']} ч',
+                    '${ref.lang('scan.hours_left')}: ${result!['hours_left']} ${ref.lang('booking.hours_short')}',
                     style: TextStyle(
                         color: context.text2, fontSize: 16),
                   ),

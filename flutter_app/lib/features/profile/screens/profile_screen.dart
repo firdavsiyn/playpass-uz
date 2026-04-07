@@ -40,7 +40,7 @@ class ProfileScreen extends ConsumerWidget {
           subscription: subAsync.valueOrNull,
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Ошибка: $e')),
+        error: (e, _) => Center(child: Text('${ref.lang('common.error')}: $e')),
       ),
     );
   }
@@ -178,13 +178,13 @@ class _ProfileContent extends ConsumerWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Подписка: ${subscription!.planName}',
+                    Text('${ref.lang('profile.sub_label')}: ${subscription!.planName}',
                         style: TextStyle(
                             color: context.text1,
                             fontWeight: FontWeight.w600)),
                     const SizedBox(height: 4),
                     Text(
-                      'До ${subscription!.endDate.day}.${subscription!.endDate.month.toString().padLeft(2, '0')}.${subscription!.endDate.year}',
+                      '${ref.lang('profile.until')} ${subscription!.endDate.day}.${subscription!.endDate.month.toString().padLeft(2, '0')}.${subscription!.endDate.year}',
                       style: TextStyle(color: context.text3, fontSize: 12),
                     ),
                   ],
@@ -192,7 +192,7 @@ class _ProfileContent extends ConsumerWidget {
                 const Spacer(),
                 TextButton(
                   onPressed: () => context.push('/plans'),
-                  child: const Text('Продлить'),
+                  child: Text(ref.lang('profile.renew')),
                 ),
               ],
             ),
@@ -224,14 +224,14 @@ class _ProfileContent extends ConsumerWidget {
         ),
         _MenuItem(
           icon: Icons.emoji_events_rounded,
-          title: 'Турниры',
-          subtitle: 'Соревнуйтесь с другими игроками',
+          title: ref.lang('profile.tournaments'),
+          subtitle: ref.lang('profile.tournaments_sub'),
           onTap: () => context.push('/tournaments'),
         ),
         _MenuItem(
           icon: Icons.star_rounded,
-          title: 'Программа лояльности',
-          subtitle: 'XP, уровни и привилегии',
+          title: ref.lang('profile.loyalty'),
+          subtitle: ref.lang('profile.loyalty_sub'),
           onTap: () => context.push('/loyalty'),
         ),
         _MenuItem(
@@ -254,8 +254,8 @@ class _ProfileContent extends ConsumerWidget {
         ),
         _MenuItem(
           icon: Icons.notifications_rounded,
-          title: 'Уведомления',
-          subtitle: 'Настройки push-уведомлений',
+          title: ref.lang('profile.notifications'),
+          subtitle: ref.lang('profile.notif_sub'),
           onTap: () => context.push('/notifications-settings'),
         ),
         _MenuItem(
@@ -279,7 +279,7 @@ class _ProfileContent extends ConsumerWidget {
           _MenuItem(
             icon: Icons.ac_unit_rounded,
             title: ref.lang('profile.freeze'),
-            subtitle: '${subscription!.freezeDaysLeft} дн. доступно',
+            subtitle: '${subscription!.freezeDaysLeft} ${ref.lang('profile.freeze_days')}',
             onTap: () => context.push('/profile/freeze', extra: subscription),
           ),
         if (subscription != null && subscription!.isFrozen)
@@ -299,7 +299,7 @@ class _ProfileContent extends ConsumerWidget {
         _MenuItem(
           icon: Icons.help_outline_rounded,
           title: ref.lang('profile.support'),
-          onTap: () => _showSupportSheet(context),
+          onTap: () => _showSupportSheet(context, ref),
         ),
         const SizedBox(height: 8),
         _MenuItem(
@@ -340,7 +340,7 @@ class _ProfileContent extends ConsumerWidget {
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Загрузка фото...')),
+          SnackBar(content: Text(ref.lang('profile.upload_photo'))),
         );
       }
 
@@ -351,14 +351,14 @@ class _ProfileContent extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Фото обновлено!')),
+          SnackBar(content: Text(ref.lang('profile.photo_updated'))),
         );
       }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка загрузки: $e')),
+          SnackBar(content: Text('${ref.lang('common.error')}: $e')),
         );
       }
     }
@@ -374,22 +374,22 @@ class _ProfileContent extends ConsumerWidget {
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(color: AppTheme.primary.withValues(alpha: 0.15)),
         ),
-        title: Text('Изменить имя',
+        title: Text(ref.lang('profile.change_name'),
             style: TextStyle(color: context.text1)),
         content: TextField(
           controller: controller,
           autofocus: true,
           textCapitalization: TextCapitalization.words,
           style: TextStyle(color: context.text1, fontSize: 16),
-          decoration: const InputDecoration(
-            hintText: 'Ваше имя',
+          decoration: InputDecoration(
+            hintText: ref.lang('profile.name_hint'),
             prefixIcon: Icon(Icons.person_outline, size: 20),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Отмена'),
+            child: Text(ref.lang('common.cancel')),
           ),
           Container(
             decoration: BoxDecoration(
@@ -406,7 +406,7 @@ class _ProfileContent extends ConsumerWidget {
                 final newName = controller.text.trim();
                 if (newName.length < 2) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Имя должно быть не менее 2 символов')),
+                    SnackBar(content: Text(ref.lang('profile.name_too_short'))),
                   );
                   return;
                 }
@@ -416,18 +416,18 @@ class _ProfileContent extends ConsumerWidget {
                   ref.invalidate(profileProvider);
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Имя изменено на "$newName"')),
+                      SnackBar(content: Text('${ref.lang('profile.name_changed')}: $newName')),
                     );
                   }
                 } catch (e) {
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Ошибка: $e')),
+                      SnackBar(content: Text('${ref.lang('common.error')}: $e')),
                     );
                   }
                 }
               },
-              child: const Text('Сохранить'),
+              child: Text(ref.lang('common.save')),
             ),
           ),
         ],
@@ -435,7 +435,7 @@ class _ProfileContent extends ConsumerWidget {
     );
   }
 
-  void _showSupportSheet(BuildContext context) {
+  void _showSupportSheet(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
       context: context,
       backgroundColor: context.card,
@@ -473,7 +473,7 @@ class _ProfileContent extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Служба поддержки',
+              ref.lang('support.title'),
               style: TextStyle(
                 color: context.text1,
                 fontSize: 20,
@@ -482,7 +482,7 @@ class _ProfileContent extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Мы на связи ежедневно с 10:00 до 22:00',
+              ref.lang('support.hours'),
               style: TextStyle(color: context.text2, fontSize: 14),
             ),
             const SizedBox(height: 24),
@@ -502,7 +502,7 @@ class _ProfileContent extends ConsumerWidget {
             const SizedBox(height: 12),
             _SupportOption(
               icon: Icons.phone_rounded,
-              title: 'Телефон',
+              title: ref.lang('support.phone'),
               subtitle: '+998 90 123 45 67',
               color: AppTheme.success,
               onTap: () async {
@@ -627,7 +627,7 @@ class _LanguageToggle extends ConsumerWidget {
             Icon(Icons.language_rounded, color: context.text1, size: 22),
             const SizedBox(width: 14),
             Expanded(
-              child: Text('Язык / Til', style: TextStyle(color: context.text1, fontSize: 15)),
+              child: Text(ref.lang('profile.language'), style: TextStyle(color: context.text1, fontSize: 15)),
             ),
             Container(
               padding: const EdgeInsets.all(2),
@@ -671,7 +671,7 @@ class _ThemeToggle extends ConsumerWidget {
                 color: Theme.of(context).textTheme.bodyLarge?.color, size: 22),
             const SizedBox(width: 14),
             Expanded(
-              child: Text(isDark ? 'Тёмная тема' : 'Светлая тема',
+              child: Text(isDark ? ref.lang('profile.dark_theme') : ref.lang('profile.light_theme'),
                   style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color, fontSize: 15)),
             ),
             Switch(
