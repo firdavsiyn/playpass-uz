@@ -425,6 +425,7 @@ function showAddClubModal() {
   $('modal-title').textContent = 'Добавить клуб';
   $('modal-body').innerHTML = clubFormHtml();
   openModal();
+  initPhotoUploader([]);
 }
 
 function editClubModal(id) {
@@ -433,6 +434,143 @@ function editClubModal(id) {
   $('modal-title').textContent = 'Редактировать клуб';
   $('modal-body').innerHTML = clubFormHtml(club);
   openModal();
+  initPhotoUploader(club.photos || []);
+}
+
+/* ── PHOTO UPLOADER ────────────────────────────── */
+let clubPhotos = []; // current photos (URLs)
+let pendingUploads = []; // File objects to upload on save
+
+function initPhotoUploader(existingPhotos) {
+  clubPhotos = [...existingPhotos];
+  pendingUploads = [];
+  renderPhotoGrid();
+  setupDropzone();
+}
+
+function renderPhotoGrid() {
+  const grid = $('photo-grid');
+  if (!grid) return;
+  grid.innerHTML = clubPhotos.map((url, i) => `
+    <div class="photo-item" draggable="true" data-index="${i}">
+      <img src="${esc(url)}" alt="Photo ${i + 1}" />
+      <div class="photo-overlay">
+        <span class="photo-index">${i + 1}</span>
+        <button class="photo-delete" onclick="removePhoto(${i})" title="Удалить">&times;</button>
+      </div>
+      ${i === 0 ? '<span class="photo-main-badge">Главное</span>' : ''}
+    </div>
+  `).join('') + (pendingUploads.length > 0 ? pendingUploads.map((f, i) => `
+    <div class="photo-item photo-pending">
+      <img src="${URL.createObjectURL(f)}" alt="New ${i + 1}" />
+      <div class="photo-overlay">
+        <span class="photo-index" style="background:var(--warning)">+</span>
+        <button class="photo-delete" onclick="removePendingPhoto(${i})" title="Убрать">&times;</button>
+      </div>
+    </div>
+  `).join('') : '');
+
+  const total = clubPhotos.length + pendingUploads.length;
+  const counter = $('photo-counter');
+  if (counter) counter.textContent = `${total}/5`;
+  const addBtn = $('photo-add-area');
+  if (addBtn) addBtn.style.display = total >= 5 ? 'none' : '';
+
+  // Drag & drop reorder
+  grid.querySelectorAll('.photo-item[draggable="true"]').forEach(item => {
+    item.addEventListener('dragstart', (e) => {
+      e.dataTransfer.setData('text/plain', item.dataset.index);
+      item.classList.add('dragging');
+    });
+    item.addEventListener('dragend', () => item.classList.remove('dragging'));
+    item.addEventListener('dragover', (e) => { e.preventDefault(); item.classList.add('drag-over'); });
+    item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
+    item.addEventListener('drop', (e) => {
+      e.preventDefault();
+      item.classList.remove('drag-over');
+      const from = parseInt(e.dataTransfer.getData('text/plain'));
+      const to = parseInt(item.dataset.index);
+      if (from !== to && !isNaN(from) && !isNaN(to)) {
+        const moved = clubPhotos.splice(from, 1)[0];
+        clubPhotos.splice(to, 0, moved);
+        renderPhotoGrid();
+      }
+    });
+  });
+}
+
+function setupDropzone() {
+  const zone = $('photo-dropzone');
+  if (!zone) return;
+  zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('drag-active'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-active'));
+  zone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    zone.classList.remove('drag-active');
+    handlePhotoFiles(e.dataTransfer.files);
+  });
+}
+
+function triggerPhotoInput() {
+  const inp = $('photo-file-input');
+  if (inp) inp.click();
+}
+
+function onPhotoInputChange(input) {
+  handlePhotoFiles(input.files);
+  input.value = '';
+}
+
+function handlePhotoFiles(fileList) {
+  const total = clubPhotos.length + pendingUploads.length;
+  const remaining = 5 - total;
+  if (remaining <= 0) { showToast('Максимум 5 фото', 'error'); return; }
+  const files = Array.from(fileList).filter(f => f.type.startsWith('image/')).slice(0, remaining);
+  if (files.length === 0) { showToast('Выберите изображения', 'error'); return; }
+  // Validate size (max 5MB each)
+  for (const f of files) {
+    if (f.size > 5 * 1024 * 1024) { showToast(`${f.name} > 5MB`, 'error'); return; }
+  }
+  pendingUploads.push(...files);
+  renderPhotoGrid();
+}
+
+function removePhoto(index) {
+  clubPhotos.splice(index, 1);
+  renderPhotoGrid();
+}
+
+function removePendingPhoto(index) {
+  pendingUploads.splice(index, 1);
+  renderPhotoGrid();
+}
+
+async function uploadClubPhotos(clubId) {
+  const uploaded = [];
+  for (const file of pendingUploads) {
+    const ext = file.name.split('.').pop() || 'jpg';
+    const path = `${clubId}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await sb.storage.from('club-photos').upload(path, file, {
+      cacheControl: '3600', upsert: false,
+    });
+    if (error) { console.error('Upload error:', error); showToast(`Ошибка загрузки: ${file.name}`, 'error'); continue; }
+    const { data: urlData } = sb.storage.from('club-photos').getPublicUrl(path);
+    uploaded.push(urlData.publicUrl);
+  }
+  return uploaded;
+}
+
+async function deleteOldPhotos(oldPhotos, newPhotos) {
+  // Delete from storage any photos that were removed
+  const removed = oldPhotos.filter(u => !newPhotos.includes(u));
+  for (const url of removed) {
+    // Extract path from URL: ...club-photos/clubId/filename.jpg
+    const match = url.match(/club-photos\/(.+)$/);
+    if (match) {
+      await sb.storage.from('club-photos').remove([match[1]]).catch(() => {});
+    }
+    // If it's an unsplash URL, just skip storage deletion
+  }
 }
 
 const WEEK_DAYS = [
@@ -524,12 +662,25 @@ function clubFormHtml(club = null) {
     <div class="form-group"><label>${t('clubs_label_pc')}</label><input type="number" id="club-pc" value="${club?.pc_count || ''}" placeholder="30" /></div>
     <div class="form-group"><label>${currentLang === 'uz' ? 'Umumiy sig\'im' : 'Общая вместимость'}</label><input type="number" id="club-capacity" value="${club?.total_capacity || ''}" placeholder="50" /></div>
     <div class="form-group">
+      <label>${currentLang === 'uz' ? 'Suratlar' : 'Фотографии'} <span id="photo-counter" class="text-muted">${(club?.photos || []).length}/5</span></label>
+      <div id="photo-dropzone" class="photo-dropzone">
+        <div id="photo-grid" class="photo-grid"></div>
+        <div id="photo-add-area" class="photo-add-area" onclick="triggerPhotoInput()">
+          <div class="photo-add-btn">
+            <span class="photo-add-icon">📷</span>
+            <span>${currentLang === 'uz' ? 'Qo\'shish yoki tashlash' : 'Нажмите или перетащите'}</span>
+          </div>
+        </div>
+        <input type="file" id="photo-file-input" accept="image/*" multiple hidden onchange="onPhotoInputChange(this)" />
+      </div>
+    </div>
+    <div class="form-group">
       <label>${currentLang === 'uz' ? 'Ish vaqti' : 'Часы работы'}</label>
       <div class="wh-grid">${workingHoursHtml(club?.working_hours)}</div>
     </div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal()">${t('btn_cancel')}</button>
-      <button class="btn-primary btn-inline" onclick="saveClub('${club?.id || ''}')">${club ? t('btn_save') : t('btn_add')}</button>
+      <button class="btn-primary btn-inline" id="save-club-btn" onclick="saveClub('${club?.id || ''}')">${club ? t('btn_save') : t('btn_add')}</button>
     </div>`;
 }
 
@@ -540,21 +691,61 @@ async function saveClub(id) {
     working_hours: collectWorkingHours(),
   };
   if (!payload.name) { showToast('Введите название клуба', 'error'); return; }
+
+  const saveBtn = $('save-club-btn');
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '⏳ Сохранение...'; }
+
   try {
+    let clubId = id;
+
+    // If new club — insert first to get ID for photo upload
+    if (!clubId) {
+      payload.status = 'active';
+      payload.photos = [];
+      const { data: inserted, error } = await sb.from('clubs').insert(payload).select('id').single();
+      if (error) throw error;
+      clubId = inserted.id;
+    }
+
+    // Upload new photos
+    let newUrls = [];
+    if (pendingUploads.length > 0) {
+      if (saveBtn) saveBtn.textContent = '📷 Загрузка фото...';
+      newUrls = await uploadClubPhotos(clubId);
+    }
+
+    // Build final photos array: existing (reordered) + newly uploaded
+    const finalPhotos = [...clubPhotos, ...newUrls];
+
+    // Delete removed photos from storage
+    const oldClub = clubsCache.find(c => c.id === clubId);
+    if (oldClub?.photos) {
+      await deleteOldPhotos(oldClub.photos, finalPhotos);
+    }
+
+    // Update club with photos (and other fields if editing)
     if (id) {
+      payload.photos = finalPhotos;
       const { error } = await sb.from('clubs').update(payload).eq('id', id);
       if (error) throw error;
       showToast('Клуб обновлён');
       logAction('Обновил клуб', 'club', id, payload.name);
     } else {
-      payload.status = 'active';
-      const { error } = await sb.from('clubs').insert(payload);
+      // New club — just update photos
+      const { error } = await sb.from('clubs').update({ photos: finalPhotos }).eq('id', clubId);
       if (error) throw error;
       showToast('Клуб добавлен');
-      logAction('Добавил клуб', 'club', null, payload.name);
+      logAction('Добавил клуб', 'club', clubId, payload.name);
     }
+
+    pendingUploads = [];
+    clubPhotos = [];
     closeModal(); loadClubs();
-  } catch (e) { showToast(e.message, 'error'); }
+  } catch (e) {
+    showToast(e.message, 'error');
+  } finally {
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = id ? t('btn_save') : t('btn_add'); }
+  }
 }
 
 async function toggleClubStatus(id, currentlyActive) {

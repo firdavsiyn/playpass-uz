@@ -558,8 +558,8 @@ tbody tr:hover td { background: rgba(255,255,255,.02); }
   border: 1px solid var(--border);
   border-radius: 20px;
   width: 100%;
-  max-width: 560px;
-  max-height: 85vh;
+  max-width: 620px;
+  max-height: 88vh;
   overflow-y: auto;
 }
 .modal-header {
@@ -928,3 +928,112 @@ textarea:focus { outline: none; border-color: var(--primary); }
   min-width: 180px;
 }
 .filters-row select:focus { outline: none; border-color: var(--primary); }
+
+/* ── PHOTO UPLOADER ──────────────────────────── */
+.photo-dropzone {
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  transition: border-color 0.2s, background 0.2s;
+}
+.photo-dropzone.drag-active {
+  border-color: var(--primary);
+  background: rgba(99, 102, 241, 0.05);
+}
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.photo-grid:empty { margin-bottom: 0; }
+.photo-item {
+  position: relative;
+  aspect-ratio: 4/3;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: grab;
+  border: 2px solid transparent;
+  transition: border-color 0.2s, transform 0.15s;
+}
+.photo-item:hover { border-color: var(--primary-light); }
+.photo-item.dragging { opacity: 0.4; transform: scale(0.95); }
+.photo-item.drag-over { border-color: var(--primary); box-shadow: 0 0 12px rgba(99, 102, 241, 0.3); }
+.photo-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.photo-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 40%, transparent 60%, rgba(0,0,0,0.3) 100%);
+  opacity: 0;
+  transition: opacity 0.2s;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 6px;
+}
+.photo-item:hover .photo-overlay { opacity: 1; }
+.photo-index {
+  background: var(--primary);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.photo-delete {
+  background: rgba(239, 68, 68, 0.9);
+  color: #fff;
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: background 0.15s;
+}
+.photo-delete:hover { background: #EF4444; }
+.photo-main-badge {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.3px;
+}
+.photo-pending { border: 2px dashed var(--warning); }
+.photo-add-area {
+  display: flex;
+  justify-content: center;
+  cursor: pointer;
+}
+.photo-add-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 24px;
+  border-radius: 10px;
+  color: var(--text-sec);
+  font-size: 13px;
+  transition: color 0.2s, background 0.2s;
+}
+.photo-add-btn:hover { color: var(--primary); background: rgba(99, 102, 241, 0.06); }
+.photo-add-icon { font-size: 28px; }
+.text-muted { color: var(--text-muted); font-size: 13px; font-weight: 400; }
