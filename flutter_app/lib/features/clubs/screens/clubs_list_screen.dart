@@ -16,13 +16,13 @@ final selectedTierProvider = StateProvider<String?>((ref) => null);
 final searchQueryProvider = StateProvider<String>((ref) => '');
 final isMapViewProvider = StateProvider<bool>((ref) => false);
 final sortModeProvider = StateProvider<String>((ref) => 'rating');
-
-// Console filters
 final filterPsProvider = StateProvider<bool>((ref) => false);
+final filterXboxProvider = StateProvider<bool>((ref) => false);
+final filterVrProvider = StateProvider<bool>((ref) => false);
+// View mode: 'list' | 'map' | 'favorites'
+final viewModeProvider = StateProvider<String>((ref) => 'list');
 
-// Nearby clubs (using device location or Tashkent center as default)
 final nearbyClubsListProvider = FutureProvider<List<Club>>((ref) async {
-  // Default: Tashkent center coordinates
   return SupabaseService().getNearbyClubs(41.2995, 69.2401, radiusKm: 50);
 });
 
@@ -44,7 +44,6 @@ final clubsFilteredProvider = FutureProvider<List<Club>>((ref) async {
   return clubs;
 });
 
-// Occupancy for list display — single batch query instead of N+1
 final clubsOccupancyProvider = FutureProvider<Map<String, int>>((ref) async {
   ref.watch(clubsFilteredProvider);
   return SupabaseService().getAllClubsOccupancy();
@@ -59,201 +58,256 @@ class ClubsListScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final query = ref.watch(searchQueryProvider);
     final clubsAsync = ref.watch(clubsFilteredProvider);
-    final isMap = ref.watch(isMapViewProvider);
-    final tier = ref.watch(selectedTierProvider);
-    final ps = ref.watch(filterPsProvider);
+    final viewMode = ref.watch(viewModeProvider);
 
     return Scaffold(
-      body: Column(
-        children: [
-          // ── Header area: search + toggle + filters ────────
-          SafeArea(
-            bottom: false,
-            child: Column(
-              children: [
-                const SizedBox(height: 8),
-                // Search bar + toggle row
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    children: [
-                      // Search field
-                      Expanded(
-                        child: SizedBox(
-                          height: 42,
-                          child: TextField(
-                            onChanged: (v) =>
-                                ref.read(searchQueryProvider.notifier).state = v,
-                            style: const TextStyle(fontSize: 14),
-                            decoration: InputDecoration(
-                              hintText: 'Поиск клуба...',
-                              prefixIcon:
-                                  Icon(Icons.search, color: context.text3, size: 20),
-                              contentPadding:
-                                  const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      // Map / List toggle
-                      _ViewToggle(
-                        isMap: isMap,
-                        onToggle: () => ref
-                            .read(isMapViewProvider.notifier)
-                            .state = !isMap,
-                      ),
-                    ],
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            // ── Title + notification bell ──────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: Row(
+                children: [
+                  Text(
+                    'Клубы',
+                    style: TextStyle(
+                      color: context.text1,
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
-                ),
-
-                // Filter chips
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  child: Row(
-                    children: [
-                      _FilterChip(
-                        label: 'Все',
-                        icon: Icons.apps,
-                        selected: tier == null && !ps,
-                        onTap: () {
-                          ref.read(selectedTierProvider.notifier).state = null;
-                          ref.read(filterPsProvider.notifier).state = false;
-                        },
+                  const Spacer(),
+                  GestureDetector(
+                    onTap: () => context.push('/notifications'),
+                    child: Container(
+                      width: 40, height: 40,
+                      decoration: BoxDecoration(
+                        color: context.card,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: context.border),
                       ),
-                      const SizedBox(width: 8),
-                      _FilterChip(
-                        label: 'VIP',
-                        icon: Icons.star_rounded,
-                        selected: tier == 'vip',
-                        onTap: () =>
-                            ref.read(selectedTierProvider.notifier).state =
-                                tier == 'vip' ? null : 'vip',
-                      ),
-                      const SizedBox(width: 8),
-                      _FilterChip(
-                        label: 'Стандарт',
-                        icon: Icons.computer,
-                        selected: tier == 'standard',
-                        onTap: () =>
-                            ref.read(selectedTierProvider.notifier).state =
-                                tier == 'standard' ? null : 'standard',
-                      ),
-                      const SizedBox(width: 8),
-                      _FilterChip(
-                        label: 'PlayStation',
-                        icon: Icons.videogame_asset_rounded,
-                        selected: ps,
-                        onTap: () =>
-                            ref.read(filterPsProvider.notifier).state = !ps,
-                      ),
-                    ],
+                      child: Icon(Icons.notifications_none_rounded,
+                          color: context.text2, size: 22),
+                    ),
                   ),
-                ),
-
-                // Sort row
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                  child: Row(
-                    children: [
-                      Icon(Icons.sort_rounded, size: 14, color: context.text3),
-                      const SizedBox(width: 6),
-                      ...['rating', 'price', 'name'].map((mode) {
-                        final sortMode = ref.watch(sortModeProvider);
-                        final selected = sortMode == mode;
-                        final label = mode == 'rating' ? 'По рейтингу' :
-                            mode == 'price' ? 'По цене' : 'По имени';
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 6),
-                          child: GestureDetector(
-                            onTap: () => ref.read(sortModeProvider.notifier).state = mode,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: selected ? AppTheme.primary.withValues(alpha: 0.15) : Colors.transparent,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(label,
-                                  style: TextStyle(
-                                    color: selected ? AppTheme.primary : context.text3,
-                                    fontSize: 11,
-                                    fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-                                  )),
-                            ),
-                          ),
-                        );
-                      }),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const Divider(height: 1),
-
-          // ── Content: map or list ──────────────────────────
-          Expanded(
-            child: clubsAsync.when(
-              data: (clubs) {
-                final filtered = query.isEmpty
-                    ? clubs
-                    : clubs
-                        .where((c) =>
-                            c.name.toLowerCase().contains(query.toLowerCase()))
-                        .toList();
-
-                if (isMap) {
-                  return _MapView(clubs: filtered, allClubs: clubs);
-                }
-                return _ListView(clubs: filtered);
-              },
-              loading: () =>
-                  const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(
-                child: Text('Ошибка: $e',
-                    style: const TextStyle(color: AppTheme.error)),
+                ],
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
-// ── Map/List toggle button ───────────────────────────────
+            const SizedBox(height: 12),
 
-class _ViewToggle extends StatelessWidget {
-  final bool isMap;
-  final VoidCallback onToggle;
-  const _ViewToggle({required this.isMap, required this.onToggle});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onToggle,
-      child: Container(
-        height: 42,
-        padding: const EdgeInsets.all(2),
-        decoration: BoxDecoration(
-          color: context.card,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: context.border),
-        ),
-        child: Row(
-          children: [
-            _ToggleItem(
-              icon: Icons.list_rounded,
-              label: 'Список',
-              selected: !isMap,
+            // ── Search bar ────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: SizedBox(
+                height: 44,
+                child: TextField(
+                  onChanged: (v) =>
+                      ref.read(searchQueryProvider.notifier).state = v,
+                  style: const TextStyle(fontSize: 14),
+                  decoration: InputDecoration(
+                    hintText: 'Найти клуб или зону...',
+                    hintStyle: TextStyle(color: context.text3),
+                    prefixIcon:
+                        Icon(Icons.search_rounded, color: context.text3, size: 22),
+                    filled: true,
+                    fillColor: context.surface,
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              ),
             ),
-            _ToggleItem(
-              icon: Icons.map_rounded,
-              label: 'Карта',
-              selected: isMap,
+
+            const SizedBox(height: 16),
+
+            // ── 3 Discovery cards ─────────────────────────
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  _DiscoveryCard(
+                    icon: Icons.map_rounded,
+                    iconColor: AppTheme.success,
+                    iconBg: AppTheme.success.withValues(alpha: 0.12),
+                    label: 'На карте',
+                    selected: viewMode == 'map',
+                    onTap: () => ref.read(viewModeProvider.notifier).state =
+                        viewMode == 'map' ? 'list' : 'map',
+                  ),
+                  const SizedBox(width: 10),
+                  _DiscoveryCard(
+                    icon: Icons.sports_esports_rounded,
+                    iconColor: AppTheme.primary,
+                    iconBg: AppTheme.primary.withValues(alpha: 0.12),
+                    label: 'По зонам',
+                    selected: false,
+                    onTap: () {
+                      // Scroll down and show zone filters
+                      ref.read(selectedTierProvider.notifier).state = null;
+                      ref.read(viewModeProvider.notifier).state = 'list';
+                    },
+                  ),
+                  const SizedBox(width: 10),
+                  _DiscoveryCard(
+                    icon: Icons.favorite_rounded,
+                    iconColor: const Color(0xFFE91E8C),
+                    iconBg: const Color(0xFFE91E8C).withValues(alpha: 0.12),
+                    label: 'Избранные',
+                    selected: viewMode == 'favorites',
+                    onTap: () => ref.read(viewModeProvider.notifier).state =
+                        viewMode == 'favorites' ? 'list' : 'favorites',
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 14),
+
+            // ── Quick filter chips (horizontal scroll) ────
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Row(
+                children: [
+                  _QuickChip(
+                    icon: Icons.local_fire_department_rounded,
+                    label: 'Свободные',
+                    color: AppTheme.success,
+                    selected: false,
+                    onTap: () {
+                      ref.read(sortModeProvider.notifier).state = 'rating';
+                      ref.read(viewModeProvider.notifier).state = 'list';
+                    },
+                  ),
+                  _QuickChip(
+                    icon: Icons.star_rounded,
+                    label: 'VIP',
+                    color: const Color(0xFFFBBF24),
+                    selected: ref.watch(selectedTierProvider) == 'vip',
+                    onTap: () {
+                      final t = ref.read(selectedTierProvider);
+                      ref.read(selectedTierProvider.notifier).state =
+                          t == 'vip' ? null : 'vip';
+                      ref.read(viewModeProvider.notifier).state = 'list';
+                    },
+                  ),
+                  _QuickChip(
+                    icon: Icons.computer_rounded,
+                    label: 'Стандарт',
+                    color: AppTheme.primary,
+                    selected: ref.watch(selectedTierProvider) == 'standard',
+                    onTap: () {
+                      final t = ref.read(selectedTierProvider);
+                      ref.read(selectedTierProvider.notifier).state =
+                          t == 'standard' ? null : 'standard';
+                      ref.read(viewModeProvider.notifier).state = 'list';
+                    },
+                  ),
+                  _QuickChip(
+                    icon: Icons.videogame_asset_rounded,
+                    label: 'PlayStation',
+                    color: const Color(0xFF3B82F6),
+                    selected: ref.watch(filterPsProvider),
+                    onTap: () {
+                      ref.read(filterPsProvider.notifier).state =
+                          !ref.read(filterPsProvider);
+                      ref.read(viewModeProvider.notifier).state = 'list';
+                    },
+                  ),
+                  _QuickChip(
+                    icon: Icons.near_me_rounded,
+                    label: 'Рядом',
+                    color: AppTheme.info,
+                    selected: false,
+                    onTap: () {
+                      ref.read(viewModeProvider.notifier).state = 'list';
+                    },
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            // ── Sort row ──────────────────────────────────
+            if (viewMode == 'list')
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
+                child: Row(
+                  children: [
+                    Icon(Icons.sort_rounded, size: 14, color: context.text3),
+                    const SizedBox(width: 6),
+                    ...['rating', 'price', 'name'].map((mode) {
+                      final sortMode = ref.watch(sortModeProvider);
+                      final selected = sortMode == mode;
+                      final label = mode == 'rating'
+                          ? 'По рейтингу'
+                          : mode == 'price'
+                              ? 'По цене'
+                              : 'По имени';
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: GestureDetector(
+                          onTap: () =>
+                              ref.read(sortModeProvider.notifier).state = mode,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: selected
+                                  ? AppTheme.primary.withValues(alpha: 0.15)
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(label,
+                                style: TextStyle(
+                                  color:
+                                      selected ? AppTheme.primary : context.text3,
+                                  fontSize: 11,
+                                  fontWeight:
+                                      selected ? FontWeight.w600 : FontWeight.normal,
+                                )),
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              ),
+
+            // ── Content ───────────────────────────────────
+            Expanded(
+              child: clubsAsync.when(
+                data: (clubs) {
+                  final filtered = query.isEmpty
+                      ? clubs
+                      : clubs
+                          .where((c) =>
+                              c.name.toLowerCase().contains(query.toLowerCase()))
+                          .toList();
+
+                  if (viewMode == 'map') {
+                    return _MapView(clubs: filtered, allClubs: clubs);
+                  }
+                  if (viewMode == 'favorites') {
+                    return _FavoritesView(allClubs: clubs);
+                  }
+                  return _ListView(clubs: filtered);
+                },
+                loading: () =>
+                    const Center(child: CircularProgressIndicator(color: AppTheme.primary)),
+                error: (e, _) => Center(
+                  child: Text('Ошибка: $e',
+                      style: const TextStyle(color: AppTheme.error)),
+                ),
+              ),
             ),
           ],
         ),
@@ -262,35 +316,130 @@ class _ViewToggle extends StatelessWidget {
   }
 }
 
-class _ToggleItem extends StatelessWidget {
+// ── Discovery Card ──────────────────────────────────────────
+
+class _DiscoveryCard extends StatelessWidget {
   final IconData icon;
+  final Color iconColor;
+  final Color iconBg;
   final String label;
   final bool selected;
-  const _ToggleItem(
-      {required this.icon, required this.label, required this.selected});
+  final VoidCallback onTap;
+
+  const _DiscoveryCard({
+    required this.icon,
+    required this.iconColor,
+    required this.iconBg,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: selected ? AppTheme.primary : Colors.transparent,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 16, color: selected ? Colors.white : context.text3),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: selected ? Colors.white : context.text3,
-              fontSize: 12,
-              fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          decoration: BoxDecoration(
+            color: selected
+                ? AppTheme.primary.withValues(alpha: 0.08)
+                : context.card,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: selected
+                  ? AppTheme.primary.withValues(alpha: 0.3)
+                  : context.border,
             ),
           ),
-        ],
+          child: Column(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: iconBg,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, color: iconColor, size: 26),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: selected ? AppTheme.primary : context.text1,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Quick Chip ──────────────────────────────────────────────
+
+class _QuickChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _QuickChip({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: selected ? color.withValues(alpha: 0.15) : context.surface,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: selected ? color.withValues(alpha: 0.4) : Colors.transparent,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, size: 14, color: color),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  color: selected ? color : context.text2,
+                  fontSize: 12,
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -328,6 +477,45 @@ class _MapView extends ConsumerWidget {
   }
 }
 
+// ── Favorites view ──────────────────────────────────────────
+
+class _FavoritesView extends ConsumerWidget {
+  final List<Club> allClubs;
+  const _FavoritesView({required this.allClubs});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final favIds = ref.watch(favoritesProvider);
+    final favClubs = allClubs.where((c) => favIds.contains(c.id)).toList();
+
+    if (favClubs.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.favorite_border_rounded,
+                color: context.text3.withValues(alpha: 0.4), size: 56),
+            const SizedBox(height: 12),
+            Text('Нет избранных клубов',
+                style: TextStyle(color: context.text3, fontSize: 15)),
+            const SizedBox(height: 6),
+            Text('Нажмите на сердечко, чтобы добавить',
+                style: TextStyle(color: context.text3.withValues(alpha: 0.6), fontSize: 12)),
+          ],
+        ),
+      );
+    }
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+      children: favClubs.map((club) => Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: _ClubListCard(club: club),
+      )).toList(),
+    );
+  }
+}
+
 // ── List view ────────────────────────────────────────────
 
 class _ListView extends ConsumerWidget {
@@ -353,7 +541,7 @@ class _ListView extends ConsumerWidget {
     final nearbyAsync = ref.watch(nearbyClubsListProvider);
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
       children: [
         // Nearby clubs horizontal section
         nearbyAsync.when(
@@ -364,9 +552,10 @@ class _ListView extends ConsumerWidget {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.near_me_rounded, size: 18, color: AppTheme.primary),
+                    const Icon(Icons.near_me_rounded,
+                        size: 18, color: AppTheme.primary),
                     const SizedBox(width: 6),
-                    Text('Ближайшие клубы',
+                    Text('Ближайшие',
                         style: TextStyle(
                           color: context.text1,
                           fontWeight: FontWeight.w700,
@@ -391,8 +580,6 @@ class _ListView extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Divider(height: 1),
-                const SizedBox(height: 12),
               ],
             );
           },
@@ -400,18 +587,26 @@ class _ListView extends ConsumerWidget {
           error: (_, __) => const SizedBox.shrink(),
         ),
 
-        // All clubs
-        Text('Все клубы',
-            style: TextStyle(
-              color: context.text1,
-              fontWeight: FontWeight.w700,
-              fontSize: 16,
-            )),
+        // Section title
+        Row(
+          children: [
+            Text('Все клубы',
+                style: TextStyle(
+                  color: context.text1,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                )),
+            const Spacer(),
+            Text('${clubs.length}',
+                style: TextStyle(color: context.text3, fontSize: 13)),
+          ],
+        ),
         const SizedBox(height: 10),
+
         ...clubs.map((club) => Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: _ClubListCard(club: club),
-        )),
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _ClubListCard(club: club),
+            )),
       ],
     );
   }
@@ -424,10 +619,6 @@ class _NearbyClubChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final name = club.name;
-    final thumbnail = club.thumbnail;
-    final isOpen = club.isOpen;
-
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -440,12 +631,12 @@ class _NearbyClubChip extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
-              child: thumbnail != null
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(14)),
+              child: club.thumbnail != null
                   ? CachedNetworkImage(
-                      imageUrl: thumbnail,
+                      imageUrl: club.thumbnail!,
                       width: 120,
                       height: 65,
                       fit: BoxFit.cover,
@@ -454,7 +645,8 @@ class _NearbyClubChip extends StatelessWidget {
                       width: 120,
                       height: 65,
                       color: context.surface,
-                      child: Icon(Icons.sports_esports, color: context.text3, size: 24),
+                      child: Icon(Icons.sports_esports,
+                          color: context.text3, size: 24),
                     ),
             ),
             Padding(
@@ -462,7 +654,7 @@ class _NearbyClubChip extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(name,
+                  Text(club.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -476,17 +668,24 @@ class _NearbyClubChip extends StatelessWidget {
                       Container(
                         width: 6, height: 6,
                         decoration: BoxDecoration(
-                          color: isOpen ? AppTheme.success : AppTheme.error,
+                          color: club.isOpen ? AppTheme.success : AppTheme.error,
                           shape: BoxShape.circle,
                         ),
                       ),
                       const SizedBox(width: 4),
-                      Text(isOpen ? 'Открыт' : 'Закрыт',
+                      Text(club.isOpen ? 'Открыт' : 'Закрыт',
                           style: TextStyle(
-                            color: isOpen ? AppTheme.success : AppTheme.error,
+                            color:
+                                club.isOpen ? AppTheme.success : AppTheme.error,
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
                           )),
+                      if (club.distanceMeters != null) ...[
+                        const Spacer(),
+                        Text(club.distanceText,
+                            style: TextStyle(
+                                color: context.text3, fontSize: 9)),
+                      ],
                     ],
                   ),
                 ],
@@ -499,57 +698,7 @@ class _NearbyClubChip extends StatelessWidget {
   }
 }
 
-// ── Filter chip ────────────────────────────────────────────
-
-class _FilterChip extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _FilterChip({
-    required this.label,
-    required this.icon,
-    required this.selected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: selected ? AppTheme.primary : context.card,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: selected ? AppTheme.primary : context.border,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon,
-                size: 14, color: selected ? Colors.white : context.text3),
-            const SizedBox(width: 5),
-            Text(
-              label,
-              style: TextStyle(
-                color: selected ? Colors.white : context.text2,
-                fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-                fontSize: 13,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ── List card ──────────────────────────────────────────────
+// ── Club list card ──────────────────────────────────────────
 
 class _ClubListCard extends ConsumerWidget {
   final Club club;
@@ -568,7 +717,6 @@ class _ClubListCard extends ConsumerWidget {
         ),
         child: Row(
           children: [
-            // Photo
             ClipRRect(
               borderRadius:
                   const BorderRadius.horizontal(left: Radius.circular(16)),
@@ -594,7 +742,6 @@ class _ClubListCard extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Name + tier badge + heart
                     Row(
                       children: [
                         Expanded(
@@ -615,9 +762,12 @@ class _ClubListCard extends ConsumerWidget {
                               color: const Color(0xFFFBBF24)),
                         const SizedBox(width: 4),
                         GestureDetector(
-                          onTap: () => ref.read(favoritesProvider.notifier).toggle(club.id),
+                          onTap: () =>
+                              ref.read(favoritesProvider.notifier).toggle(club.id),
                           child: Icon(
-                            isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                            isFav
+                                ? Icons.favorite_rounded
+                                : Icons.favorite_border_rounded,
                             color: isFav ? AppTheme.error : context.text3,
                             size: 20,
                           ),
@@ -625,7 +775,6 @@ class _ClubListCard extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: 4),
-                    // Address
                     Row(
                       children: [
                         Icon(Icons.location_on_outlined,
@@ -636,25 +785,25 @@ class _ClubListCard extends ConsumerWidget {
                             club.address,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                                color: context.text3, fontSize: 12),
+                            style:
+                                TextStyle(color: context.text3, fontSize: 12),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 6),
-                    // Console badges
                     if (club.hasPlaystation)
-                      Wrap(
-                        spacing: 4,
-                        children: [
-                          _Badge(
-                              label: 'PS', color: const Color(0xFF3B82F6)),
-                        ],
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 6),
+                        child: Wrap(
+                          spacing: 4,
+                          children: [
+                            _Badge(
+                                label: 'PS',
+                                color: const Color(0xFF3B82F6)),
+                          ],
+                        ),
                       ),
-                    if (club.hasPlaystation)
-                      const SizedBox(height: 6),
-                    // Rating + PC + status
                     Row(
                       children: [
                         const Icon(Icons.star_rounded,
@@ -662,44 +811,54 @@ class _ClubListCard extends ConsumerWidget {
                         const SizedBox(width: 2),
                         Text(
                           club.rating.toStringAsFixed(1),
-                          style: TextStyle(
-                              color: context.text2, fontSize: 12),
+                          style:
+                              TextStyle(color: context.text2, fontSize: 12),
                         ),
                         const SizedBox(width: 10),
-                        Icon(Icons.computer,
-                            size: 14, color: context.text3),
+                        Icon(Icons.computer, size: 14, color: context.text3),
                         const SizedBox(width: 2),
                         Text(
                           '${club.pcCount} ПК',
-                          style: TextStyle(
-                              color: context.text3, fontSize: 12),
+                          style:
+                              TextStyle(color: context.text3, fontSize: 12),
                         ),
-                        // Occupancy indicator
                         Consumer(builder: (_, ref, __) {
-                          final occ = ref.watch(clubsOccupancyProvider).valueOrNull;
+                          final occ =
+                              ref.watch(clubsOccupancyProvider).valueOrNull;
                           final count = occ?[club.id] ?? 0;
                           if (count == 0) return const SizedBox.shrink();
-                          final pct = club.pcCount > 0 ? (count / club.pcCount * 100).round() : 0;
-                          final color = pct > 80 ? AppTheme.error : pct > 50 ? AppTheme.warning : AppTheme.success;
+                          final pct = club.pcCount > 0
+                              ? (count / club.pcCount * 100).round()
+                              : 0;
+                          final color = pct > 80
+                              ? AppTheme.error
+                              : pct > 50
+                                  ? AppTheme.warning
+                                  : AppTheme.success;
                           return Padding(
                             padding: const EdgeInsets.only(left: 8),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
                                 color: color.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(6),
                               ),
-                              child: Text('$pct%', style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w700)),
+                              child: Text('$pct%',
+                                  style: TextStyle(
+                                      color: color,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700)),
                             ),
                           );
                         }),
                         const Spacer(),
                         Container(
-                          width: 7,
-                          height: 7,
+                          width: 7, height: 7,
                           decoration: BoxDecoration(
-                            color:
-                                club.isOpen ? AppTheme.success : AppTheme.error,
+                            color: club.isOpen
+                                ? AppTheme.success
+                                : AppTheme.error,
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -707,8 +866,9 @@ class _ClubListCard extends ConsumerWidget {
                         Text(
                           club.isOpen ? 'Открыт' : 'Закрыт',
                           style: TextStyle(
-                            color:
-                                club.isOpen ? AppTheme.success : AppTheme.error,
+                            color: club.isOpen
+                                ? AppTheme.success
+                                : AppTheme.error,
                             fontSize: 11,
                           ),
                         ),
