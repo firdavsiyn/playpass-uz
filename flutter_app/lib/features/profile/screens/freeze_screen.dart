@@ -19,7 +19,6 @@ class _FreezeScreenState extends State<FreezeScreen> {
   final _svc = SupabaseService();
   Set<DateTime> _frozenDates = {};
   bool _loading = true;
-  bool _toggling = false;
   late DateTime _viewMonth;
 
   Subscription get sub => widget.subscription;
@@ -52,8 +51,6 @@ class _FreezeScreenState extends State<FreezeScreen> {
   }
 
   Future<void> _toggleDate(DateTime date) async {
-    if (_toggling) return;
-
     final normalized = DateTime(date.year, date.month, date.day);
     final today = DateTime.now();
     final todayNorm = DateTime(today.year, today.month, today.day);
@@ -66,8 +63,10 @@ class _FreezeScreenState extends State<FreezeScreen> {
       return;
     }
 
+    final isRemoving = _frozenDates.contains(normalized);
+
     // Can't add if already at limit and not removing
-    if (!_frozenDates.contains(normalized) &&
+    if (!isRemoving &&
         _frozenDates.length >= AppConstants.freezeMaxDaysPerMonth) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -77,26 +76,32 @@ class _FreezeScreenState extends State<FreezeScreen> {
       return;
     }
 
-    setState(() => _toggling = true);
+    // Optimistic UI — update immediately, DB call in background
+    setState(() {
+      if (isRemoving) {
+        _frozenDates.remove(normalized);
+      } else {
+        _frozenDates.add(normalized);
+      }
+    });
+
+    // Fire-and-forget DB call, revert on error
     try {
-      final added = await _svc.toggleFreezeDate(sub.id, normalized);
+      await _svc.toggleFreezeDate(sub.id, normalized);
+    } catch (e) {
+      // Revert optimistic update
       if (mounted) {
         setState(() {
-          if (added) {
+          if (isRemoving) {
             _frozenDates.add(normalized);
           } else {
             _frozenDates.remove(normalized);
           }
         });
-      }
-    } catch (e) {
-      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Ошибка: $e')),
         );
       }
-    } finally {
-      if (mounted) setState(() => _toggling = false);
     }
   }
 
@@ -374,9 +379,8 @@ class _FreezeScreenState extends State<FreezeScreen> {
 
                 return Expanded(
                   child: GestureDetector(
-                    onTap: _toggling ? null : () => _toggleDate(date),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
+                    onTap: () => _toggleDate(date),
+                    child: Container(
                       height: 42,
                       margin: const EdgeInsets.all(2),
                       decoration: BoxDecoration(
