@@ -69,6 +69,11 @@ class YandexMapService {
     _eval('panToClub($lat, $lon)');
   }
 
+  /// Locate user via browser geolocation and show blue dot
+  static void locateUser() {
+    _eval('locateUser()');
+  }
+
   /// Start polling for marker click events from JS
   static void startMarkerClickPolling(void Function(String clubId) callback) {
     if (_polling) return;

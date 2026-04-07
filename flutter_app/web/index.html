@@ -129,7 +129,7 @@
         var map = new ymaps.Map(containerId, {
           center: [41.2995, 69.2401], // Tashkent [lat, lon]
           zoom: 12,
-          controls: ['zoomControl', 'geolocationControl']
+          controls: ['zoomControl']
         });
 
         window._ymapInstance = map;
@@ -244,6 +244,42 @@
     window.panToClub = function(lat, lon) {
       if (!window._ymapInstance) return;
       window._ymapInstance.setCenter([lat, lon], 15, { duration: 500 });
+    };
+
+    // Locate user via browser geolocation, pan map and show blue dot
+    window._ymapUserMark = null;
+    window.locateUser = function() {
+      if (!window._ymapInstance) return;
+      if (!navigator.geolocation) { console.warn('[YMap] geolocation not supported'); return; }
+      navigator.geolocation.getCurrentPosition(function(pos) {
+        var lat = pos.coords.latitude;
+        var lon = pos.coords.longitude;
+        console.log('[YMap] user location:', lat, lon);
+        window._ymapInstance.setCenter([lat, lon], 14, { duration: 500 });
+        // Remove old user marker
+        if (window._ymapUserMark) {
+          try { window._ymapInstance.geoObjects.remove(window._ymapUserMark); } catch(e) {}
+        }
+        // Blue pulsing dot SVG
+        var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">' +
+          '<circle cx="12" cy="12" r="8" fill="#3B82F6" opacity="0.25"/>' +
+          '<circle cx="12" cy="12" r="5" fill="#3B82F6" stroke="white" stroke-width="2"/>' +
+          '</svg>';
+        window._ymapUserMark = new ymaps.Placemark([lat, lon], {
+          hintContent: 'Вы здесь'
+        }, {
+          iconLayout: 'default#image',
+          iconImageHref: 'data:image/svg+xml,' + encodeURIComponent(svg),
+          iconImageSize: [24, 24],
+          iconImageOffset: [-12, -12]
+        });
+        window._ymapInstance.geoObjects.add(window._ymapUserMark);
+        // Store position for Dart
+        window._ymapUserLat = lat;
+        window._ymapUserLon = lon;
+      }, function(err) {
+        console.warn('[YMap] geolocation error:', err.message);
+      }, { enableHighAccuracy: false, timeout: 10000 });
     };
   </script>
 

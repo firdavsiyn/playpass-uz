@@ -10,6 +10,7 @@ import '../../../core/theme/app_theme.dart';
 import '../providers/favorites_provider.dart';
 import '../widgets/yandex_map_widget.dart';
 import '../widgets/club_map_bottom_sheet.dart';
+import '../services/yandex_map_service.dart';
 
 // ── Providers ──────────────────────────────────────────────
 
@@ -152,9 +153,14 @@ class ClubsListScreen extends ConsumerWidget {
                     iconColor: AppTheme.success,
                     iconBg: AppTheme.success.withValues(alpha: 0.12),
                     label: 'На карте',
-                    selected: viewMode == 'map',
-                    onTap: () => ref.read(viewModeProvider.notifier).state =
-                        viewMode == 'map' ? 'list' : 'map',
+                    selected: false,
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const FullscreenMapScreen(),
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(width: 10),
                   _DiscoveryCard(
@@ -473,7 +479,7 @@ class _QuickChip extends StatelessWidget {
   }
 }
 
-// ── Map view ─────────────────────────────────────────────
+// ── Map view (inline, non-fullscreen) ─────────────────────
 
 class _MapView extends ConsumerWidget {
   final List<Club> clubs;
@@ -501,6 +507,250 @@ class _MapView extends ConsumerWidget {
       clubs: clubs,
       occupancy: occ,
       onMarkerTapped: (clubId) => _showClubSheet(context, ref, clubId),
+    );
+  }
+}
+
+// ── Fullscreen map screen ──────────────────────────────────
+
+class FullscreenMapScreen extends ConsumerStatefulWidget {
+  const FullscreenMapScreen({super.key});
+
+  @override
+  ConsumerState<FullscreenMapScreen> createState() => _FullscreenMapScreenState();
+}
+
+class _FullscreenMapScreenState extends ConsumerState<FullscreenMapScreen> {
+  String? _tierFilter;
+  bool _psFilter = false;
+
+  void _showClubSheet(String clubId) {
+    final clubs = ref.read(clubsFilteredProvider).valueOrNull ?? [];
+    final match = clubs.where((c) => c.id == clubId);
+    if (match.isEmpty) return;
+    final club = match.first;
+    final occ = ref.read(clubsOccupancyProvider).valueOrNull;
+    final count = occ?[club.id] ?? 0;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: false,
+      builder: (_) => ClubMapBottomSheet(club: club, occupancy: count),
+    );
+  }
+
+  List<Club> _applyFilters(List<Club> clubs) {
+    var filtered = clubs;
+    if (_tierFilter != null) {
+      filtered = filtered.where((c) => c.tier == _tierFilter).toList();
+    }
+    if (_psFilter) {
+      filtered = filtered.where((c) => c.hasPlaystation).toList();
+    }
+    return filtered;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final clubsAsync = ref.watch(clubsFilteredProvider);
+    final occ = ref.watch(clubsOccupancyProvider).valueOrNull;
+
+    return Scaffold(
+      body: clubsAsync.when(
+        data: (clubs) {
+          final filtered = _applyFilters(clubs);
+          return Stack(
+            children: [
+              // Full-screen map
+              YandexMapWidget(
+                clubs: filtered,
+                occupancy: occ,
+                onMarkerTapped: _showClubSheet,
+              ),
+
+              // Top bar overlay
+              Positioned(
+                top: MediaQuery.of(context).padding.top + 8,
+                left: 12,
+                right: 12,
+                child: Column(
+                  children: [
+                    // Back button + title
+                    Row(
+                      children: [
+                        _MapOverlayButton(
+                          icon: Icons.arrow_back_rounded,
+                          onTap: () => Navigator.of(context).pop(),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: context.card.withValues(alpha: 0.92),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Text(
+                              '${filtered.length} клубов на карте',
+                              style: TextStyle(
+                                color: context.text1,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        _MapOverlayButton(
+                          icon: Icons.my_location_rounded,
+                          onTap: () => YandexMapService.locateUser(),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    // Filter chips
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          _MapFilterChip(
+                            label: 'Все',
+                            selected: _tierFilter == null && !_psFilter,
+                            onTap: () => setState(() {
+                              _tierFilter = null;
+                              _psFilter = false;
+                            }),
+                          ),
+                          _MapFilterChip(
+                            label: 'VIP',
+                            color: const Color(0xFFFBBF24),
+                            selected: _tierFilter == 'vip',
+                            onTap: () => setState(() {
+                              _tierFilter =
+                                  _tierFilter == 'vip' ? null : 'vip';
+                            }),
+                          ),
+                          _MapFilterChip(
+                            label: 'Стандарт',
+                            color: AppTheme.primary,
+                            selected: _tierFilter == 'standard',
+                            onTap: () => setState(() {
+                              _tierFilter = _tierFilter == 'standard'
+                                  ? null
+                                  : 'standard';
+                            }),
+                          ),
+                          _MapFilterChip(
+                            label: 'Базовый',
+                            color: AppTheme.success,
+                            selected: _tierFilter == 'basic',
+                            onTap: () => setState(() {
+                              _tierFilter =
+                                  _tierFilter == 'basic' ? null : 'basic';
+                            }),
+                          ),
+                          _MapFilterChip(
+                            label: 'PS',
+                            color: const Color(0xFF3B82F6),
+                            selected: _psFilter,
+                            onTap: () =>
+                                setState(() => _psFilter = !_psFilter),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
+        loading: () => const Center(
+            child: CircularProgressIndicator(color: AppTheme.primary)),
+        error: (e, _) => Center(
+            child: Text('Ошибка: $e',
+                style: const TextStyle(color: AppTheme.error))),
+      ),
+    );
+  }
+}
+
+class _MapOverlayButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  const _MapOverlayButton({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 42,
+        height: 42,
+        decoration: BoxDecoration(
+          color: context.card.withValues(alpha: 0.92),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withValues(alpha: 0.15),
+                blurRadius: 8,
+                offset: const Offset(0, 2)),
+          ],
+        ),
+        child: Icon(icon, color: context.text1, size: 20),
+      ),
+    );
+  }
+}
+
+class _MapFilterChip extends StatelessWidget {
+  final String label;
+  final Color? color;
+  final bool selected;
+  final VoidCallback onTap;
+  const _MapFilterChip({
+    required this.label,
+    this.color,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = color ?? context.text1;
+    return Padding(
+      padding: const EdgeInsets.only(right: 6),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          decoration: BoxDecoration(
+            color: selected
+                ? c.withValues(alpha: 0.2)
+                : context.card.withValues(alpha: 0.92),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: selected ? c.withValues(alpha: 0.5) : Colors.transparent,
+            ),
+            boxShadow: [
+              if (!selected)
+                BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1)),
+            ],
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: selected ? c : context.text2,
+              fontSize: 12,
+              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
