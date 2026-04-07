@@ -23,9 +23,16 @@ class SupabaseService {
 
   Stream<AuthState> get authStateChanges => _client.auth.onAuthStateChange;
 
+  /// Safe accessor — throws a clear message instead of null-pointer crash.
+  String get _userId {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('Not authenticated');
+    return user.id;
+  }
+
   // ── Users ─────────────────────────────────────────────────
   Future<void> updateUserProfile({required String name, String? avatarUrl}) async {
-    final userId = currentUser!.id;
+    final userId = _userId;
     await _client.from('users').upsert({
       'id': userId,
       'name': name,
@@ -61,7 +68,7 @@ class SupabaseService {
   // ── Freeze / Unfreeze (calendar-based, 5 days/month) ─────
   /// Get freeze dates for a subscription in a given month
   Future<List<DateTime>> getFreezeDates(String subscriptionId, {int? year, int? month}) async {
-    final userId = currentUser!.id;
+    final userId = _userId;
     final y = year ?? DateTime.now().year;
     final m = month ?? DateTime.now().month;
     final from = '$y-${m.toString().padLeft(2, '0')}-01';
@@ -86,48 +93,56 @@ class SupabaseService {
 
   /// Toggle a freeze date (add or remove)
   Future<bool> toggleFreezeDate(String subscriptionId, DateTime date) async {
-    final userId = currentUser!.id;
-    final dateStr = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    try {
+      final userId = _userId;
+      final dateStr = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
-    // Check if already exists
-    final existing = await _client.from('subscription_freezes')
-        .select('id')
-        .eq('subscription_id', subscriptionId)
-        .eq('freeze_date', dateStr)
-        .maybeSingle();
+      // Check if already exists
+      final existing = await _client.from('subscription_freezes')
+          .select('id')
+          .eq('subscription_id', subscriptionId)
+          .eq('freeze_date', dateStr)
+          .maybeSingle();
 
-    if (existing != null) {
-      // Remove freeze
-      await _client.from('subscription_freezes')
-          .delete()
-          .eq('id', existing['id'] as String);
-      // Shrink end_date by 1 day
-      final sub = await _client.from('subscriptions').select('end_date').eq('id', subscriptionId).single();
-      final oldEnd = DateTime.parse(sub['end_date'] as String);
-      await _client.from('subscriptions').update({
-        'end_date': oldEnd.subtract(const Duration(days: 1)).toIso8601String().split('T')[0],
-      }).eq('id', subscriptionId).eq('user_id', userId);
-      return false; // removed
-    } else {
-      // Add freeze
-      await _client.from('subscription_freezes').insert({
-        'subscription_id': subscriptionId,
-        'user_id': userId,
-        'freeze_date': dateStr,
-      });
-      // Extend end_date by 1 day
-      final sub = await _client.from('subscriptions').select('end_date').eq('id', subscriptionId).single();
-      final oldEnd = DateTime.parse(sub['end_date'] as String);
-      await _client.from('subscriptions').update({
-        'end_date': oldEnd.add(const Duration(days: 1)).toIso8601String().split('T')[0],
-      }).eq('id', subscriptionId).eq('user_id', userId);
-      return true; // added
+      if (existing != null) {
+        // Remove freeze
+        await _client.from('subscription_freezes')
+            .delete()
+            .eq('id', existing['id'] as String);
+        // Shrink end_date by 1 day
+        final sub = await _client.from('subscriptions').select('end_date').eq('id', subscriptionId).single();
+        final oldEnd = DateTime.parse(sub['end_date'] as String);
+        await _client.from('subscriptions').update({
+          'end_date': oldEnd.subtract(const Duration(days: 1)).toIso8601String().split('T')[0],
+        }).eq('id', subscriptionId).eq('user_id', userId);
+        return false; // removed
+      } else {
+        // Add freeze
+        await _client.from('subscription_freezes').insert({
+          'subscription_id': subscriptionId,
+          'user_id': userId,
+          'freeze_date': dateStr,
+        });
+        // Extend end_date by 1 day
+        final sub = await _client.from('subscriptions').select('end_date').eq('id', subscriptionId).single();
+        final oldEnd = DateTime.parse(sub['end_date'] as String);
+        await _client.from('subscriptions').update({
+          'end_date': oldEnd.add(const Duration(days: 1)).toIso8601String().split('T')[0],
+        }).eq('id', subscriptionId).eq('user_id', userId);
+        return true; // added
+      }
+    } on PostgrestException catch (e) {
+      throw Exception('Freeze toggle failed: ${e.message}');
+    } on Exception {
+      rethrow;
+    } catch (e) {
+      throw Exception('Freeze toggle failed: $e');
     }
   }
 
   // Legacy freeze methods kept for backward compat
   Future<void> freezeSubscription(String subscriptionId, int days) async {
-    final userId = currentUser!.id;
+    final userId = _userId;
     await _client.from('subscriptions').update({
       'status': 'frozen',
       'frozen_since': DateTime.now().toIso8601String().split('T')[0],
@@ -135,7 +150,7 @@ class SupabaseService {
   }
 
   Future<void> unfreezeSubscription(String subscriptionId) async {
-    final userId = currentUser!.id;
+    final userId = _userId;
     await _client.from('subscriptions').update({
       'status': 'active',
       'frozen_since': null,
@@ -149,7 +164,7 @@ class SupabaseService {
     required String userPhone,
     String? paymentNote,
   }) async {
-    final userId = currentUser!.id;
+    final userId = _userId;
     await _client.from('subscription_requests').insert({
       'user_id': userId,
       'plan': plan,
@@ -160,10 +175,10 @@ class SupabaseService {
   }
 
   Future<List<SubscriptionRequest>> getMySubscriptionRequests() async {
-    final userId = currentUser!.id;
+    final userId = _userId;
     final res = await _client
         .from('subscription_requests')
-        .select()
+        .select('id, user_id, plan, amount_uzs, user_phone, payment_note, status, created_at')
         .eq('user_id', userId)
         .order('created_at', ascending: false);
     return (res as List)
@@ -190,7 +205,7 @@ class SupabaseService {
   Future<List<Club>> getActiveClubs({String? tier}) async {
     var query = _client
         .from('clubs')
-        .select()
+        .select('id, name, address, lat, lon, photos, working_hours, pc_count, rating, status, tier, has_playstation, price_per_hour, review_count')
         .eq('status', 'active');
 
     if (tier != null) {
@@ -211,7 +226,7 @@ class SupabaseService {
   Future<List<ClubZone>> getClubZones(String clubId) async {
     final res = await _client
         .from('club_zones')
-        .select()
+        .select('id, club_id, type, name, capacity, is_active')
         .eq('club_id', clubId)
         .eq('is_active', true)
         .order('type');
@@ -220,10 +235,10 @@ class SupabaseService {
 
   // ── Visits ────────────────────────────────────────────────
   Future<List<Visit>> getVisitHistory({int? month, int? year}) async {
-    final userId = currentUser!.id;
+    final userId = _userId;
     var query = _client
         .from('visits')
-        .select('*, clubs(name)')
+        .select('id, user_id, club_id, zone, hours_spent, created_at, clubs(name)')
         .eq('user_id', userId);
 
     if (month != null && year != null) {
@@ -245,26 +260,34 @@ class SupabaseService {
     double? geoLat,
     double? geoLon,
   }) async {
-    final response = await _client.functions.invoke(
-      'checkin',
-      body: {
-        'zone_id': zoneId,
-        'qr_hmac': qrHmac,
-        if (geoLat != null) 'geo_lat': geoLat,
-        if (geoLon != null) 'geo_lon': geoLon,
-      },
-    );
+    try {
+      final response = await _client.functions.invoke(
+        'checkin',
+        body: {
+          'zone_id': zoneId,
+          'qr_hmac': qrHmac,
+          if (geoLat != null) 'geo_lat': geoLat,
+          if (geoLon != null) 'geo_lon': geoLon,
+        },
+      );
 
-    if (response.data == null) {
-      throw Exception('Checkin failed: no response');
+      if (response.data == null) {
+        throw Exception('Checkin failed: no response');
+      }
+
+      final data = response.data as Map<String, dynamic>;
+      if (data['error'] != null) {
+        throw Exception(data['error'] as String);
+      }
+
+      return data;
+    } on FunctionException catch (e) {
+      throw Exception('Checkin failed: ${e.reasonPhrase ?? 'server error'}');
+    } on Exception {
+      rethrow;
+    } catch (e) {
+      throw Exception('Checkin failed: $e');
     }
-
-    final data = response.data as Map<String, dynamic>;
-    if (data['error'] != null) {
-      throw Exception(data['error'] as String);
-    }
-
-    return data;
   }
 
   // ── Promo Codes ───────────────────────────────────────────
@@ -292,7 +315,7 @@ class SupabaseService {
   }
 
   Future<Map<String, dynamic>> applyPromoCode(String code) async {
-    final userId = currentUser!.id;
+    final userId = _userId;
     final promo = await validatePromoCode(code);
     if (promo == null) throw Exception('Промокод недействителен или истёк');
 
@@ -366,7 +389,7 @@ class SupabaseService {
     String? text,
     List<String> photoUrls = const [],
   }) async {
-    final userId = currentUser!.id;
+    final userId = _userId;
     await _client.from('reviews').insert({
       'club_id': clubId,
       'user_id': userId,
@@ -378,7 +401,7 @@ class SupabaseService {
 
   /// Upload review photo to Supabase Storage, returns public URL
   Future<String> uploadReviewPhoto(List<int> bytes, String fileName) async {
-    final userId = currentUser!.id;
+    final userId = _userId;
     final ext = fileName.split('.').last;
     final path = '$userId/${DateTime.now().millisecondsSinceEpoch}.$ext';
     await _client.storage.from('review-photos').uploadBinary(
@@ -413,7 +436,7 @@ class SupabaseService {
 
   // ── Referrals ─────────────────────────────────────────────
   Future<void> applyReferralCode(String code) async {
-    final userId = currentUser!.id;
+    final userId = _userId;
     await _client.functions.invoke(
       'apply-referral',
       body: {
@@ -424,7 +447,7 @@ class SupabaseService {
   }
 
   Future<Map<String, dynamic>> getReferralStats() async {
-    final userId = currentUser!.id;
+    final userId = _userId;
     try {
       final res = await _client
           .from('referral_bonuses')
@@ -477,7 +500,7 @@ class SupabaseService {
   }
 
   Future<void> addFavorite(String clubId) async {
-    final userId = currentUser!.id;
+    final userId = _userId;
     await _client.from('favorites').insert({
       'user_id': userId,
       'club_id': clubId,
@@ -485,7 +508,7 @@ class SupabaseService {
   }
 
   Future<void> removeFavorite(String clubId) async {
-    final userId = currentUser!.id;
+    final userId = _userId;
     await _client
         .from('favorites')
         .delete()
@@ -555,7 +578,7 @@ class SupabaseService {
   Future<List<Map<String, dynamic>>> getAllAchievements() async {
     final res = await _client
         .from('achievements')
-        .select()
+        .select('id, name, description, icon_url, xp_reward, sort_order')
         .order('sort_order');
     return (res as List).cast<Map<String, dynamic>>();
   }
@@ -572,7 +595,7 @@ class SupabaseService {
   }
 
   Future<void> unlockAchievement(String achievementId) async {
-    final userId = currentUser!.id;
+    final userId = _userId;
     await _client.from('user_achievements').upsert({
       'user_id': userId,
       'achievement_id': achievementId,
@@ -600,7 +623,7 @@ class SupabaseService {
     String? recipientEmail,
     String? recipientPhone,
   }) async {
-    final userId = currentUser!.id;
+    final userId = _userId;
     final code = _generateGiftCode();
     await _client.from('gift_certificates').insert({
       'buyer_id': userId,
@@ -642,7 +665,7 @@ class SupabaseService {
   }
 
   Future<void> redeemGiftCertificate(String code) async {
-    final userId = currentUser!.id;
+    final userId = _userId;
     final gift = await getGiftByCode(code);
     if (gift == null) throw Exception('Сертификат не найден');
     if (gift['status'] != 'paid') throw Exception('Сертификат недействителен');
@@ -665,41 +688,49 @@ class SupabaseService {
     required DateTime bookingTime,
     required int durationHours,
   }) async {
-    final userId = currentUser!.id;
+    try {
+      final userId = _userId;
 
-    // Check if user is blocked from booking (too many no-shows)
-    final userRes = await _client
-        .from('users')
-        .select('booking_no_shows, booking_blocked_until')
-        .eq('id', userId)
-        .maybeSingle();
-    if (userRes != null) {
-      final blockedUntil = userRes['booking_blocked_until'] as String?;
-      if (blockedUntil != null && DateTime.parse(blockedUntil).isAfter(DateTime.now())) {
-        throw Exception('Бронирование заблокировано из-за неявок. Попробуйте позже.');
+      // Check if user is blocked from booking (too many no-shows)
+      final userRes = await _client
+          .from('users')
+          .select('booking_no_shows, booking_blocked_until')
+          .eq('id', userId)
+          .maybeSingle();
+      if (userRes != null) {
+        final blockedUntil = userRes['booking_blocked_until'] as String?;
+        if (blockedUntil != null && DateTime.parse(blockedUntil).isAfter(DateTime.now())) {
+          throw Exception('Бронирование заблокировано из-за неявок. Попробуйте позже.');
+        }
       }
+
+      final endTime = bookingTime.add(Duration(hours: durationHours));
+      final dateStr = '${bookingTime.year}-${bookingTime.month.toString().padLeft(2, '0')}-${bookingTime.day.toString().padLeft(2, '0')}';
+      final startStr = '${bookingTime.hour.toString().padLeft(2, '0')}:${bookingTime.minute.toString().padLeft(2, '0')}:00';
+      final endStr = '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}:00';
+
+      // Grace period = booking start time + 15 minutes
+      final graceExpiresAt = bookingTime.add(const Duration(minutes: _gracePeriodMinutes));
+
+      await _client.from('bookings').insert({
+        'user_id': userId,
+        'club_id': clubId,
+        'zone': zone,
+        'date': dateStr,
+        'start_time': startStr,
+        'end_time': endStr,
+        'booking_time': bookingTime.toIso8601String(),
+        'duration_hours': durationHours,
+        'status': 'confirmed',
+        'grace_expires_at': graceExpiresAt.toIso8601String(),
+      });
+    } on PostgrestException catch (e) {
+      throw Exception('Booking failed: ${e.message}');
+    } on Exception {
+      rethrow;
+    } catch (e) {
+      throw Exception('Booking failed: $e');
     }
-
-    final endTime = bookingTime.add(Duration(hours: durationHours));
-    final dateStr = '${bookingTime.year}-${bookingTime.month.toString().padLeft(2, '0')}-${bookingTime.day.toString().padLeft(2, '0')}';
-    final startStr = '${bookingTime.hour.toString().padLeft(2, '0')}:${bookingTime.minute.toString().padLeft(2, '0')}:00';
-    final endStr = '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}:00';
-
-    // Grace period = booking start time + 15 minutes
-    final graceExpiresAt = bookingTime.add(const Duration(minutes: _gracePeriodMinutes));
-
-    await _client.from('bookings').insert({
-      'user_id': userId,
-      'club_id': clubId,
-      'zone': zone,
-      'date': dateStr,
-      'start_time': startStr,
-      'end_time': endStr,
-      'booking_time': bookingTime.toIso8601String(),
-      'duration_hours': durationHours,
-      'status': 'confirmed',
-      'grace_expires_at': graceExpiresAt.toIso8601String(),
-    });
   }
 
   Future<List<Map<String, dynamic>>> getMyBookings() async {
@@ -707,7 +738,7 @@ class SupabaseService {
     if (userId == null) return [];
     final res = await _client
         .from('bookings')
-        .select('*, clubs(name, address, photos)')
+        .select('id, user_id, club_id, zone, date, start_time, end_time, booking_time, duration_hours, status, grace_expires_at, clubs(name, address)')
         .eq('user_id', userId)
         .order('booking_time', ascending: false)
         .limit(20);
@@ -715,7 +746,7 @@ class SupabaseService {
   }
 
   Future<void> cancelBooking(String bookingId) async {
-    final userId = currentUser!.id;
+    final userId = _userId;
     await _client.from('bookings').update({
       'status': 'cancelled',
     }).eq('id', bookingId).eq('user_id', userId);
@@ -737,7 +768,7 @@ class SupabaseService {
     final now = DateTime.now().toIso8601String();
     final res = await _client
         .from('banners')
-        .select()
+        .select('id, title, image_url, action_url, sort_order, expires_at')
         .eq('is_active', true)
         .or('expires_at.is.null,expires_at.gte.$now')
         .order('sort_order');
@@ -746,7 +777,7 @@ class SupabaseService {
 
   // ── Avatar upload ─────────────────────────────────────────
   Future<String> uploadAvatar(List<int> fileBytes, String fileName) async {
-    final userId = currentUser!.id;
+    final userId = _userId;
     final ext = fileName.split('.').last;
     final path = '$userId/avatar.$ext';
 
@@ -771,7 +802,7 @@ class SupabaseService {
 
   // ── Visit stats ───────────────────────────────────────────
   Future<Map<String, dynamic>> getAllTimeVisitStats() async {
-    final userId = currentUser!.id;
+    final userId = _userId;
     final res = await _client
         .from('visits')
         .select('*, clubs(name, address)')
@@ -853,7 +884,7 @@ class SupabaseService {
   }
 
   Future<void> registerForTournament(String tournamentId, {String? teamName}) async {
-    final userId = currentUser!.id;
+    final userId = _userId;
     await _client.from('tournament_participants').insert({
       'tournament_id': tournamentId,
       'user_id': userId,
@@ -864,7 +895,7 @@ class SupabaseService {
   }
 
   Future<void> unregisterFromTournament(String tournamentId) async {
-    final userId = currentUser!.id;
+    final userId = _userId;
     await _client.from('tournament_participants')
         .delete()
         .eq('tournament_id', tournamentId)
@@ -905,7 +936,7 @@ class SupabaseService {
 
   // ── Loyalty / XP ─────────────────────────────────────────
   Future<Map<String, dynamic>> getLoyaltyInfo() async {
-    final userId = currentUser!.id;
+    final userId = _userId;
 
     Map<String, dynamic> user = {};
     try {
@@ -965,9 +996,9 @@ class SupabaseService {
 
   // ── Notification Preferences ─────────────────────────────
   Future<Map<String, dynamic>> getNotificationPrefs() async {
-    final userId = currentUser!.id;
+    final userId = _userId;
     final res = await _client.from('notification_prefs')
-        .select()
+        .select('user_id, push_enabled, promo_enabled, tournament_enabled, subscription_enabled, club_news_enabled')
         .eq('user_id', userId)
         .maybeSingle();
     if (res != null) return res;
@@ -985,7 +1016,7 @@ class SupabaseService {
   }
 
   Future<void> updateNotificationPrefs(Map<String, dynamic> prefs) async {
-    final userId = currentUser!.id;
+    final userId = _userId;
     await _client.from('notification_prefs')
         .upsert({'user_id': userId, ...prefs, 'updated_at': DateTime.now().toIso8601String()});
   }
@@ -1008,7 +1039,7 @@ class SupabaseService {
   // ── Player Profiles (Game Stats) ─────────────────────────
   Future<List<Map<String, dynamic>>> getPlayerProfiles(String userId) async {
     final res = await _client.from('player_profiles')
-        .select()
+        .select('id, user_id, game, nickname, rank, hours_played, kd_ratio, winrate, updated_at')
         .eq('user_id', userId)
         .order('updated_at', ascending: false);
     return (res as List).cast<Map<String, dynamic>>();
@@ -1022,7 +1053,7 @@ class SupabaseService {
     double? kdRatio,
     double? winrate,
   }) async {
-    final userId = currentUser!.id;
+    final userId = _userId;
     await _client.from('player_profiles').upsert({
       'user_id': userId,
       'game': game,
@@ -1036,7 +1067,7 @@ class SupabaseService {
   }
 
   Future<void> deletePlayerProfile(String id) async {
-    final userId = currentUser!.id;
+    final userId = _userId;
     await _client.from('player_profiles').delete().eq('id', id).eq('user_id', userId);
   }
 
@@ -1058,7 +1089,7 @@ class SupabaseService {
     bool micRequired = false,
     String? clubId,
   }) async {
-    final userId = currentUser!.id;
+    final userId = _userId;
     await _client.from('lfg_posts').insert({
       'user_id': userId,
       'game': game,
@@ -1072,7 +1103,7 @@ class SupabaseService {
   }
 
   Future<void> respondToLfg(String postId) async {
-    final userId = currentUser!.id;
+    final userId = _userId;
     await _client.from('lfg_responses').upsert({
       'post_id': postId,
       'user_id': userId,
@@ -1103,7 +1134,7 @@ class SupabaseService {
   // ── Happy Hours ──────────────────────────────────────────
   Future<List<Map<String, dynamic>>> getClubHappyHours(String clubId) async {
     final res = await _client.from('happy_hours')
-        .select()
+        .select('id, club_id, day_of_week, start_time, end_time, discount_percent, description')
         .eq('club_id', clubId)
         .eq('is_active', true)
         .order('day_of_week');

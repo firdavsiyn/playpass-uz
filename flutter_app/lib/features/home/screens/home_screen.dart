@@ -200,7 +200,7 @@ class _ScanButton extends ConsumerWidget {
       onTap: () {
         if (isFrozen) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Подписка заморожена. Разморозьте в профиле.')),
+            SnackBar(content: Text(ref.lang('home.frozen'))),
           );
         } else if (hasActiveSubscription) {
           context.go('/scanner');
@@ -365,18 +365,18 @@ class _SubscriptionSkeleton extends StatelessWidget {
   }
 }
 
-class _SubscriptionError extends StatelessWidget {
+class _SubscriptionError extends ConsumerWidget {
   const _SubscriptionError();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: context.card,
         borderRadius: BorderRadius.circular(16),
       ),
-      child: const Text('Ошибка загрузки подписки', style: TextStyle(color: AppTheme.error)),
+      child: Text(ref.lang('common.error'), style: const TextStyle(color: AppTheme.error)),
     );
   }
 }

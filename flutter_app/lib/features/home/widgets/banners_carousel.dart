@@ -60,9 +60,14 @@ class _BannerCard extends StatelessWidget {
     final actionUrl = banner['action_url'] as String?;
     final bgColor = banner['bg_color'] as String?;
 
-    final color = bgColor != null
-        ? Color(int.parse(bgColor.replaceFirst('#', '0xFF')))
-        : AppTheme.primary;
+    Color color;
+    try {
+      color = bgColor != null
+          ? Color(int.parse(bgColor.replaceFirst('#', '0xFF')))
+          : AppTheme.primary;
+    } catch (_) {
+      color = AppTheme.primary;
+    }
 
     return GestureDetector(
       onTap: actionUrl != null ? () async {

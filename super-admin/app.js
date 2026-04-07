@@ -121,6 +121,10 @@ function esc(str) {
   return div.innerHTML;
 }
 
+function toDateInput(d) {
+  return d.toISOString().split('T')[0];
+}
+
 /* ── ADMIN LOG HELPER ────────────────────────── */
 async function logAction(action, entityType, entityId, details) {
   try {
@@ -132,7 +136,7 @@ async function logAction(action, entityType, entityId, details) {
       entity_id: entityId || null,
       details: details || null,
     });
-  } catch (_) {}
+  } catch (e) { console.warn('logAction failed:', e); }
 }
 
 /* ── CSV EXPORT HELPER ───────────────────────── */
@@ -806,7 +810,7 @@ function exportPaymentsCSV() {
   sb.from('subscription_requests').select('*, users(name)').eq('status', 'approved').order('created_at', { ascending: false }).then(({ data }) => {
     downloadCSV('payments.csv', ['Дата', 'Пользователь', 'Тариф', 'Сумма'],
       (data || []).map(p => [fmtDateTime(p.created_at), p.users?.name, p.plan, p.amount_uzs]));
-  });
+  }).catch(e => { alert('Ошибка экспорта: ' + e.message); });
 }
 
 /* ═══════════════════════════════════════════════
@@ -966,7 +970,7 @@ function exportPromosCSV() {
   sb.from('promo_codes').select('*').order('created_at', { ascending: false }).then(({ data }) => {
     downloadCSV('promos.csv', ['Код', 'Тип', 'Скидка', 'Исп.', 'Макс', 'Активен', 'Истекает'],
       (data || []).map(p => [p.code, p.discount_type, p.discount_value, p.used_count, p.max_uses || '∞', p.is_active, fmtDate(p.expires_at)]));
-  });
+  }).catch(e => { alert('Ошибка экспорта: ' + e.message); });
 }
 
 /* ═══════════════════════════════════════════════
@@ -1069,7 +1073,7 @@ function exportLogsCSV() {
   sb.from('admin_logs').select('*').order('created_at', { ascending: false }).limit(500).then(({ data }) => {
     downloadCSV('admin_logs.csv', ['Дата', 'Админ', 'Действие', 'Тип', 'ID', 'Детали'],
       (data || []).map(l => [fmtDateTime(l.created_at), l.admin_name, l.action, l.entity_type, l.entity_id, l.details]));
-  });
+  }).catch(e => { alert('Ошибка экспорта: ' + e.message); });
 }
 
 /* ═══════════════════════════════════════════════
@@ -1556,21 +1560,21 @@ async function loadAllBookings() {
         case 'completed': statusBadge = '<span class="badge badge-success">✓ Готово</span>'; break;
         case 'no_show': statusBadge = '<span class="badge badge-error">Неявка</span>'; break;
         case 'cancelled': statusBadge = '<span class="badge" style="background:rgba(255,255,255,0.1);color:var(--text-sec)">Отменён</span>'; break;
-        default: statusBadge = `<span class="badge">${escHtml(b.status)}</span>`;
+        default: statusBadge = `<span class="badge">${esc(b.status)}</span>`;
       }
 
       return `<tr>
         <td>${b.date}</td>
         <td>${b.start_time?.slice(0,5)} – ${b.end_time?.slice(0,5)}</td>
-        <td>${escHtml(clubName)}</td>
-        <td>${escHtml(userName)}</td>
+        <td>${esc(clubName)}</td>
+        <td>${esc(userName)}</td>
         <td><span style="color:${zoneColor};font-weight:600">${zoneLabel}</span></td>
         <td>${b.duration_hours || '—'} ч</td>
         <td>${statusBadge}</td>
       </tr>`;
     }).join('');
   } catch (e) {
-    $('all-bookings-tbody').innerHTML = `<tr><td colspan="7" class="empty-cell">Ошибка: ${escHtml(e.message)}</td></tr>`;
+    $('all-bookings-tbody').innerHTML = `<tr><td colspan="7" class="empty-cell">Ошибка: ${esc(e.message)}</td></tr>`;
   }
 }
 
@@ -1738,7 +1742,7 @@ function copyReportText() {
   const r = window.__lastReport;
   if (!r) return;
   const text = `PlayPass — Еженедельный отчёт (${r.from} — ${r.to})\nНовых пользователей: ${r.newUsers} | Выручка: ${fmt(r.weekRevenue)} UZS | Визитов: ${r.weekVisits} | Новых подписок: ${r.newSubs}\nВсего: ${r.totalUsers} юзеров, ${r.activeSubs} подписок, ${r.totalClubs} клубов, ${r.openTickets} тикетов`;
-  navigator.clipboard.writeText(text).then(() => showToast('Скопировано'));
+  navigator.clipboard.writeText(text).then(() => showToast('Скопировано')).catch(() => {});
 }
 
 function exportFinanceCSV() {

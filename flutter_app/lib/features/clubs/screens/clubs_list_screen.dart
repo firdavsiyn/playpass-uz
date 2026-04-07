@@ -7,6 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import '../../../models/club.dart';
 import '../../../services/supabase_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../providers/favorites_provider.dart';
 import '../widgets/yandex_map_widget.dart';
 import '../widgets/club_map_bottom_sheet.dart';
@@ -42,26 +43,38 @@ final nearbyClubsListProvider = FutureProvider<List<Club>>((ref) async {
   }
 });
 
-final clubsFilteredProvider = FutureProvider<List<Club>>((ref) async {
+// Cache: single API call for all clubs
+final _allClubsProvider = FutureProvider<List<Club>>((ref) async {
+  return SupabaseService().getActiveClubs();
+});
+
+// Filtered view: no API calls, pure client-side filtering/sorting
+final clubsFilteredProvider = Provider<AsyncValue<List<Club>>>((ref) {
+  final allClubsAsync = ref.watch(_allClubsProvider);
   final tier = ref.watch(selectedTierProvider);
   final ps = ref.watch(filterPsProvider);
   final sortMode = ref.watch(sortModeProvider);
-  var clubs = await SupabaseService().getActiveClubs(tier: tier);
-  if (ps) clubs = clubs.where((c) => c.hasPlaystation).toList();
 
-  switch (sortMode) {
-    case 'rating':
-      clubs.sort((a, b) => b.rating.compareTo(a.rating));
-    case 'price':
-      clubs.sort((a, b) => a.pricePerHour.compareTo(b.pricePerHour));
-    case 'name':
-      clubs.sort((a, b) => a.name.compareTo(b.name));
-  }
-  return clubs;
+  return allClubsAsync.whenData((allClubs) {
+    var clubs = tier != null
+        ? allClubs.where((c) => c.tier == tier).toList()
+        : List<Club>.from(allClubs);
+    if (ps) clubs = clubs.where((c) => c.hasPlaystation).toList();
+
+    switch (sortMode) {
+      case 'rating':
+        clubs.sort((a, b) => b.rating.compareTo(a.rating));
+      case 'price':
+        clubs.sort((a, b) => a.pricePerHour.compareTo(b.pricePerHour));
+      case 'name':
+        clubs.sort((a, b) => a.name.compareTo(b.name));
+    }
+    return clubs;
+  });
 });
 
 final clubsOccupancyProvider = FutureProvider<Map<String, int>>((ref) async {
-  ref.watch(clubsFilteredProvider);
+  ref.watch(_allClubsProvider);
   return SupabaseService().getAllClubsOccupancy();
 });
 
@@ -87,7 +100,7 @@ class ClubsListScreen extends ConsumerWidget {
               child: Row(
                 children: [
                   Text(
-                    'Клубы',
+                    ref.lang('nav.clubs'),
                     style: TextStyle(
                       color: context.text1,
                       fontSize: 26,
@@ -809,7 +822,7 @@ class _ListView extends ConsumerWidget {
           children: [
             Icon(Icons.search_off, color: context.text3, size: 48),
             const SizedBox(height: 12),
-            Text('Клубы не найдены',
+            Text(ref.lang('clubs.not_found'),
                 style: TextStyle(color: context.text3)),
           ],
         ),

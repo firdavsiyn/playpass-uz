@@ -170,6 +170,10 @@ function showTab(tabName, linkEl) {
     if (group && !group.classList.contains('open')) group.classList.add('open');
   }
 
+  // Clear timers when switching away from their respective tabs
+  if (tabName !== 'pcs' && pcTimerInterval) { clearInterval(pcTimerInterval); pcTimerInterval = null; }
+  if (tabName !== 'sessions' && sessionTimer) { clearInterval(sessionTimer); sessionTimer = null; }
+
   const loaders = {
     visits: loadVisits, finance: loadFinance, qr: loadQr,
     pcs: loadPcs, sessions: loadSessions, bookings: loadBookings,
@@ -338,7 +342,7 @@ async function loadQr() {
 
 async function regenerateQr() {
   if (!confirm(t('qr_regen_confirm'))) return;
-  try { await sb.functions.invoke('qr-validate', { body: { club_id: currentClub.id, regenerate: true } }); } catch (_) {}
+  try { await sb.functions.invoke('qr-validate', { body: { club_id: currentClub.id, regenerate: true } }); } catch (e) { console.error('QR regeneration failed:', e); showToast('Ошибка генерации QR', 'error'); }
   await loadQr();
 }
 
@@ -462,7 +466,7 @@ function showEditPcModal(id) {
     $('modal-title').textContent = t('pcs_modal_edit');
     $('modal-body').innerHTML = pcFormHtml(pc);
     openModal();
-  });
+  }).catch(e => { console.error(e); showToast('Ошибка загрузки', 'error'); });
 }
 
 function pcFormHtml(pc = null) {
@@ -710,7 +714,7 @@ function showEditStaffModal(id) {
     $('modal-title').textContent = t('staff_modal_edit');
     $('modal-body').innerHTML = staffFormHtml(s);
     openModal();
-  });
+  }).catch(e => { console.error(e); showToast('Ошибка загрузки', 'error'); });
 }
 
 function staffFormHtml(s = null) {
@@ -779,7 +783,7 @@ async function loadAnalytics() {
   // Hourly chart
   const peakSet = new Set(sorted.slice(0, 3).map(p => p.h));
   const hourColors = byHour.map((_, i) => peakSet.has(i) ? '#6366F1BB' : '#6366F166');
-  if (analyticsCharts['chart-hours']) analyticsCharts['chart-hours'].destroy();
+  if (analyticsCharts['chart-hours']) try { analyticsCharts['chart-hours'].destroy(); } catch(_) {}
   analyticsCharts['chart-hours'] = new Chart($('chart-hours'), {
     type: 'bar',
     data: { labels: Array.from({ length: 24 }, (_, i) => `${i}:00`), datasets: [{ data: byHour, backgroundColor: hourColors, borderRadius: 4 }] },
@@ -789,7 +793,7 @@ async function loadAnalytics() {
 
   // Weekday chart
   const dayLabels = ['analytics_mon','analytics_tue','analytics_wed','analytics_thu','analytics_fri','analytics_sat','analytics_sun'].map(k => t(k));
-  if (analyticsCharts['chart-weekdays']) analyticsCharts['chart-weekdays'].destroy();
+  if (analyticsCharts['chart-weekdays']) try { analyticsCharts['chart-weekdays'].destroy(); } catch(_) {}
   analyticsCharts['chart-weekdays'] = new Chart($('chart-weekdays'), {
     type: 'bar',
     data: { labels: dayLabels, datasets: [{ data: byDay, backgroundColor: '#10B981BB', borderRadius: 4 }] },
@@ -923,7 +927,7 @@ async function loadOccupancyAnalytics() {
 
   const colors = avgOccupancy.map(v => v > 80 ? '#EF4444BB' : v > 50 ? '#F59E0BBB' : '#10B981BB');
 
-  if (analyticsCharts['chart-occupancy']) analyticsCharts['chart-occupancy'].destroy();
+  if (analyticsCharts['chart-occupancy']) try { analyticsCharts['chart-occupancy'].destroy(); } catch(_) {}
   analyticsCharts['chart-occupancy'] = new Chart($('chart-occupancy'), {
     type: 'bar',
     data: {
@@ -957,7 +961,7 @@ async function loadOccupancyAnalytics() {
   const dayLabels = ['analytics_mon','analytics_tue','analytics_wed','analytics_thu','analytics_fri','analytics_sat','analytics_sun'].map(k => t(k));
   const dayColors = avgByDay.map(v => v > 80 ? '#EF4444BB' : v > 50 ? '#F59E0BBB' : '#10B981BB');
 
-  if (analyticsCharts['chart-occupancy-days']) analyticsCharts['chart-occupancy-days'].destroy();
+  if (analyticsCharts['chart-occupancy-days']) try { analyticsCharts['chart-occupancy-days'].destroy(); } catch(_) {}
   analyticsCharts['chart-occupancy-days'] = new Chart($('chart-occupancy-days'), {
     type: 'bar',
     data: {

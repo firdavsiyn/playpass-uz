@@ -83,7 +83,9 @@ class YandexMapService {
   }
 
   static void _pollLoop(void Function(String clubId) callback) {
+    if (!_polling) return; // Guard: stop immediately if cancelled
     Future.delayed(const Duration(milliseconds: 250), () {
+      if (!_polling) return; // Guard: check again after delay
       try {
         final raw = _evalReturn(
           '(function(){var q=window._ymapClickQueue||[];window._ymapClickQueue=[];return JSON.stringify(q);})()'
