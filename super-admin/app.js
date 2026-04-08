@@ -737,13 +737,13 @@ async function saveClub(id) {
       const { error } = await sb.from('clubs').update(payload).eq('id', id);
       if (error) throw error;
       showToast('Клуб обновлён');
-      logAction('Обновил клуб', 'club', id, payload.name);
+      logAction(t('log_club_updated'), 'club', id, payload.name);
     } else {
       // New club — just update photos
       const { error } = await sb.from('clubs').update({ photos: finalPhotos }).eq('id', clubId);
       if (error) throw error;
       showToast('Клуб добавлен');
-      logAction('Добавил клуб', 'club', clubId, payload.name);
+      logAction(t('log_club_added'), 'club', clubId, payload.name);
     }
 
     pendingUploads = [];
@@ -763,7 +763,7 @@ async function toggleClubStatus(id, currentlyActive) {
     if (error) throw error;
     const club = clubsCache.find(c => c.id === id);
     showToast(currentlyActive ? 'Клуб приостановлен' : 'Клуб активирован');
-    logAction(currentlyActive ? 'Приостановил клуб' : 'Активировал клуб', 'club', id, club?.name);
+    logAction(currentlyActive ? t('log_club_paused') : t('log_club_activated'), 'club', id, club?.name);
     loadClubs();
   } catch (e) { showToast(e.message, 'error'); }
 }
@@ -889,7 +889,7 @@ async function extendSubscription(userId, plan) {
     const { error } = await sb.from('subscriptions').update(updates).eq('id', sub.id);
     if (error) throw error;
     showToast(`Подписка продлена: +${days} дн, +${hours} ч`);
-    logAction('Продлил подписку', 'user', userId, `+${days}д +${hours}ч`);
+    logAction(t('log_sub_extended'), 'user', userId, `+${days}д +${hours}ч`);
     closeModal(); loadUsers();
   } catch (e) { showToast(e.message, 'error'); }
 }
@@ -900,7 +900,7 @@ async function cancelSubscription(userId) {
     const { error } = await sb.from('subscriptions').update({ status: 'cancelled' }).eq('user_id', userId).eq('status', 'active');
     if (error) throw error;
     showToast('Подписка отменена');
-    logAction('Отменил подписку', 'user', userId);
+    logAction(t('log_sub_cancelled'), 'user', userId);
     closeModal(); loadUsers();
   } catch (e) { showToast(e.message, 'error'); }
 }
@@ -919,7 +919,7 @@ async function assignSubscription(userId) {
     });
     if (error) throw error;
     showToast(`Подписка ${plan.toUpperCase()} назначена`);
-    logAction('Назначил подписку', 'user', userId, `${plan} на ${days} дн`);
+    logAction(t('log_sub_assigned'), 'user', userId, `${plan} на ${days} дн`);
     closeModal(); loadUsers();
   } catch (e) { showToast(e.message, 'error'); }
 }
@@ -990,7 +990,7 @@ async function approvePayment(reqId, userId, plan, amount) {
     const { error: reqErr } = await sb.from('subscription_requests').update({ status: 'approved', processed_by: currentAdmin?.id, processed_at: new Date().toISOString() }).eq('id', reqId);
     if (reqErr) throw reqErr;
     showToast('Оплата одобрена');
-    logAction('Одобрил оплату', 'payment', reqId, `${plan} — ${fmt(amount)} UZS`);
+    logAction(t('log_payment_approved'), 'payment', reqId, `${plan} — ${fmt(amount)} UZS`);
     loadPayments(); loadDashboard();
   } catch (e) { showToast(e.message, 'error'); }
 }
@@ -1000,7 +1000,7 @@ async function rejectPayment(reqId) {
     const { error } = await sb.from('subscription_requests').update({ status: 'rejected', processed_by: currentAdmin?.id, processed_at: new Date().toISOString() }).eq('id', reqId);
     if (error) throw error;
     showToast('Заявка отклонена');
-    logAction('Отклонил оплату', 'payment', reqId);
+    logAction(t('log_payment_rejected'), 'payment', reqId);
     loadPayments();
   } catch (e) { showToast(e.message, 'error'); }
 }
@@ -1052,7 +1052,7 @@ async function sendNotification() {
     if (error) throw error;
 
     showToast(`Уведомление отправлено ${userIds.length} пользователям`);
-    logAction('Отправил уведомление', 'notification', null, `"${title}" → ${targetLabels[target]} (${userIds.length})`);
+    logAction(t('log_notif_sent'), 'notification', null, `"${title}" → ${targetLabels[target]} (${userIds.length})`);
 
     $('notif-title').value = '';
     $('notif-body').value = '';
@@ -1151,7 +1151,7 @@ async function savePromo() {
     });
     if (error) throw error;
     showToast(`Промокод ${code} создан`);
-    logAction('Создал промокод', 'promo', null, `${code} — ${discountType === 'percent' ? discountValue + '%' : fmt(discountValue) + ' UZS'}`);
+    logAction(t('log_promo_created'), 'promo', null, `${code} — ${discountType === 'percent' ? discountValue + '%' : fmt(discountValue) + ' UZS'}`);
     closeModal(); loadPromos();
   } catch (e) { showToast(e.message, 'error'); }
 }
@@ -1161,7 +1161,7 @@ async function togglePromo(id, isActive) {
     const { error } = await sb.from('promo_codes').update({ is_active: !isActive }).eq('id', id);
     if (error) throw error;
     showToast(isActive ? 'Промокод деактивирован' : 'Промокод активирован');
-    logAction(isActive ? 'Деактивировал промокод' : 'Активировал промокод', 'promo', id);
+    logAction(isActive ? t('log_promo_deactivated') : t('log_promo_activated'), 'promo', id);
     loadPromos();
   } catch (e) { showToast(e.message, 'error'); }
 }
@@ -1209,7 +1209,7 @@ async function deleteReview(id) {
     const { error } = await sb.from('reviews').delete().eq('id', id);
     if (error) throw error;
     showToast('Отзыв удалён');
-    logAction('Удалил отзыв', 'review', id);
+    logAction(t('log_review_deleted'), 'review', id);
     loadReviews();
   } catch (e) { showToast(e.message, 'error'); }
 }
@@ -1477,7 +1477,7 @@ async function replyTicket(id) {
     const { error } = await sb.from('support_tickets').update(upd).eq('id', id);
     if (error) throw error;
     showToast('Тикет обновлён');
-    logAction('Ответил на тикет', 'ticket', id, status);
+    logAction(t('log_ticket_replied'), 'ticket', id, status);
     closeModal(); loadTickets();
   } catch (e) { showToast(e.message, 'error'); }
 }
@@ -1498,7 +1498,7 @@ async function verifyClub(id) {
     if (error) throw error;
     const club = clubsCache.find(c => c.id === id);
     showToast('Клуб верифицирован и активирован');
-    logAction('Верифицировал клуб', 'club', id, club?.name);
+    logAction(t('log_club_verified'), 'club', id, club?.name);
     loadClubs();
   } catch (e) { showToast(e.message, 'error'); }
 }
@@ -1526,7 +1526,7 @@ async function bulkClubAction(newStatus) {
     const { error } = await sb.from('clubs').update({ status: newStatus }).in('id', ids);
     if (error) throw error;
     showToast(`${ids.length} клубов обновлено`);
-    logAction(`Массовое изменение клубов → ${newStatus}`, 'club', null, `${ids.length} клубов`);
+    logAction(`${t('log_club_bulk')} → ${newStatus}`, 'club', null, `${ids.length} ${t('log_clubs_count')}`);
     selectedClubs.clear();
     loadClubs();
   } catch (e) { showToast(e.message, 'error'); }
@@ -1570,7 +1570,7 @@ async function sendBulkNotif() {
     const { error } = await sb.from('notifications').insert(notifs);
     if (error) throw error;
     showToast(`Отправлено ${notifs.length} уведомлений`);
-    logAction('Массовая рассылка', 'notification', null, `"${title}" → ${notifs.length} пользователей`);
+    logAction(t('log_notif_bulk'), 'notification', null, `"${title}" → ${notifs.length} ${t('log_users_count')}`);
     closeModal();
   } catch (e) { showToast(e.message, 'error'); }
 }
@@ -1667,12 +1667,12 @@ async function saveBanner(id) {
     if (id) {
       const { error } = await sb.from('banners').update(payload).eq('id', id);
       if (error) throw error;
-      showToast('Баннер обновлён'); logAction('Обновил баннер', 'banner', id, payload.title);
+      showToast('Баннер обновлён'); logAction(t('log_banner_updated'), 'banner', id, payload.title);
     } else {
       payload.is_active = true;
       const { error } = await sb.from('banners').insert(payload);
       if (error) throw error;
-      showToast('Баннер создан'); logAction('Создал баннер', 'banner', null, payload.title);
+      showToast('Баннер создан'); logAction(t('log_banner_created'), 'banner', null, payload.title);
     }
     closeModal(); loadBanners();
   } catch (e) { showToast(e.message, 'error'); }
@@ -1692,7 +1692,7 @@ async function deleteBanner(id) {
   try {
     const { error } = await sb.from('banners').delete().eq('id', id);
     if (error) throw error;
-    showToast('Баннер удалён'); logAction('Удалил баннер', 'banner', id);
+    showToast('Баннер удалён'); logAction(t('log_banner_deleted'), 'banner', id);
     loadBanners();
   } catch (e) { showToast(e.message, 'error'); }
 }
@@ -1918,7 +1918,7 @@ async function generateWeeklyReport() {
       </div>`;
 
     window.__lastReport = { newUsers, weekRevenue, weekVisits, newSubs, totalUsers, activeSubs, totalClubs, openTickets, from: fmtDate(weekAgo), to: fmtDate(now) };
-    logAction('Сгенерировал еженедельный отчёт', 'report', null);
+    logAction(t('log_report_generated'), 'report', null);
   } catch (e) { showToast(e.message, 'error'); }
 }
 
