@@ -187,17 +187,17 @@ class MainShell extends ConsumerWidget {
       body: shell,
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
+          color: context.navBg,
           border: Border(
             top: BorderSide(
-              color: AppTheme.primary.withValues(alpha: 0.1),
+              color: AppTheme.primary.withValues(alpha: 0.15),
             ),
           ),
           boxShadow: [
             BoxShadow(
-              color: AppTheme.primary.withValues(alpha: 0.08),
-              blurRadius: 20,
-              offset: const Offset(0, -4),
+              color: AppTheme.primary.withValues(alpha: 0.12),
+              blurRadius: 30,
+              offset: const Offset(0, -6),
             ),
           ],
         ),
@@ -214,23 +214,23 @@ class MainShell extends ConsumerWidget {
           items: [
             BottomNavigationBarItem(
                 icon: const Icon(Icons.home_outlined),
-                activeIcon: _NeonIcon(icon: Icons.home),
+                activeIcon: _NeonIcon(icon: Icons.home_rounded),
                 label: s['nav.home']!),
             BottomNavigationBarItem(
                 icon: const Icon(Icons.map_outlined),
-                activeIcon: _NeonIcon(icon: Icons.map),
+                activeIcon: _NeonIcon(icon: Icons.map_rounded),
                 label: s['nav.clubs']!),
             BottomNavigationBarItem(
-                icon: const Icon(Icons.qr_code_scanner),
-                activeIcon: _NeonIcon(icon: Icons.qr_code_scanner),
+                icon: const _ScannerIcon(active: false),
+                activeIcon: const _ScannerIcon(active: true),
                 label: s['nav.scan']!),
             BottomNavigationBarItem(
                 icon: const Icon(Icons.card_membership_outlined),
-                activeIcon: _NeonIcon(icon: Icons.card_membership),
+                activeIcon: _NeonIcon(icon: Icons.card_membership_rounded),
                 label: s['nav.subscription']!),
             BottomNavigationBarItem(
-                icon: const Icon(Icons.person_outline),
-                activeIcon: _NeonIcon(icon: Icons.person),
+                icon: const Icon(Icons.person_outline_rounded),
+                activeIcon: _NeonIcon(icon: Icons.person_rounded),
                 label: s['nav.profile']!),
           ],
         ),
@@ -239,6 +239,7 @@ class MainShell extends ConsumerWidget {
   }
 }
 
+/// Neon-glowing active tab icon
 class _NeonIcon extends StatelessWidget {
   final IconData icon;
   const _NeonIcon({required this.icon});
@@ -246,18 +247,52 @@ class _NeonIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(6),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
+        gradient: LinearGradient(
+          colors: [
+            AppTheme.primary.withValues(alpha: 0.2),
+            AppTheme.neonCyan.withValues(alpha: 0.08),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primary.withValues(alpha: 0.4),
-            blurRadius: 12,
-            spreadRadius: -2,
+            color: AppTheme.primary.withValues(alpha: 0.5),
+            blurRadius: 16,
+            spreadRadius: -4,
           ),
         ],
       ),
-      child: Icon(icon, color: AppTheme.primary),
+      child: Icon(icon, color: AppTheme.primaryLight, size: 24),
+    );
+  }
+}
+
+/// Special scanner icon with accent glow
+class _ScannerIcon extends StatelessWidget {
+  final bool active;
+  const _ScannerIcon({required this.active});
+
+  @override
+  Widget build(BuildContext context) {
+    if (!active) return const Icon(Icons.qr_code_scanner_rounded);
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF7C3AED), Color(0xFF06B6D4)],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.neonCyan.withValues(alpha: 0.4),
+            blurRadius: 16,
+            spreadRadius: -4,
+          ),
+        ],
+      ),
+      child: const Icon(Icons.qr_code_scanner_rounded, color: Colors.white, size: 24),
     );
   }
 }

@@ -42,6 +42,7 @@ class HomeScreen extends ConsumerWidget {
 
     return Scaffold(
       body: RefreshIndicator(
+        color: AppTheme.primary,
         onRefresh: () async {
           await Future.wait([
             ref.refresh(activeSubscriptionProvider.future),
@@ -52,37 +53,62 @@ class HomeScreen extends ConsumerWidget {
         },
         child: CustomScrollView(
           slivers: [
-            // App bar
+            // ── App Bar ─────────────────────────────────────
             SliverAppBar(
               floating: true,
               pinned: false,
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              backgroundColor: context.bg,
               title: Row(
                 children: [
+                  // Logo with neon glow
                   Container(
-                    padding: const EdgeInsets.all(6),
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [AppTheme.neonPurple, AppTheme.primary],
+                        colors: [AppTheme.primary, AppTheme.neonCyan],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(10),
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.primary.withValues(alpha: 0.4),
-                          blurRadius: 12,
+                          color: AppTheme.primary.withValues(alpha: 0.6),
+                          blurRadius: 16,
+                          spreadRadius: -4,
+                        ),
+                        BoxShadow(
+                          color: AppTheme.neonCyan.withValues(alpha: 0.3),
+                          blurRadius: 24,
+                          spreadRadius: -4,
                         ),
                       ],
                     ),
-                    child: const Icon(Icons.sports_esports, color: Colors.white, size: 20),
+                    child: const Icon(Icons.sports_esports_rounded, color: Colors.white, size: 20),
                   ),
-                  const SizedBox(width: 8),
-                  const Text('PlayPass'),
+                  const SizedBox(width: 10),
+                  Text(
+                    'PlayPass',
+                    style: TextStyle(
+                      color: context.text1,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 22,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
                 ],
               ),
               actions: [
-                IconButton(
-                  icon: const Icon(Icons.notifications_outlined),
-                  onPressed: () => context.push('/notifications-settings'),
+                Container(
+                  margin: const EdgeInsets.only(right: 8),
+                  decoration: BoxDecoration(
+                    color: context.card,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppTheme.primary.withValues(alpha: 0.1)),
+                  ),
+                  child: IconButton(
+                    icon: Icon(Icons.notifications_outlined, color: context.text2, size: 22),
+                    onPressed: () => context.push('/notifications-settings'),
+                  ),
                 ),
               ],
             ),
@@ -93,7 +119,7 @@ class HomeScreen extends ConsumerWidget {
                 delegate: SliverChildListDelegate([
                   const SizedBox(height: 8),
 
-                  // Active session widget
+                  // ── Active session widget ─────────────────
                   ref.watch(activeSessionProvider).when(
                     data: (session) => session != null
                         ? Padding(
@@ -111,16 +137,16 @@ class HomeScreen extends ConsumerWidget {
                     error: (_, __) => const SizedBox.shrink(),
                   ),
 
-                  // Subscription widget
+                  // ── Subscription widget ────────────────────
                   subscriptionAsync.when(
                     data: (sub) => SubscriptionWidget(subscription: sub),
                     loading: () => const _SubscriptionSkeleton(),
                     error: (_, __) => const _SubscriptionError(),
                   ),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
 
-                  // Scan button
+                  // ── Scan Button ────────────────────────────
                   subscriptionAsync.when(
                     data: (sub) => _ScanButton(
                       hasActiveSubscription: sub?.isActive == true,
@@ -132,46 +158,34 @@ class HomeScreen extends ConsumerWidget {
 
                   const SizedBox(height: 20),
 
-                  // Stories bubbles
+                  // ── Stories bubbles ────────────────────────
                   const StoryBubbles(),
-                  const SizedBox(height: 12),
-
-                  // Quick actions
-                  const _QuickActions(),
                   const SizedBox(height: 16),
 
-                  // Banners carousel
-                  const BannersCarousel(),
+                  // ── Quick Actions ──────────────────────────
+                  const _QuickActions(),
                   const SizedBox(height: 20),
 
-                  // Nearby clubs
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(ref.lang('home.nearby'),
-                          style: Theme.of(context).textTheme.titleMedium),
-                      TextButton(
-                        onPressed: () => context.go('/clubs'),
-                        child: Text(ref.lang('home.all'), style: const TextStyle(color: AppTheme.primary)),
-                      ),
-                    ],
+                  // ── Banners ────────────────────────────────
+                  const BannersCarousel(),
+                  const SizedBox(height: 24),
+
+                  // ── Nearby Clubs Section ───────────────────
+                  _SectionHeader(
+                    title: ref.lang('home.nearby'),
+                    action: ref.lang('home.all'),
+                    onAction: () => context.go('/clubs'),
                   ),
                   const SizedBox(height: 12),
                   NearbyClubsRow(clubsAsync: ref.watch(nearbyClubsProvider)),
 
                   const SizedBox(height: 28),
 
-                  // Recent visits
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(ref.lang('home.recent'),
-                          style: Theme.of(context).textTheme.titleMedium),
-                      TextButton(
-                        onPressed: () => context.push('/profile/history'),
-                        child: Text(ref.lang('home.history'), style: const TextStyle(color: AppTheme.primary)),
-                      ),
-                    ],
+                  // ── Recent Visits Section ──────────────────
+                  _SectionHeader(
+                    title: ref.lang('home.recent'),
+                    action: ref.lang('home.history'),
+                    onAction: () => context.push('/profile/history'),
                   ),
                   const SizedBox(height: 12),
                   RecentVisitsWidget(visitsAsync: ref.watch(recentVisitsProvider)),
@@ -186,6 +200,47 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 }
+
+// ── Section Header ──────────────────────────────────────────
+
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  final String action;
+  final VoidCallback onAction;
+  const _SectionHeader({required this.title, required this.action, required this.onAction});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(title, style: TextStyle(
+          color: context.text1,
+          fontSize: 17,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.3,
+        )),
+        GestureDetector(
+          onTap: onAction,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(action, style: const TextStyle(
+                color: AppTheme.neonCyan,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              )),
+              const SizedBox(width: 2),
+              const Icon(Icons.chevron_right_rounded, color: AppTheme.neonCyan, size: 18),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Scan Button (CTA) ───────────────────────────────────────
 
 class _ScanButton extends ConsumerWidget {
   final bool hasActiveSubscription;
@@ -213,27 +268,28 @@ class _ScanButton extends ConsumerWidget {
         decoration: BoxDecoration(
           gradient: canScan
               ? const LinearGradient(
-                  colors: [AppTheme.neonPurple, AppTheme.primary, AppTheme.neonBlue],
+                  colors: [Color(0xFF7C3AED), Color(0xFF6366F1), Color(0xFF06B6D4)],
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                 )
               : null,
-          color: canScan ? null : context.surface,
+          color: canScan ? null : context.card,
           borderRadius: BorderRadius.circular(16),
+          border: canScan ? null : Border.all(color: AppTheme.primary.withValues(alpha: 0.15)),
           boxShadow: canScan
               ? [
                   BoxShadow(
-                    color: AppTheme.primary.withValues(alpha: 0.45),
-                    blurRadius: 20,
-                    offset: const Offset(0, 4),
+                    color: AppTheme.primary.withValues(alpha: 0.5),
+                    blurRadius: 24,
+                    offset: const Offset(0, 6),
                   ),
                   BoxShadow(
-                    color: AppTheme.neonPurple.withValues(alpha: 0.2),
+                    color: AppTheme.neonCyan.withValues(alpha: 0.25),
                     blurRadius: 40,
                     offset: const Offset(0, 8),
                   ),
                 ]
-              : [],
+              : AppTheme.cardGlow(),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -245,7 +301,7 @@ class _ScanButton extends ConsumerWidget {
                       ? Icons.qr_code_scanner_rounded
                       : Icons.shopping_cart_outlined,
               color: canScan ? Colors.white : context.text3,
-              size: 28,
+              size: 26,
             ),
             const SizedBox(width: 12),
             Text(
@@ -256,16 +312,23 @@ class _ScanButton extends ConsumerWidget {
                       : ref.lang('home.buy_sub'),
               style: TextStyle(
                 color: canScan ? Colors.white : context.text3,
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.3,
               ),
             ),
+            if (canScan) ...[
+              const SizedBox(width: 8),
+              const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 20),
+            ],
           ],
         ),
       ),
     );
   }
 }
+
+// ── Quick Actions Grid ──────────────────────────────────────
 
 class _QuickActions extends ConsumerWidget {
   const _QuickActions();
@@ -276,39 +339,39 @@ class _QuickActions extends ConsumerWidget {
     return Column(
       children: [
         SizedBox(
-          height: 84,
+          height: 80,
           child: Row(
             children: [
-              _QuickAction(icon: Icons.emoji_events, label: t['home_tournaments'] ?? 'Турниры',
+              _QuickAction(icon: Icons.emoji_events_rounded, label: t['home_tournaments'] ?? 'Турниры',
                   color: AppTheme.warning, onTap: () => context.push('/tournaments')),
-              const SizedBox(width: 10),
-              _QuickAction(icon: Icons.people, label: t['home_lfg'] ?? 'Тиммейты',
+              const SizedBox(width: 8),
+              _QuickAction(icon: Icons.people_rounded, label: t['home_lfg'] ?? 'Тиммейты',
                   color: AppTheme.neonBlue, onTap: () => context.push('/lfg')),
-              const SizedBox(width: 10),
-              _QuickAction(icon: Icons.leaderboard, label: t['home_leaderboard'] ?? 'Рейтинг',
+              const SizedBox(width: 8),
+              _QuickAction(icon: Icons.leaderboard_rounded, label: t['home_leaderboard'] ?? 'Рейтинг',
                   color: AppTheme.neonPurple, onTap: () => context.push('/leaderboard')),
-              const SizedBox(width: 10),
-              _QuickAction(icon: Icons.newspaper, label: t['home_news'] ?? 'Новости',
+              const SizedBox(width: 8),
+              _QuickAction(icon: Icons.newspaper_rounded, label: t['home_news'] ?? 'Новости',
                   color: AppTheme.success, onTap: () => context.push('/stories')),
             ],
           ),
         ),
         const SizedBox(height: 8),
         SizedBox(
-          height: 84,
+          height: 80,
           child: Row(
             children: [
-              _QuickAction(icon: Icons.map, label: t['home_map'] ?? 'Карта',
-                  color: const Color(0xFF06B6D4), onTap: () => context.push('/clubs-map')),
-              const SizedBox(width: 10),
-              _QuickAction(icon: Icons.star, label: t['home_loyalty'] ?? 'XP',
-                  color: const Color(0xFFF59E0B), onTap: () => context.push('/loyalty')),
-              const SizedBox(width: 10),
-              _QuickAction(icon: Icons.sports_esports, label: t['home_stats'] ?? 'Профили',
-                  color: const Color(0xFFEC4899), onTap: () => context.push('/player-stats')),
-              const SizedBox(width: 10),
-              _QuickAction(icon: Icons.local_offer, label: t['home_happy'] ?? 'Скидки',
-                  color: const Color(0xFF8B5CF6), onTap: () => context.push('/happy-hours')),
+              _QuickAction(icon: Icons.map_rounded, label: t['home_map'] ?? 'Карта',
+                  color: AppTheme.neonCyan, onTap: () => context.push('/clubs-map')),
+              const SizedBox(width: 8),
+              _QuickAction(icon: Icons.star_rounded, label: t['home_loyalty'] ?? 'XP',
+                  color: AppTheme.tierVip, onTap: () => context.push('/loyalty')),
+              const SizedBox(width: 8),
+              _QuickAction(icon: Icons.sports_esports_rounded, label: t['home_stats'] ?? 'Профили',
+                  color: AppTheme.neonPink, onTap: () => context.push('/player-stats')),
+              const SizedBox(width: 8),
+              _QuickAction(icon: Icons.local_offer_rounded, label: t['home_happy'] ?? 'Скидки',
+                  color: AppTheme.neonPurple, onTap: () => context.push('/happy-hours')),
             ],
           ),
         ),
@@ -331,16 +394,31 @@ class _QuickAction extends StatelessWidget {
         onTap: onTap,
         child: Container(
           decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
+            color: color.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: color.withValues(alpha: 0.2)),
+            border: Border.all(color: color.withValues(alpha: 0.18)),
+            boxShadow: [
+              BoxShadow(
+                color: color.withValues(alpha: 0.08),
+                blurRadius: 12,
+                spreadRadius: -4,
+              ),
+            ],
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: color, size: 24),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: color, size: 20),
+              ),
               const SizedBox(height: 6),
-              Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color),
+              Text(label,
+                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: color.withValues(alpha: 0.9)),
                   overflow: TextOverflow.ellipsis),
             ],
           ),
@@ -350,6 +428,8 @@ class _QuickAction extends StatelessWidget {
   }
 }
 
+// ── Skeleton / Error States ─────────────────────────────────
+
 class _SubscriptionSkeleton extends StatelessWidget {
   const _SubscriptionSkeleton();
 
@@ -357,10 +437,7 @@ class _SubscriptionSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 120,
-      decoration: BoxDecoration(
-        color: context.card,
-        borderRadius: BorderRadius.circular(16),
-      ),
+      decoration: AppTheme.gamingCard(),
     );
   }
 }
@@ -372,10 +449,7 @@ class _SubscriptionError extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: context.card,
-        borderRadius: BorderRadius.circular(16),
-      ),
+      decoration: AppTheme.gamingCard(glowColor: AppTheme.error),
       child: Text(ref.lang('common.error'), style: const TextStyle(color: AppTheme.error)),
     );
   }

@@ -56,23 +56,29 @@ class _Podium extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 240,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          // 2nd place
-          Expanded(child: _PodiumItem(player: players[1], rank: 2, height: 160,
-              color: const Color(0xFFC0C0C0), emoji: '🥈')),
-          const SizedBox(width: 8),
-          // 1st place
-          Expanded(child: _PodiumItem(player: players[0], rank: 1, height: 200,
-              color: const Color(0xFFFFD700), emoji: '👑')),
-          const SizedBox(width: 8),
-          // 3rd place
-          Expanded(child: _PodiumItem(player: players[2], rank: 3, height: 130,
-              color: const Color(0xFFCD7F32), emoji: '🥉')),
-        ],
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+      decoration: BoxDecoration(
+        color: context.card,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.primary.withValues(alpha: 0.15)),
+        boxShadow: AppTheme.cardGlow(),
+      ),
+      child: SizedBox(
+        height: 240,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Expanded(child: _PodiumItem(player: players[1], rank: 2, height: 150,
+                color: const Color(0xFFC0C0C0), emoji: '🥈')),
+            const SizedBox(width: 6),
+            Expanded(child: _PodiumItem(player: players[0], rank: 1, height: 190,
+                color: const Color(0xFFFFD700), emoji: '👑')),
+            const SizedBox(width: 6),
+            Expanded(child: _PodiumItem(player: players[2], rank: 3, height: 120,
+                color: const Color(0xFFCD7F32), emoji: '🥉')),
+          ],
+        ),
       ),
     );
   }
@@ -91,31 +97,40 @@ class _PodiumItem extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        Text(emoji, style: const TextStyle(fontSize: 28)),
+        Text(emoji, style: const TextStyle(fontSize: 26)),
         const SizedBox(height: 4),
-        CircleAvatar(
-          radius: rank == 1 ? 28 : 22,
-          backgroundColor: color.withValues(alpha: 0.3),
-          backgroundImage: player['avatar_url'] != null ? NetworkImage(player['avatar_url'] as String) : null,
-          child: player['avatar_url'] == null
-              ? Text((player['name'] as String? ?? '?')[0].toUpperCase(),
-                  style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: rank == 1 ? 20 : 16))
-              : null,
+        Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(color: color.withValues(alpha: 0.4), blurRadius: 16, spreadRadius: -4),
+            ],
+          ),
+          child: CircleAvatar(
+            radius: rank == 1 ? 30 : 24,
+            backgroundColor: color.withValues(alpha: 0.2),
+            backgroundImage: player['avatar_url'] != null ? NetworkImage(player['avatar_url'] as String) : null,
+            child: player['avatar_url'] == null
+                ? Text((player['name'] as String? ?? '?')[0].toUpperCase(),
+                    style: TextStyle(color: color, fontWeight: FontWeight.w800, fontSize: rank == 1 ? 22 : 17))
+                : null,
+          ),
         ),
         const SizedBox(height: 6),
         Text(player['name'] as String? ?? '', maxLines: 1, overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: context.text1)),
-        Text('${player['xp'] ?? 0} XP', style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w700)),
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: context.text1)),
+        Text('${player['xp'] ?? 0} XP', style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w800)),
         const SizedBox(height: 8),
         Container(
           height: height * 0.4,
           decoration: BoxDecoration(
-            gradient: LinearGradient(colors: [color.withValues(alpha: 0.3), color.withValues(alpha: 0.1)],
+            gradient: LinearGradient(colors: [color.withValues(alpha: 0.25), color.withValues(alpha: 0.05)],
                 begin: Alignment.topCenter, end: Alignment.bottomCenter),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+            border: Border.all(color: color.withValues(alpha: 0.15)),
           ),
           child: Center(
-            child: Text('#$rank', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: color)),
+            child: Text('#$rank', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: color)),
           ),
         ),
       ],
@@ -136,9 +151,12 @@ class _LeaderboardRow extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: isMe ? AppTheme.primary.withValues(alpha: 0.1) : context.cardDark,
-        borderRadius: BorderRadius.circular(12),
-        border: isMe ? Border.all(color: AppTheme.primary.withValues(alpha: 0.3)) : null,
+        color: isMe ? AppTheme.primary.withValues(alpha: 0.1) : context.card,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isMe ? AppTheme.primary.withValues(alpha: 0.3) : AppTheme.primary.withValues(alpha: 0.08),
+        ),
+        boxShadow: isMe ? AppTheme.cardGlow() : [],
       ),
       child: Row(
         children: [

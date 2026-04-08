@@ -738,25 +738,34 @@ class _MenuItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = color ?? context.text1;
+    final iconColor = color ?? AppTheme.primaryLight;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         decoration: BoxDecoration(
           color: context.card,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppTheme.primary.withValues(alpha: 0.05)),
+          border: Border.all(color: (color ?? AppTheme.primary).withValues(alpha: 0.1)),
         ),
         child: Row(
           children: [
-            Icon(icon, color: c, size: 22),
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: iconColor, size: 20),
+            ),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: TextStyle(color: c, fontSize: 15)),
+                  Text(title, style: TextStyle(color: c, fontSize: 15, fontWeight: FontWeight.w500)),
                   if (subtitle != null)
                     Text(subtitle!,
                         style: TextStyle(
@@ -766,7 +775,7 @@ class _MenuItem extends StatelessWidget {
             ),
             if (color == null)
               Icon(Icons.chevron_right_rounded,
-                  color: context.text3),
+                  color: context.text3, size: 20),
           ],
         ),
       ),
