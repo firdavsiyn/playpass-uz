@@ -42,7 +42,7 @@ class SubscriptionWidget extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
-            color: AppTheme.bgCard,
+            color: context.card,
             borderRadius: BorderRadius.circular(19),
           ),
           child: Row(
@@ -141,7 +141,7 @@ class _ActiveSubscription extends StatelessWidget {
       child: Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppTheme.bgCard,
+        color: context.card,
         borderRadius: BorderRadius.circular(19),
       ),
       child: ClipRRect(
