@@ -1641,15 +1641,10 @@ function bannerFormHtml(b = null) {
   return `
     <div class="form-group"><label>Заголовок</label><input type="text" id="banner-title" value="${esc(b?.title || '')}" placeholder="Новая акция!" /></div>
     <div class="form-group"><label>Описание</label><textarea id="banner-desc" placeholder="Описание...">${esc(b?.description || '')}</textarea></div>
-    <div class="form-group"><label>Тип</label><select id="banner-type">
-      <option value="banner" ${b?.type==='banner'?'selected':''}>Баннер</option>
-      <option value="news" ${b?.type==='news'?'selected':''}>Новость</option>
-      <option value="promo" ${b?.type==='promo'?'selected':''}>Акция</option>
-    </select></div>
     <div class="form-group"><label>URL картинки</label><input type="text" id="banner-image" value="${esc(b?.image_url || '')}" placeholder="https://..." /></div>
-    <div class="form-group"><label>Ссылка (необязательно)</label><input type="text" id="banner-link" value="${esc(b?.link_url || '')}" placeholder="https://..." /></div>
-    <div class="form-group"><label>Дата начала</label><input type="date" id="banner-start" value="${b?.starts_at ? b.starts_at.substring(0,10) : ''}" /></div>
-    <div class="form-group"><label>Дата окончания</label><input type="date" id="banner-end" value="${b?.ends_at ? b.ends_at.substring(0,10) : ''}" /></div>
+    <div class="form-group"><label>Ссылка (необязательно)</label><input type="text" id="banner-link" value="${esc(b?.action_url || '')}" placeholder="https://..." /></div>
+    <div class="form-group"><label>Фон (HEX цвет)</label><input type="text" id="banner-bg" value="${esc(b?.bg_color || '')}" placeholder="#7C3AED" /></div>
+    <div class="form-group"><label>Истекает</label><input type="date" id="banner-end" value="${b?.expires_at ? b.expires_at.substring(0,10) : ''}" /></div>
     <div class="form-group"><label>Порядок</label><input type="number" id="banner-sort" value="${b?.sort_order ?? 0}" /></div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal()">Отмена</button>
@@ -1661,11 +1656,10 @@ async function saveBanner(id) {
   const payload = {
     title: $('banner-title').value.trim(),
     description: $('banner-desc').value.trim() || null,
-    type: $('banner-type').value,
     image_url: $('banner-image').value.trim() || null,
-    link_url: $('banner-link').value.trim() || null,
-    starts_at: $('banner-start').value ? new Date($('banner-start').value).toISOString() : null,
-    ends_at: $('banner-end').value ? new Date($('banner-end').value).toISOString() : null,
+    action_url: $('banner-link').value.trim() || null,
+    bg_color: $('banner-bg').value.trim() || null,
+    expires_at: $('banner-end').value ? new Date($('banner-end').value).toISOString() : null,
     sort_order: parseInt($('banner-sort').value) || 0,
   };
   if (!payload.title) { showToast('Введите заголовок', 'error'); return; }
@@ -1676,7 +1670,6 @@ async function saveBanner(id) {
       showToast('Баннер обновлён'); logAction('Обновил баннер', 'banner', id, payload.title);
     } else {
       payload.is_active = true;
-      payload.created_by = currentAdmin?.id;
       const { error } = await sb.from('banners').insert(payload);
       if (error) throw error;
       showToast('Баннер создан'); logAction('Создал баннер', 'banner', null, payload.title);
