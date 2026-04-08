@@ -1113,21 +1113,10 @@ class SupabaseService {
   // ── Leaderboard ──────────────────────────────────────────
   Future<List<Map<String, dynamic>>> getLeaderboard({int limit = 50}) async {
     try {
-      final res = await _client.from('users')
-          .select('id, name, avatar_url, xp, loyalty_level, total_visits')
-          .order('xp', ascending: false)
-          .limit(limit);
+      final res = await _client.rpc('get_leaderboard', params: {'limit_count': limit});
       return (res as List).cast<Map<String, dynamic>>();
     } catch (_) {
-      // Columns xp/loyalty_level/total_visits may not exist yet
-      try {
-        final res = await _client.from('users')
-            .select('id, name, avatar_url')
-            .limit(limit);
-        return (res as List).cast<Map<String, dynamic>>();
-      } catch (_) {
-        return [];
-      }
+      return [];
     }
   }
 
