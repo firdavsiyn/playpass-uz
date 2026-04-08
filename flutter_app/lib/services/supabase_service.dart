@@ -33,11 +33,10 @@ class SupabaseService {
   // ── Users ─────────────────────────────────────────────────
   Future<void> updateUserProfile({required String name, String? avatarUrl}) async {
     final userId = _userId;
-    await _client.from('users').upsert({
-      'id': userId,
+    await _client.from('users').update({
       'name': name,
       if (avatarUrl != null) 'avatar_url': avatarUrl,
-    });
+    }).eq('id', userId);
   }
 
   Future<Map<String, dynamic>?> getUserProfile(String userId) async {
