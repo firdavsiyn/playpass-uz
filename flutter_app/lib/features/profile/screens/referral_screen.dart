@@ -299,7 +299,7 @@ class _ReferralCodeCard extends StatelessWidget {
                     );
                   },
                   icon: const Icon(Icons.copy_rounded, size: 18),
-                  label: const Text('Копировать'),
+                  label: const Text('Копировать', maxLines: 1, overflow: TextOverflow.ellipsis),
                 ),
               ),
               const SizedBox(width: 12),
@@ -316,7 +316,7 @@ class _ReferralCodeCard extends StatelessWidget {
                     );
                   },
                   icon: const Icon(Icons.share_rounded, size: 18),
-                  label: const Text('Поделиться'),
+                  label: const Text('Поделиться', maxLines: 1, overflow: TextOverflow.ellipsis),
                 ),
               ),
             ],
