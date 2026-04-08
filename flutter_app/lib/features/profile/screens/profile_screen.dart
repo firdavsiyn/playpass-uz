@@ -32,16 +32,23 @@ class ProfileScreen extends ConsumerWidget {
     final profileAsync = ref.watch(profileProvider);
     final subAsync = ref.watch(subscriptionProvider);
 
+    // Show loading spinner only on initial load (no previous data)
+    // During refresh after name/avatar change, keep showing old profile
+    final Widget body;
+    if (profileAsync.isLoading && !profileAsync.hasValue) {
+      body = const Center(child: CircularProgressIndicator());
+    } else if (profileAsync.hasError && !profileAsync.hasValue) {
+      body = Center(child: Text('${ref.lang('common.error')}: ${profileAsync.error}'));
+    } else {
+      body = _ProfileContent(
+        profile: profileAsync.valueOrNull,
+        subscription: subAsync.valueOrNull,
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(title: Text(ref.lang('profile.title'))),
-      body: profileAsync.when(
-        data: (profile) => _ProfileContent(
-          profile: profile,
-          subscription: subAsync.valueOrNull,
-        ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('${ref.lang('common.error')}: $e')),
-      ),
+      body: body,
     );
   }
 }
@@ -328,6 +335,12 @@ class _ProfileContent extends ConsumerWidget {
   }
 
   Future<void> _pickAndUploadAvatar(BuildContext context, WidgetRef ref) async {
+    // Cache stable references before async gap
+    final messenger = ScaffoldMessenger.of(context);
+    final uploadText = ref.lang('profile.upload_photo');
+    final doneText = ref.lang('profile.photo_updated');
+    final errorText = ref.lang('common.error');
+
     try {
       final picker = ImagePicker();
       final image = await picker.pickImage(
@@ -338,43 +351,42 @@ class _ProfileContent extends ConsumerWidget {
       );
       if (image == null) return;
 
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(ref.lang('profile.upload_photo'))),
-        );
-      }
+      messenger.showSnackBar(SnackBar(content: Text(uploadText)));
 
       final bytes = await image.readAsBytes();
       await SupabaseService().uploadAvatar(bytes.toList(), image.name);
       ref.invalidate(profileProvider);
 
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(ref.lang('profile.photo_updated'))),
-        );
-      }
+      messenger.clearSnackBars();
+      messenger.showSnackBar(SnackBar(content: Text(doneText)));
     } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${ref.lang('common.error')}: $e')),
-        );
-      }
+      messenger.clearSnackBars();
+      messenger.showSnackBar(SnackBar(content: Text('$errorText: $e')));
     }
   }
 
   void _showChangeNameDialog(BuildContext context, WidgetRef ref, String currentName) {
     final controller = TextEditingController(text: currentName);
+    // Cache translated strings before async gap
+    final changeName = ref.lang('profile.change_name');
+    final nameHint = ref.lang('profile.name_hint');
+    final cancelText = ref.lang('common.cancel');
+    final saveText = ref.lang('common.save');
+    final tooShortText = ref.lang('profile.name_too_short');
+    final nameChangedText = ref.lang('profile.name_changed');
+    final errorText = ref.lang('common.error');
+    // Get scaffold messenger before dialog opens (stable reference)
+    final messenger = ScaffoldMessenger.of(context);
+
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: context.card,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(color: AppTheme.primary.withValues(alpha: 0.15)),
         ),
-        title: Text(ref.lang('profile.change_name'),
+        title: Text(changeName,
             style: TextStyle(color: context.text1)),
         content: TextField(
           controller: controller,
@@ -382,14 +394,14 @@ class _ProfileContent extends ConsumerWidget {
           textCapitalization: TextCapitalization.words,
           style: TextStyle(color: context.text1, fontSize: 16),
           decoration: InputDecoration(
-            hintText: ref.lang('profile.name_hint'),
+            hintText: nameHint,
             prefixIcon: Icon(Icons.person_outline, size: 20),
           ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(ref.lang('common.cancel')),
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(cancelText),
           ),
           Container(
             decoration: BoxDecoration(
@@ -405,29 +417,25 @@ class _ProfileContent extends ConsumerWidget {
               onPressed: () async {
                 final newName = controller.text.trim();
                 if (newName.length < 2) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(ref.lang('profile.name_too_short'))),
+                  messenger.showSnackBar(
+                    SnackBar(content: Text(tooShortText)),
                   );
                   return;
                 }
-                Navigator.pop(context);
+                Navigator.pop(dialogContext);
                 try {
                   await SupabaseService().updateUserProfile(name: newName);
                   ref.invalidate(profileProvider);
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('${ref.lang('profile.name_changed')}: $newName')),
-                    );
-                  }
+                  messenger.showSnackBar(
+                    SnackBar(content: Text('$nameChangedText: $newName')),
+                  );
                 } catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('${ref.lang('common.error')}: $e')),
-                    );
-                  }
+                  messenger.showSnackBar(
+                    SnackBar(content: Text('$errorText: $e')),
+                  );
                 }
               },
-              child: Text(ref.lang('common.save')),
+              child: Text(saveText),
             ),
           ),
         ],
