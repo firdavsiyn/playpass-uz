@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../models/club.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/neon_shimmer.dart';
 
 class NearbyClubsRow extends StatelessWidget {
   final AsyncValue<List<Club>> clubsAsync;
@@ -16,7 +17,7 @@ class NearbyClubsRow extends StatelessWidget {
       data: (clubs) => clubs.isEmpty
           ? Text('Клубы не найдены', style: TextStyle(color: context.text3))
           : SizedBox(
-              height: 160,
+              height: 175,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: clubs.length,
@@ -25,7 +26,7 @@ class NearbyClubsRow extends StatelessWidget {
               ),
             ),
       loading: () => SizedBox(
-        height: 160,
+        height: 175,
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           itemCount: 3,
@@ -44,49 +45,171 @@ class _ClubCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final statusColor = club.isOpen ? AppTheme.success : AppTheme.error;
+
     return GestureDetector(
       onTap: () => context.push('/clubs/${club.id}'),
       child: Container(
-        width: 140,
+        width: 150,
         decoration: BoxDecoration(
           color: context.card,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppTheme.primary.withValues(alpha: 0.08)),
-          boxShadow: AppTheme.cardGlow(),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppTheme.primary.withValues(alpha: 0.12)),
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.primary.withValues(alpha: 0.08),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Photo
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
-              child: club.thumbnail != null
-                  ? CachedNetworkImage(
-                      imageUrl: club.thumbnail!,
-                      height: 90,
-                      width: 140,
-                      fit: BoxFit.cover,
-                      placeholder: (_, __) => Container(
-                        height: 90,
-                        color: context.surface,
-                        child: Icon(Icons.image_outlined, color: context.text3),
-                      ),
-                      errorWidget: (_, __, ___) => Container(
-                        height: 90,
-                        color: context.surface,
-                        child: Icon(Icons.sports_esports, color: context.text3),
-                      ),
-                    )
-                  : Container(
-                      height: 90,
-                      color: context.surface,
-                      child: Center(
-                        child: Icon(Icons.sports_esports, color: context.text3, size: 32),
+            // Photo with overlay badges
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                  child: club.thumbnail != null
+                      ? CachedNetworkImage(
+                          imageUrl: club.thumbnail!,
+                          height: 100,
+                          width: 150,
+                          fit: BoxFit.cover,
+                          placeholder: (_, __) => Container(
+                            height: 100,
+                            color: context.surface,
+                            child: const Center(
+                              child: Icon(Icons.image_outlined, color: AppTheme.textMuted, size: 24),
+                            ),
+                          ),
+                          errorWidget: (_, __, ___) => Container(
+                            height: 100,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  AppTheme.primary.withValues(alpha: 0.15),
+                                  AppTheme.neonCyan.withValues(alpha: 0.08),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                            ),
+                            child: const Center(
+                              child: Icon(Icons.sports_esports_rounded, color: AppTheme.textMuted, size: 28),
+                            ),
+                          ),
+                        )
+                      : Container(
+                          height: 100,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                AppTheme.primary.withValues(alpha: 0.15),
+                                AppTheme.neonCyan.withValues(alpha: 0.08),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                          ),
+                          child: const Center(
+                            child: Icon(Icons.sports_esports_rounded, color: AppTheme.textMuted, size: 32),
+                          ),
+                        ),
+                ),
+
+                // Gradient overlay at bottom of image
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: 40,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          context.card.withValues(alpha: 0.9),
+                        ],
                       ),
                     ),
+                  ),
+                ),
+
+                // Status badge (top-right)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: statusColor.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: statusColor.withValues(alpha: 0.4)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: statusColor.withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          spreadRadius: -2,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 5,
+                          height: 5,
+                          decoration: BoxDecoration(
+                            color: statusColor,
+                            shape: BoxShape.circle,
+                            boxShadow: [BoxShadow(color: statusColor, blurRadius: 4)],
+                          ),
+                        ),
+                        const SizedBox(width: 3),
+                        Text(
+                          club.isOpen ? 'LIVE' : 'OFF',
+                          style: TextStyle(
+                            color: statusColor,
+                            fontSize: 8,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Tier badge (top-left) if VIP
+                if (club.tier == 'vip')
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: AppTheme.tierVip.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: AppTheme.tierVip.withValues(alpha: 0.4)),
+                      ),
+                      child: const Text('VIP',
+                          style: TextStyle(
+                            color: AppTheme.tierVip,
+                            fontSize: 8,
+                            fontWeight: FontWeight.w800,
+                          )),
+                    ),
+                  ),
+              ],
             ),
+
+            // Info section
             Padding(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -97,31 +220,28 @@ class _ClubCard extends StatelessWidget {
                     style: TextStyle(
                       color: context.text1,
                       fontSize: 13,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Row(
                     children: [
-                      Icon(
-                        Icons.circle,
-                        size: 8,
-                        color: club.isOpen ? AppTheme.success : AppTheme.error,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        club.isOpen ? 'Открыт' : 'Закрыт',
-                        style: TextStyle(
-                          color: club.isOpen ? AppTheme.success : AppTheme.error,
-                          fontSize: 11,
-                        ),
-                      ),
-                      const Spacer(),
-                      const Icon(Icons.star, size: 12, color: Color(0xFFFBBF24)),
+                      Icon(Icons.star_rounded, size: 14, color: AppTheme.tierVip),
                       const SizedBox(width: 2),
                       Text(
                         club.rating.toStringAsFixed(1),
-                        style: TextStyle(color: context.text2, fontSize: 11),
+                        style: TextStyle(
+                          color: context.text2,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const Spacer(),
+                      Icon(Icons.computer_rounded, size: 12, color: context.text3),
+                      const SizedBox(width: 3),
+                      Text(
+                        '${club.pcCount}',
+                        style: TextStyle(color: context.text3, fontSize: 11),
                       ),
                     ],
                   ),
@@ -140,12 +260,16 @@ class _ClubCardSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 140,
-      height: 160,
-      decoration: BoxDecoration(
-        color: context.card,
-        borderRadius: BorderRadius.circular(12),
+    return NeonShimmer(
+      borderRadius: 16,
+      child: Container(
+        width: 150,
+        height: 175,
+        decoration: BoxDecoration(
+          color: context.card,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppTheme.primary.withValues(alpha: 0.08)),
+        ),
       ),
     );
   }

@@ -21,61 +21,75 @@ class SubscriptionWidget extends StatelessWidget {
   Widget _buildNoSubscription(BuildContext context) {
     return GestureDetector(
       onTap: () => context.push('/plans'),
+      // Gradient border wrapper
       child: Container(
-        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: context.glass,
+          gradient: const LinearGradient(
+            colors: [AppTheme.primary, AppTheme.neonCyan],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppTheme.primary.withValues(alpha: 0.15)),
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.primary.withValues(alpha: 0.2),
+              blurRadius: 20,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        AppTheme.primary.withValues(alpha: 0.3),
-                        AppTheme.neonPurple.withValues(alpha: 0.2),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: const Icon(Icons.card_membership_rounded,
-                      color: AppTheme.primaryLight, size: 28),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Нет активной подписки',
-                          style: TextStyle(
-                              color: context.text1,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16)),
-                      const SizedBox(height: 4),
-                      Text('Купите тариф и начните играть',
-                          style:
-                              TextStyle(color: context.text2, fontSize: 13)),
+        padding: const EdgeInsets.all(1.5), // border width
+        child: Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: AppTheme.bgCard,
+            borderRadius: BorderRadius.circular(19),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppTheme.primary.withValues(alpha: 0.25),
+                      AppTheme.neonCyan.withValues(alpha: 0.1),
                     ],
                   ),
+                  borderRadius: BorderRadius.circular(14),
                 ),
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primary.withValues(alpha: 0.15),
-                    shape: BoxShape.circle,
+                child: const Icon(Icons.card_membership_rounded,
+                    color: AppTheme.primaryLight, size: 28),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Нет активной подписки',
+                        style: TextStyle(
+                            color: context.text1,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15)),
+                    const SizedBox(height: 4),
+                    Text('Купите тариф и начните играть',
+                        style:
+                            TextStyle(color: context.text2, fontSize: 13)),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppTheme.primary, AppTheme.neonCyan],
                   ),
-                  child: const Icon(Icons.arrow_forward_ios,
-                      color: AppTheme.primary, size: 14),
+                  shape: BoxShape.circle,
                 ),
-              ],
-            ),
+                child: const Icon(Icons.arrow_forward_ios,
+                    color: Colors.white, size: 14),
+              ),
+            ],
           ),
         ),
       ),
@@ -107,19 +121,31 @@ class _ActiveSubscription extends StatelessWidget {
     final color = _planGlowColor(subscription.plan);
     final isFrozen = subscription.isFrozen;
 
+    // Gradient border wrapper for active subscription
     return Container(
+      decoration: BoxDecoration(
+        gradient: isFrozen
+            ? null
+            : LinearGradient(
+                colors: [color.withValues(alpha: 0.6), color.withValues(alpha: 0.15)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+        color: isFrozen ? Colors.blueGrey.withValues(alpha: 0.2) : null,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: isFrozen
+            ? []
+            : [BoxShadow(color: color.withValues(alpha: 0.15), blurRadius: 20, offset: const Offset(0, 4))],
+      ),
+      padding: const EdgeInsets.all(1.5),
+      child: Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: context.glass,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isFrozen
-              ? Colors.blueGrey.withValues(alpha: 0.3)
-              : color.withValues(alpha: 0.15),
-        ),
+        color: AppTheme.bgCard,
+        borderRadius: BorderRadius.circular(19),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(19),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
           child: Column(
@@ -318,6 +344,7 @@ class _ActiveSubscription extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }

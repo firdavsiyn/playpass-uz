@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,7 +9,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_locale.dart';
 import '../../../services/supabase_service.dart';
 
-/// Экран авторизации MVP — Email + Пароль (Tabs: Войти / Создать аккаунт)
+/// Dramatic gaming-style auth screen
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
 
@@ -17,8 +18,10 @@ class AuthScreen extends ConsumerStatefulWidget {
 }
 
 class _AuthScreenState extends ConsumerState<AuthScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late TabController _tabController;
+  late AnimationController _glowController;
+  late AnimationController _bgController;
 
   // Login fields
   final _loginEmail = TextEditingController();
@@ -39,11 +42,21 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _glowController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    )..repeat(reverse: true);
+    _bgController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 8),
+    )..repeat();
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _glowController.dispose();
+    _bgController.dispose();
     _loginEmail.dispose();
     _loginPassword.dispose();
     _regName.dispose();
@@ -52,7 +65,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     super.dispose();
   }
 
-  // ── Вход ──────────────────────────────────────────────────
+  // ── Login ────────────────────────────────────────────────
   Future<void> _login() async {
     final email = _loginEmail.text.trim();
     final password = _loginPassword.text;
@@ -86,7 +99,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     }
   }
 
-  // ── Регистрация ───────────────────────────────────────────
+  // ── Register ─────────────────────────────────────────────
   Future<void> _register() async {
     final name = _regName.text.trim();
     final email = _regEmail.text.trim();
@@ -111,7 +124,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     });
 
     try {
-      // 1. Создаём пользователя в Supabase Auth
       final response = await Supabase.instance.client.auth.signUp(
         email: email,
         password: password,
@@ -123,15 +135,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
         return;
       }
 
-      // 2. Сразу логиним (signUp в Supabase автоматически логинит)
-      // 3. Обновляем профиль в public.users
       try {
         await SupabaseService().updateUserProfile(name: name);
-      } catch (_) {
-        // Профиль может создаться через trigger — не критично
-      }
+      } catch (_) {}
 
-      // 4. Отправляем на онбординг
       if (mounted) {
         context.go('/auth/onboarding');
       }
@@ -163,92 +170,239 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 48),
-
-              // Logo
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppTheme.neonPurple, AppTheme.primary],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+      body: Stack(
+        children: [
+          // ── Animated background orbs ───────────────────────
+          AnimatedBuilder(
+            animation: _bgController,
+            builder: (_, __) {
+              final angle = _bgController.value * 2 * math.pi;
+              return Stack(
+                children: [
+                  Positioned(
+                    top: -80 + math.sin(angle) * 30,
+                    right: -60 + math.cos(angle) * 20,
+                    child: Container(
+                      width: 250,
+                      height: 250,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          colors: [
+                            AppTheme.primary.withValues(alpha: 0.15),
+                            AppTheme.primary.withValues(alpha: 0.0),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: AppTheme.neonGlow(radius: 20),
-                ),
-                child: const Icon(Icons.sports_esports, color: Colors.white, size: 36),
-              ),
-              const SizedBox(height: 24),
-
-              Text(
-                ref.lang('auth.welcome'),
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      color: context.text1,
-                      height: 1.3,
+                  Positioned(
+                    bottom: 100 + math.cos(angle) * 25,
+                    left: -40 + math.sin(angle) * 15,
+                    child: Container(
+                      width: 200,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          colors: [
+                            AppTheme.neonCyan.withValues(alpha: 0.1),
+                            AppTheme.neonCyan.withValues(alpha: 0.0),
+                          ],
+                        ),
+                      ),
                     ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                ref.lang('auth.tagline'),
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 28),
+                  ),
+                ],
+              );
+            },
+          ),
 
-              // Tabs
-              Container(
-                decoration: BoxDecoration(
-                  color: context.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppTheme.primary.withValues(alpha: 0.1)),
-                ),
-                child: TabBar(
-                  controller: _tabController,
-                  indicator: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [AppTheme.neonPurple, AppTheme.primary],
+          // ── Main content ───────────────────────────────────
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 40),
+
+                  // ── Animated Logo ──────────────────────────
+                  Center(
+                    child: AnimatedBuilder(
+                      animation: _glowController,
+                      builder: (_, child) {
+                        final glow = 0.3 + _glowController.value * 0.4;
+                        return Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [AppTheme.primary, AppTheme.neonCyan],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.primary.withValues(alpha: glow),
+                                blurRadius: 30,
+                                spreadRadius: -4,
+                              ),
+                              BoxShadow(
+                                color: AppTheme.neonCyan.withValues(alpha: glow * 0.6),
+                                blurRadius: 50,
+                                spreadRadius: -8,
+                              ),
+                            ],
+                          ),
+                          child: const Icon(Icons.sports_esports_rounded,
+                              color: Colors.white, size: 42),
+                        );
+                      },
                     ),
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
+                  ),
+                  const SizedBox(height: 20),
+
+                  // ── Title ──────────────────────────────────
+                  Center(
+                    child: ShaderMask(
+                      shaderCallback: (bounds) => const LinearGradient(
+                        colors: [AppTheme.primaryLight, AppTheme.neonCyan],
+                      ).createShader(bounds),
+                      child: Text(
+                        'PLAYPASS',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 32,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 6,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Center(
+                    child: Text(
+                      ref.lang('auth.tagline'),
+                      style: TextStyle(
+                        color: context.text2,
+                        fontSize: 14,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // ── Tab Bar ────────────────────────────────
+                  Container(
+                    decoration: BoxDecoration(
+                      color: context.surface,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: AppTheme.primary.withValues(alpha: 0.15)),
+                    ),
+                    child: TabBar(
+                      controller: _tabController,
+                      indicator: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [AppTheme.primary, Color(0xFF6366F1)],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.primary.withValues(alpha: 0.4),
+                            blurRadius: 12,
+                            spreadRadius: -2,
+                          ),
+                        ],
+                      ),
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      labelColor: Colors.white,
+                      unselectedLabelColor: context.text3,
+                      labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                      dividerHeight: 0,
+                      tabs: [
+                        Tab(text: ref.lang('auth.tab_login')),
+                        Tab(text: ref.lang('auth.tab_register')),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // ── Tab Content ────────────────────────────
+                  Expanded(
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _buildLoginForm(),
+                        _buildRegisterForm(),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Gradient Button ────────────────────────────────────────
+  Widget _gradientButton({
+    required String label,
+    required bool loading,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: loading ? null : onTap,
+      child: AnimatedBuilder(
+        animation: _glowController,
+        builder: (_, __) {
+          final glow = loading ? 0.0 : 0.2 + _glowController.value * 0.3;
+          return Container(
+            height: 54,
+            decoration: BoxDecoration(
+              gradient: loading
+                  ? null
+                  : const LinearGradient(
+                      colors: [AppTheme.primary, Color(0xFF6366F1), AppTheme.neonCyan],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    ),
+              color: loading ? context.surface : null,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: loading
+                  ? []
+                  : [
                       BoxShadow(
-                        color: AppTheme.primary.withValues(alpha: 0.3),
-                        blurRadius: 8,
+                        color: AppTheme.primary.withValues(alpha: glow),
+                        blurRadius: 24,
+                        offset: const Offset(0, 6),
                       ),
                     ],
-                  ),
-                  indicatorSize: TabBarIndicatorSize.tab,
-                  labelColor: Colors.white,
-                  unselectedLabelColor: context.text2,
-                  dividerHeight: 0,
-                  tabs: [
-                    Tab(text: ref.lang('auth.tab_login')),
-                    Tab(text: ref.lang('auth.tab_register')),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Tab content
-              Expanded(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _buildLoginForm(),
-                    _buildRegisterForm(),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
+            ),
+            child: Center(
+              child: loading
+                  ? const SizedBox(
+                      height: 22,
+                      width: 22,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2.5, color: AppTheme.primaryLight),
+                    )
+                  : Text(
+                      label,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -259,7 +413,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Email', style: Theme.of(context).textTheme.bodyMedium),
+          _inputLabel('Email'),
           const SizedBox(height: 8),
           TextField(
             controller: _loginEmail,
@@ -274,7 +428,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
           ),
           const SizedBox(height: 16),
 
-          Text(ref.lang('auth.password'), style: Theme.of(context).textTheme.bodyMedium),
+          _inputLabel(ref.lang('auth.password')),
           const SizedBox(height: 8),
           TextField(
             controller: _loginPassword,
@@ -298,8 +452,24 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
 
           if (_loginError != null) ...[
             const SizedBox(height: 12),
-            Text(_loginError!,
-                style: const TextStyle(color: AppTheme.error, fontSize: 13)),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppTheme.error.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppTheme.error.withValues(alpha: 0.2)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.error_outline, color: AppTheme.error, size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(_loginError!,
+                        style: const TextStyle(color: AppTheme.error, fontSize: 13)),
+                  ),
+                ],
+              ),
+            ),
           ],
 
           const SizedBox(height: 8),
@@ -308,35 +478,15 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
             child: TextButton(
               onPressed: () => context.push('/auth/forgot-password'),
               child: Text(ref.lang('auth.forgot'),
-                  style: const TextStyle(fontSize: 13)),
+                  style: const TextStyle(fontSize: 13, color: AppTheme.neonCyan)),
             ),
           ),
 
           const SizedBox(height: 16),
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: !_loginLoading
-                  ? [
-                      BoxShadow(
-                        color: AppTheme.primary.withValues(alpha: 0.4),
-                        blurRadius: 16,
-                        offset: const Offset(0, 4),
-                      ),
-                    ]
-                  : [],
-            ),
-            child: ElevatedButton(
-              onPressed: (!_loginLoading) ? _login : null,
-              child: _loginLoading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white),
-                    )
-                  : Text(ref.lang('auth.login_btn')),
-            ),
+          _gradientButton(
+            label: ref.lang('auth.login_btn'),
+            loading: _loginLoading,
+            onTap: _login,
           ),
         ],
       ),
@@ -349,7 +499,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(ref.lang('auth.name'), style: Theme.of(context).textTheme.bodyMedium),
+          _inputLabel(ref.lang('auth.name')),
           const SizedBox(height: 8),
           TextField(
             controller: _regName,
@@ -358,13 +508,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
             style: TextStyle(color: context.text1, fontSize: 16),
             decoration: InputDecoration(
               hintText: ref.lang('auth.name_hint'),
-              prefixIcon: Icon(Icons.person_outline, size: 20),
+              prefixIcon: const Icon(Icons.person_outline, size: 20),
             ),
             onChanged: (_) => setState(() => _regError = null),
           ),
           const SizedBox(height: 16),
 
-          Text('Email', style: Theme.of(context).textTheme.bodyMedium),
+          _inputLabel('Email'),
           const SizedBox(height: 8),
           TextField(
             controller: _regEmail,
@@ -379,7 +529,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
           ),
           const SizedBox(height: 16),
 
-          Text(ref.lang('auth.password'), style: Theme.of(context).textTheme.bodyMedium),
+          _inputLabel(ref.lang('auth.password')),
           const SizedBox(height: 8),
           TextField(
             controller: _regPassword,
@@ -403,35 +553,31 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
 
           if (_regError != null) ...[
             const SizedBox(height: 12),
-            Text(_regError!,
-                style: const TextStyle(color: AppTheme.error, fontSize: 13)),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppTheme.error.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppTheme.error.withValues(alpha: 0.2)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.error_outline, color: AppTheme.error, size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(_regError!,
+                        style: const TextStyle(color: AppTheme.error, fontSize: 13)),
+                  ),
+                ],
+              ),
+            ),
           ],
 
           const SizedBox(height: 24),
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: !_regLoading
-                  ? [
-                      BoxShadow(
-                        color: AppTheme.primary.withValues(alpha: 0.4),
-                        blurRadius: 16,
-                        offset: const Offset(0, 4),
-                      ),
-                    ]
-                  : [],
-            ),
-            child: ElevatedButton(
-              onPressed: (!_regLoading) ? _register : null,
-              child: _regLoading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white),
-                    )
-                  : Text(ref.lang('auth.register_btn')),
-            ),
+          _gradientButton(
+            label: ref.lang('auth.register_btn'),
+            loading: _regLoading,
+            onTap: _register,
           ),
 
           const SizedBox(height: 16),
@@ -439,12 +585,21 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
             child: Text(
               ref.lang('auth.terms'),
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodySmall,
+              style: TextStyle(color: context.text3, fontSize: 12),
             ),
           ),
           const SizedBox(height: 24),
         ],
       ),
     );
+  }
+
+  Widget _inputLabel(String text) {
+    return Text(text, style: TextStyle(
+      color: context.text2,
+      fontSize: 13,
+      fontWeight: FontWeight.w600,
+      letterSpacing: 0.3,
+    ));
   }
 }
