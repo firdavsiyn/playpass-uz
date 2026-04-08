@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/app_theme.dart';
 
-class UpsellScreen extends StatelessWidget {
+class UpsellScreen extends ConsumerWidget {
   final Map<String, String> extra;
 
   const UpsellScreen({super.key, required this.extra});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final currentPlan = extra['currentPlan'] ?? 'basic';
     final requiredZone = extra['requiredZone'] ?? 'pro';
     final zoneName = extra['zoneName'] ?? AppConstants.zoneLabel(requiredZone);
@@ -27,7 +29,7 @@ class UpsellScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Доступ ограничен'),
+        title: Text(ref.lang('upsell.title')),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -54,7 +56,7 @@ class UpsellScreen extends StatelessWidget {
 
             // Title
             Text(
-              'Эта зона требует другого тарифа',
+              ref.lang('upsell.zone_requires'),
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.titleLarge,
             ),
@@ -84,7 +86,7 @@ class UpsellScreen extends StatelessWidget {
               child: Column(
                 children: [
                   _PlanRow(
-                    label: 'Ваш тариф',
+                    label: ref.lang('upsell.your_plan'),
                     planName: currentPlanName,
                     color: context.text3,
                     icon: Icons.close_rounded,
@@ -97,7 +99,7 @@ class UpsellScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   _PlanRow(
-                    label: 'Требуется для зоны "$zoneName"',
+                    label: ref.lang('upsell.required_for_zone').replaceFirst('{zone}', zoneName),
                     planName: requiredPlanName,
                     color: context.text1,
                     icon: Icons.check_circle_rounded,
@@ -114,7 +116,7 @@ class UpsellScreen extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () => context.push('/plans'),
-                child: Text('Перейти на $requiredPlanName'),
+                child: Text(ref.lang('upsell.upgrade_to').replaceFirst('{plan}', requiredPlanName)),
               ),
             ),
 
@@ -124,7 +126,7 @@ class UpsellScreen extends StatelessWidget {
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: () => context.push('/clubs'),
-                child: const Text('Найти клуб с базовой зоной'),
+                child: Text(ref.lang('upsell.find_basic_club')),
               ),
             ),
 
@@ -135,7 +137,7 @@ class UpsellScreen extends StatelessWidget {
               child: TextButton(
                 onPressed: () => context.pop(),
                 child: Text(
-                  'Назад',
+                  ref.lang('upsell.back'),
                   style: TextStyle(color: context.text2),
                 ),
               ),

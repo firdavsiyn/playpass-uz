@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../services/supabase_service.dart';
 
-class GiftPurchaseScreen extends StatefulWidget {
+class GiftPurchaseScreen extends ConsumerStatefulWidget {
   const GiftPurchaseScreen({super.key});
 
   @override
-  State<GiftPurchaseScreen> createState() => _GiftPurchaseScreenState();
+  ConsumerState<GiftPurchaseScreen> createState() => _GiftPurchaseScreenState();
 }
 
-class _GiftPurchaseScreenState extends State<GiftPurchaseScreen> {
+class _GiftPurchaseScreenState extends ConsumerState<GiftPurchaseScreen> {
   String _selectedPlan = 'standard';
   final _nameCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
@@ -41,7 +43,7 @@ class _GiftPurchaseScreenState extends State<GiftPurchaseScreen> {
       setState(() => _giftCode = code);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Ошибка: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${ref.lang('gift.error_prefix')}$e')));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -51,7 +53,7 @@ class _GiftPurchaseScreenState extends State<GiftPurchaseScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Подарить подписку')),
+      appBar: AppBar(title: Text(ref.lang('gift.buy_title'))),
       body: _giftCode != null ? _buildSuccess() : _buildForm(),
     );
   }
@@ -62,7 +64,7 @@ class _GiftPurchaseScreenState extends State<GiftPurchaseScreen> {
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
       children: [
         // Plan selector
-        Text('Выберите тариф', style: TextStyle(color: context.text1, fontSize: 16, fontWeight: FontWeight.w600)),
+        Text(ref.lang('gift.choose_plan'), style: TextStyle(color: context.text1, fontSize: 16, fontWeight: FontWeight.w600)),
         const SizedBox(height: 12),
         Wrap(
           spacing: 10,
@@ -86,28 +88,28 @@ class _GiftPurchaseScreenState extends State<GiftPurchaseScreen> {
         ),
         const SizedBox(height: 8),
         Text(
-          '${_formatPrice(_plan.priceUzs)} UZS  ·  ${_plan.isUnlimited ? "Безлимит" : "${_plan.hours} ч"}',
+          '${_formatPrice(_plan.priceUzs)} UZS  ·  ${_plan.isUnlimited ? ref.lang('gift.unlimited_short') : "${_plan.hours} ${ref.lang('gift.hours_short')}"}',
           style: TextStyle(color: context.text2, fontSize: 14),
         ),
         const SizedBox(height: 24),
 
         // Recipient info
-        Text('Для кого подарок?', style: TextStyle(color: context.text1, fontSize: 16, fontWeight: FontWeight.w600)),
+        Text(ref.lang('gift.for_whom'), style: TextStyle(color: context.text1, fontSize: 16, fontWeight: FontWeight.w600)),
         const SizedBox(height: 8),
-        Text('Необязательно — можно просто скопировать код',
+        Text(ref.lang('gift.optional'),
             style: TextStyle(color: context.text3, fontSize: 13)),
         const SizedBox(height: 12),
         TextField(
           controller: _nameCtrl,
           style: TextStyle(color: context.text1),
-          decoration: const InputDecoration(hintText: 'Имя получателя', prefixIcon: Icon(Icons.person_outline, size: 20)),
+          decoration: InputDecoration(hintText: ref.lang('gift.name'), prefixIcon: const Icon(Icons.person_outline, size: 20)),
         ),
         const SizedBox(height: 12),
         TextField(
           controller: _phoneCtrl,
           keyboardType: TextInputType.phone,
           style: TextStyle(color: context.text1),
-          decoration: const InputDecoration(hintText: 'Телефон (необязательно)', prefixIcon: Icon(Icons.phone_outlined, size: 20)),
+          decoration: InputDecoration(hintText: ref.lang('gift.phone'), prefixIcon: const Icon(Icons.phone_outlined, size: 20)),
         ),
         const SizedBox(height: 32),
 
@@ -120,7 +122,7 @@ class _GiftPurchaseScreenState extends State<GiftPurchaseScreen> {
             onPressed: _loading ? null : _createGift,
             child: _loading
                 ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                : Text('Оформить подарок · ${_formatPrice(_plan.priceUzs)} UZS'),
+                : Text(ref.lang('gift.create_price').replaceFirst('{price}', _formatPrice(_plan.priceUzs))),
           ),
         ),
       ],
@@ -147,10 +149,10 @@ class _GiftPurchaseScreenState extends State<GiftPurchaseScreen> {
               child: const Icon(Icons.card_giftcard_rounded, color: AppTheme.success, size: 36),
             ),
             const SizedBox(height: 24),
-            Text('Подарочный сертификат создан!',
+            Text(ref.lang('gift.success'),
                 style: TextStyle(color: context.text1, fontSize: 20, fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
-            Text('Поделитесь кодом с другом', style: TextStyle(color: context.text2)),
+            Text(ref.lang('gift.share'), style: TextStyle(color: context.text2)),
             const SizedBox(height: 24),
             Container(
               padding: const EdgeInsets.all(20),
@@ -179,10 +181,10 @@ class _GiftPurchaseScreenState extends State<GiftPurchaseScreen> {
                   child: ElevatedButton.icon(
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: _giftCode!));
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Код скопирован')));
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(ref.lang('gift.code_copied'))));
                     },
                     icon: const Icon(Icons.copy_rounded, size: 18),
-                    label: const Text('Копировать'),
+                    label: Text(ref.lang('gift.copy')),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -190,18 +192,18 @@ class _GiftPurchaseScreenState extends State<GiftPurchaseScreen> {
                   child: OutlinedButton.icon(
                     onPressed: () {
                       Clipboard.setData(ClipboardData(
-                        text: 'Привет! Дарю тебе подписку PlayPass. Активируй код: ${_giftCode!} в приложении!',
+                        text: ref.lang('gift.share_text').replaceFirst('{code}', _giftCode!),
                       ));
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Текст скопирован')));
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(ref.lang('gift.text_copied'))));
                     },
                     icon: const Icon(Icons.share_rounded, size: 18),
-                    label: const Text('Поделиться'),
+                    label: Text(ref.lang('gift.share_btn')),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            TextButton(onPressed: () => context.go('/home'), child: const Text('На главную')),
+            TextButton(onPressed: () => context.go('/home'), child: Text(ref.lang('gift.home'))),
           ],
         ),
       ),

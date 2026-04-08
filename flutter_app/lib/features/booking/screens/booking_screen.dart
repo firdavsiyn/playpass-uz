@@ -131,6 +131,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                   ),
                   const SizedBox(height: 10),
                   ...active.map((b) => _BookingCard(
+                        key: ValueKey(b['id']),
                         booking: b,
                         onCancel: () async {
                           await SupabaseService()
@@ -439,7 +440,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                 children: [
                   _SectionTitle(title: ref.lang('booking.history')),
                   const SizedBox(height: 8),
-                  ...past.map((b) => _HistoryCard(booking: b)),
+                  ...past.map((b) => _HistoryCard(key: ValueKey(b['id']), booking: b)),
                 ],
               );
             },
@@ -808,7 +809,7 @@ class _PriceEstimate extends ConsumerWidget {
 class _BookingCard extends ConsumerWidget {
   final Map<String, dynamic> booking;
   final VoidCallback onCancel;
-  const _BookingCard({required this.booking, required this.onCancel});
+  const _BookingCard({super.key, required this.booking, required this.onCancel});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -963,7 +964,7 @@ class _BookingCard extends ConsumerWidget {
 // ── History card ───────────────────────────────────────────
 class _HistoryCard extends ConsumerWidget {
   final Map<String, dynamic> booking;
-  const _HistoryCard({required this.booking});
+  const _HistoryCard({super.key, required this.booking});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

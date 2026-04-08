@@ -11,6 +11,10 @@ import '../models/tournament.dart';
 import '../models/story.dart';
 
 class SupabaseService {
+  static final SupabaseService _instance = SupabaseService._internal();
+  factory SupabaseService() => _instance;
+  SupabaseService._internal();
+
   final SupabaseClient _client = Supabase.instance.client;
 
   // ── Auth ──────────────────────────────────────────────────
@@ -233,7 +237,12 @@ class SupabaseService {
   }
 
   // ── Visits ────────────────────────────────────────────────
-  Future<List<Visit>> getVisitHistory({int? month, int? year}) async {
+  Future<List<Visit>> getVisitHistory({
+    int? month,
+    int? year,
+    int limit = 20,
+    int offset = 0,
+  }) async {
     final userId = _userId;
     var query = _client
         .from('visits')
@@ -248,7 +257,9 @@ class SupabaseService {
           .lte('created_at', to.toIso8601String());
     }
 
-    final res = await query.order('created_at', ascending: false);
+    final res = await query
+        .order('created_at', ascending: false)
+        .range(offset, offset + limit - 1);
     return (res as List).map((e) => Visit.fromJson(e as Map<String, dynamic>)).toList();
   }
 

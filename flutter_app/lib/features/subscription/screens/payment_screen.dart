@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../services/supabase_service.dart';
 
@@ -37,7 +38,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
   Future<void> _submitRequest() async {
     final phone = _phoneController.text.trim();
     if (phone.isEmpty) {
-      setState(() => _error = 'Введите номер телефона для связи');
+      setState(() => _error = ref.lang('pay.enter_phone'));
       return;
     }
 
@@ -55,7 +56,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
       );
       setState(() => _step = 2);
     } catch (e) {
-      setState(() => _error = 'Ошибка отправки. Попробуйте снова.');
+      setState(() => _error = ref.lang('pay.send_error'));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -69,7 +70,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           icon: Icon(Icons.arrow_back_ios),
           onPressed: () => context.pop(),
         ),
-        title: Text(_step == 2 ? 'Заявка отправлена' : 'Оплата'),
+        title: Text(_step == 2 ? ref.lang('pay.request_sent_title') : ref.lang('pay.title')),
       ),
       body: SafeArea(
         child: switch (_step) {
@@ -108,7 +109,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Тариф: ${_plan.name}',
+                        '${ref.lang('pay.plan_label')}${_plan.name}',
                         style: TextStyle(
                           color: context.text1,
                           fontWeight: FontWeight.w600,
@@ -116,8 +117,8 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                       ),
                       Text(
                         _plan.isUnlimited
-                            ? 'Безлимит · 1 визит/день / 30 дней'
-                            : '${_plan.hours} часов / 30 дней',
+                            ? ref.lang('pay.unlimited_desc')
+                            : ref.lang('pay.hours_desc').replaceFirst('{n}', '${_plan.hours}'),
                         style: TextStyle(
                             color: context.text2, fontSize: 13),
                       ),
@@ -139,7 +140,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
 
           // Payment instructions
           Text(
-            'Как оплатить',
+            ref.lang('pay.how_to_pay'),
             style: TextStyle(
               color: context.text1,
               fontSize: 18,
@@ -151,8 +152,8 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           // Option 1: Payme
           _PaymentOption(
             icon: Icons.phone_android,
-            title: 'Через Payme',
-            subtitle: 'Переведите $priceFormatted UZS на номер:',
+            title: ref.lang('pay.via_payme'),
+            subtitle: ref.lang('pay.transfer_to_phone').replaceFirst('{amount}', priceFormatted),
             value: AppConstants.paymentPaymePhone,
             onCopy: () => _copyToClipboard(AppConstants.paymentPaymePhone),
           ),
@@ -161,8 +162,8 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           // Option 2: Card
           _PaymentOption(
             icon: Icons.credit_card,
-            title: 'На карту HUMO/UZCARD',
-            subtitle: 'Переведите $priceFormatted UZS на карту:',
+            title: ref.lang('pay.via_card'),
+            subtitle: ref.lang('pay.transfer_to_card').replaceFirst('{amount}', priceFormatted),
             value: AppConstants.paymentCardNumber,
             onCopy: () => _copyToClipboard(AppConstants.paymentCardNumber),
           ),
@@ -180,7 +181,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                 Icon(Icons.person_outline, size: 18, color: context.text3),
                 const SizedBox(width: 10),
                 Text(
-                  'Получатель: ${AppConstants.paymentCardHolder}',
+                  '${ref.lang('pay.recipient')}${AppConstants.paymentCardHolder}',
                   style: TextStyle(color: context.text2, fontSize: 14),
                 ),
               ],
@@ -204,8 +205,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'После перевода нажмите «Я оплатил» и заполните короткую форму. '
-                    'Мы активируем подписку в течение 30 минут.',
+                    ref.lang('pay.after_transfer_note'),
                     style: TextStyle(color: context.text2, fontSize: 13),
                   ),
                 ),
@@ -222,8 +222,8 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
-              child: const Text('Я оплатил',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              child: Text(ref.lang('pay.i_paid'),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             ),
           ),
         ],
@@ -239,7 +239,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Подтверждение оплаты',
+            ref.lang('pay.confirm_title'),
             style: TextStyle(
               color: context.text1,
               fontSize: 18,
@@ -248,13 +248,12 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Заполните форму, чтобы мы могли проверить платёж '
-            'и активировать подписку.',
+            ref.lang('pay.confirm_desc'),
             style: TextStyle(color: context.text2, fontSize: 14),
           ),
           const SizedBox(height: 24),
 
-          Text('Номер телефона для связи *',
+          Text(ref.lang('pay.phone_label'),
               style: Theme.of(context).textTheme.bodyMedium),
           const SizedBox(height: 8),
           TextField(
@@ -269,15 +268,15 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           ),
           const SizedBox(height: 16),
 
-          Text('Комментарий (необязательно)',
+          Text(ref.lang('pay.comment_label'),
               style: Theme.of(context).textTheme.bodyMedium),
           const SizedBox(height: 8),
           TextField(
             controller: _noteController,
             maxLines: 3,
             style: TextStyle(color: context.text1, fontSize: 16),
-            decoration: const InputDecoration(
-              hintText: 'Сумма перевода, время, с какого банка...',
+            decoration: InputDecoration(
+              hintText: ref.lang('pay.comment_hint'),
             ),
           ),
 
@@ -303,9 +302,9 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: Colors.white),
                     )
-                  : const Text('Отправить заявку',
+                  : Text(ref.lang('pay.submit'),
                       style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                          const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             ),
           ),
 
@@ -313,7 +312,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           Center(
             child: TextButton(
               onPressed: () => setState(() => _step = 0),
-              child: const Text('Назад к инструкции'),
+              child: Text(ref.lang('pay.back_to_instruction')),
             ),
           ),
         ],
@@ -333,16 +332,14 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                 color: AppTheme.success, size: 80),
             const SizedBox(height: 24),
             Text(
-              'Заявка отправлена!',
+              ref.lang('pay.request_sent'),
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     color: context.text1,
                   ),
             ),
             const SizedBox(height: 12),
             Text(
-              'Мы проверим платёж и активируем вашу подписку '
-              'в течение 30 минут (в рабочие часы 09:00–22:00).\n\n'
-              'Вы получите уведомление, когда подписка будет активна.',
+              ref.lang('pay.request_sent_desc'),
               textAlign: TextAlign.center,
               style: TextStyle(color: context.text2, fontSize: 14),
             ),
@@ -351,7 +348,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () => context.go('/home'),
-                child: const Text('На главную'),
+                child: Text(ref.lang('pay.go_home')),
               ),
             ),
           ],
@@ -363,7 +360,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
   void _copyToClipboard(String text) {
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Скопировано'), duration: Duration(seconds: 1)),
+      SnackBar(content: Text(ref.lang('pay.copied')), duration: const Duration(seconds: 1)),
     );
   }
 }

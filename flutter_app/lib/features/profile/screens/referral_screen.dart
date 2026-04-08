@@ -3,8 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../../services/supabase_service.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../services/supabase_service.dart';
 
 final _referralStatsProvider =
     FutureProvider<Map<String, dynamic>>((ref) async {
@@ -28,7 +29,7 @@ class ReferralScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Реферальная программа'),
+        title: Text(ref.lang('ref.title')),
       ),
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -68,7 +69,7 @@ class ReferralScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Пригласи друга — вы оба получите +3 часа к подписке',
+                  ref.lang('ref.invite_desc'),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: context.text1,
@@ -78,7 +79,7 @@ class ReferralScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Поделитесь кодом с другом. После его первой подписки вы оба получите бонусные часы.',
+                  ref.lang('ref.share_desc'),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: context.text2,
@@ -93,7 +94,16 @@ class ReferralScreen extends ConsumerWidget {
 
           // Referral code
           codeAsync.when(
-            data: (code) => _ReferralCodeCard(code: code),
+            data: (code) => _ReferralCodeCard(
+              code: code,
+              codeNotAssigned: ref.lang('ref.code_not_assigned'),
+              yourCode: ref.lang('ref.your_code'),
+              copyLabel: ref.lang('ref.copy'),
+              codeCopied: ref.lang('ref.code_copied'),
+              shareLabel: ref.lang('ref.share'),
+              shareText: ref.lang('ref.share_text'),
+              shareCopied: ref.lang('ref.share_copied'),
+            ),
             loading: () => const Center(
               child: Padding(
                 padding: EdgeInsets.all(16),
@@ -101,7 +111,7 @@ class ReferralScreen extends ConsumerWidget {
               ),
             ),
             error: (e, _) => Center(
-              child: Text('Ошибка: $e',
+              child: Text('${ref.lang('common.error_prefix')}$e',
                   style: const TextStyle(color: AppTheme.error)),
             ),
           ),
@@ -123,7 +133,7 @@ class ReferralScreen extends ConsumerWidget {
                     children: [
                       Expanded(
                         child: _StatCard(
-                          label: 'Приглашено друзей',
+                          label: ref.lang('ref.friends_invited'),
                           value: '$friendsCount',
                           icon: Icons.people_rounded,
                         ),
@@ -131,7 +141,7 @@ class ReferralScreen extends ConsumerWidget {
                       const SizedBox(width: 12),
                       Expanded(
                         child: _StatCard(
-                          label: 'Заработано часов',
+                          label: ref.lang('ref.hours_earned'),
                           value: '$totalHours',
                           icon: Icons.access_time_rounded,
                         ),
@@ -142,7 +152,7 @@ class ReferralScreen extends ConsumerWidget {
                   if (transactions.isNotEmpty) ...[
                     const SizedBox(height: 24),
                     Text(
-                      'Последние приглашения',
+                      ref.lang('ref.recent_invites'),
                       style: TextStyle(
                         color: context.text1,
                         fontSize: 16,
@@ -152,7 +162,7 @@ class ReferralScreen extends ConsumerWidget {
                     const SizedBox(height: 12),
                     ...transactions.map<Widget>((tx) {
                       final inviteeName =
-                          (tx['users']?['name'] as String?) ?? 'Друг';
+                          (tx['users']?['name'] as String?) ?? ref.lang('ref.friend_default');
                       final bonusHours = tx['bonus_hours'] as int? ?? 3;
                       final createdAt = tx['created_at'] as String? ?? '';
                       final date = createdAt.length >= 10
@@ -208,7 +218,7 @@ class ReferralScreen extends ConsumerWidget {
                               ),
                             ),
                             Text(
-                              '+$bonusHours ч',
+                              '+$bonusHours ${ref.lang('ref.hours_suffix')}',
                               style: const TextStyle(
                                 color: AppTheme.success,
                                 fontSize: 14,
@@ -230,7 +240,7 @@ class ReferralScreen extends ConsumerWidget {
               ),
             ),
             error: (e, _) => Center(
-              child: Text('Ошибка: $e',
+              child: Text('${ref.lang('common.error_prefix')}$e',
                   style: const TextStyle(color: AppTheme.error)),
             ),
           ),
@@ -244,7 +254,24 @@ class ReferralScreen extends ConsumerWidget {
 
 class _ReferralCodeCard extends StatelessWidget {
   final String code;
-  const _ReferralCodeCard({required this.code});
+  final String codeNotAssigned;
+  final String yourCode;
+  final String copyLabel;
+  final String codeCopied;
+  final String shareLabel;
+  final String shareText;
+  final String shareCopied;
+
+  const _ReferralCodeCard({
+    required this.code,
+    required this.codeNotAssigned,
+    required this.yourCode,
+    required this.copyLabel,
+    required this.codeCopied,
+    required this.shareLabel,
+    required this.shareText,
+    required this.shareCopied,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -256,7 +283,7 @@ class _ReferralCodeCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
         ),
         child: Text(
-          'Реферальный код пока не назначен',
+          codeNotAssigned,
           textAlign: TextAlign.center,
           style: TextStyle(color: context.text3, fontSize: 14),
         ),
@@ -274,7 +301,7 @@ class _ReferralCodeCard extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            'Ваш реферальный код',
+            yourCode,
             style: TextStyle(color: context.text2, fontSize: 13),
           ),
           const SizedBox(height: 12),
@@ -295,11 +322,11 @@ class _ReferralCodeCard extends StatelessWidget {
                   onPressed: () {
                     Clipboard.setData(ClipboardData(text: code));
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Код скопирован')),
+                      SnackBar(content: Text(codeCopied)),
                     );
                   },
                   icon: const Icon(Icons.copy_rounded, size: 18),
-                  label: const Text('Копировать', maxLines: 1, overflow: TextOverflow.ellipsis),
+                  label: Text(copyLabel, maxLines: 1, overflow: TextOverflow.ellipsis),
                 ),
               ),
               const SizedBox(width: 12),
@@ -307,16 +334,14 @@ class _ReferralCodeCard extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: () {
                     Clipboard.setData(ClipboardData(
-                      text:
-                          'Привет! Попробуй PlayPass - подписку на компьютерные клубы. Используй мой код: $code и получи +3 часа бонусом!',
+                      text: shareText.replaceFirst('{code}', code),
                     ));
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Текст для отправки скопирован')),
+                      SnackBar(content: Text(shareCopied)),
                     );
                   },
                   icon: const Icon(Icons.share_rounded, size: 18),
-                  label: const Text('Поделиться', maxLines: 1, overflow: TextOverflow.ellipsis),
+                  label: Text(shareLabel, maxLines: 1, overflow: TextOverflow.ellipsis),
                 ),
               ),
             ],

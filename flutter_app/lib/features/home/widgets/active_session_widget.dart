@@ -6,7 +6,25 @@ import '../../../services/supabase_service.dart';
 class ActiveSessionWidget extends StatefulWidget {
   final Map<String, dynamic> session;
   final VoidCallback onEnded;
-  const ActiveSessionWidget({super.key, required this.session, required this.onEnded});
+  final String activeSessionLabel;
+  final String endSessionLabel;
+  final String clubDefault;
+  final String errorPrefix;
+  final String timeH;
+  final String timeM;
+  final String timeS;
+  const ActiveSessionWidget({
+    super.key,
+    required this.session,
+    required this.onEnded,
+    required this.activeSessionLabel,
+    required this.endSessionLabel,
+    required this.clubDefault,
+    required this.errorPrefix,
+    required this.timeH,
+    required this.timeM,
+    required this.timeS,
+  });
 
   @override
   State<ActiveSessionWidget> createState() => _ActiveSessionWidgetState();
@@ -18,7 +36,7 @@ class _ActiveSessionWidgetState extends State<ActiveSessionWidget> {
   bool _ending = false;
 
   DateTime get _checkinTime => DateTime.parse(widget.session['checkin_time'] as String);
-  String get _clubName => (widget.session['clubs'] as Map<String, dynamic>?)?['name'] as String? ?? 'Клуб';
+  String get _clubName => (widget.session['clubs'] as Map<String, dynamic>?)?['name'] as String? ?? widget.clubDefault;
 
   @override
   void initState() {
@@ -42,8 +60,8 @@ class _ActiveSessionWidgetState extends State<ActiveSessionWidget> {
     final h = d.inHours;
     final m = d.inMinutes % 60;
     final s = d.inSeconds % 60;
-    if (h > 0) return '${h}ч ${m.toString().padLeft(2, '0')}м';
-    return '${m}м ${s.toString().padLeft(2, '0')}с';
+    if (h > 0) return '$h${widget.timeH} ${m.toString().padLeft(2, '0')}${widget.timeM}';
+    return '$m${widget.timeM} ${s.toString().padLeft(2, '0')}${widget.timeS}';
   }
 
   Future<void> _endSession() async {
@@ -53,9 +71,8 @@ class _ActiveSessionWidgetState extends State<ActiveSessionWidget> {
       widget.onEnded();
     } catch (e) {
       if (mounted) {
-        // TODO: Localize error message — needs ref.lang() access or localization passed via constructor
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка: $e')),
+          SnackBar(content: Text('${widget.errorPrefix}$e')),
         );
       }
     } finally {
@@ -87,9 +104,8 @@ class _ActiveSessionWidgetState extends State<ActiveSessionWidget> {
                 ),
               ),
               const SizedBox(width: 8),
-              // TODO: Localize — needs ref.lang() access or localization passed via constructor
-              const Text('Активная сессия',
-                  style: TextStyle(color: AppTheme.success, fontSize: 12, fontWeight: FontWeight.w700)),
+              Text(widget.activeSessionLabel,
+                  style: const TextStyle(color: AppTheme.success, fontSize: 12, fontWeight: FontWeight.w700)),
               const Spacer(),
               GestureDetector(
                 onTap: _ending ? null : _endSession,
@@ -104,9 +120,8 @@ class _ActiveSessionWidgetState extends State<ActiveSessionWidget> {
                   child: _ending
                       ? const SizedBox(width: 14, height: 14,
                           child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.error))
-                      // TODO: Localize — needs ref.lang() access or localization passed via constructor
-                      : const Text('Завершить',
-                          style: TextStyle(color: AppTheme.error, fontSize: 12, fontWeight: FontWeight.w600)),
+                      : Text(widget.endSessionLabel,
+                          style: const TextStyle(color: AppTheme.error, fontSize: 12, fontWeight: FontWeight.w600)),
                 ),
               ),
             ],

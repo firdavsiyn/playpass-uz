@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../services/supabase_service.dart';
 
@@ -22,7 +23,7 @@ class AchievementsScreen extends ConsumerWidget {
     final unlockedAsync = ref.watch(_userAchievementsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Достижения')),
+      appBar: AppBar(title: Text(ref.lang('ach.title'))),
       body: allAsync.when(
         data: (achievements) {
           final unlocked = unlockedAsync.valueOrNull ?? {};
@@ -51,7 +52,7 @@ class AchievementsScreen extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text('достижений разблокировано',
+                    Text(ref.lang('ach.unlocked'),
                         style: TextStyle(color: context.text2, fontSize: 14)),
                     const SizedBox(height: 12),
                     ClipRRect(
@@ -71,13 +72,13 @@ class AchievementsScreen extends ConsumerWidget {
               // Achievement grid
               ...achievements.map((a) {
                 final isUnlocked = unlocked.contains(a['id']);
-                return _AchievementCard(achievement: a, isUnlocked: isUnlocked);
+                return _AchievementCard(achievement: a, isUnlocked: isUnlocked, locale: ref.watch(localeProvider));
               }),
             ],
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Ошибка: $e')),
+        error: (e, _) => Center(child: Text('${ref.lang('common.error_prefix')}$e')),
       ),
     );
   }
@@ -86,13 +87,14 @@ class AchievementsScreen extends ConsumerWidget {
 class _AchievementCard extends StatelessWidget {
   final Map<String, dynamic> achievement;
   final bool isUnlocked;
-  const _AchievementCard({required this.achievement, required this.isUnlocked});
+  final String locale;
+  const _AchievementCard({required this.achievement, required this.isUnlocked, required this.locale});
 
   @override
   Widget build(BuildContext context) {
     final icon = achievement['icon'] as String? ?? '?';
-    final name = achievement['name_ru'] as String? ?? '';
-    final desc = achievement['desc_ru'] as String? ?? '';
+    final name = achievement['name_$locale'] as String? ?? achievement['name_ru'] as String? ?? '';
+    final desc = achievement['desc_$locale'] as String? ?? achievement['desc_ru'] as String? ?? '';
     final category = achievement['category'] as String? ?? '';
 
     final categoryColor = switch (category) {

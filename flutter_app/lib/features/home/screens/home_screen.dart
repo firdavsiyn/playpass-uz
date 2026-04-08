@@ -215,6 +215,13 @@ class HomeScreen extends ConsumerWidget {
                                     ref.invalidate(activeSessionProvider);
                                     ref.invalidate(activeSubscriptionProvider);
                                   },
+                                  activeSessionLabel: ref.lang('home.active_session'),
+                                  endSessionLabel: ref.lang('home.end_session'),
+                                  clubDefault: ref.lang('common.club_default'),
+                                  errorPrefix: ref.lang('common.error_prefix'),
+                                  timeH: ref.lang('common.time_h'),
+                                  timeM: ref.lang('common.time_m'),
+                                  timeS: ref.lang('common.time_s'),
                                 ),
                               )
                             : const SizedBox.shrink(),

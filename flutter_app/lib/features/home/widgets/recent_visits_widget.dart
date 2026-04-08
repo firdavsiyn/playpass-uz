@@ -30,7 +30,7 @@ class RecentVisitsWidget extends StatelessWidget {
           );
         }
         return Column(
-          children: visits.map((v) => _VisitTile(visit: v)).toList(),
+          children: visits.map((v) => _VisitTile(key: ValueKey(v.id), visit: v)).toList(),
         );
       },
       loading: () => Column(
@@ -43,7 +43,7 @@ class RecentVisitsWidget extends StatelessWidget {
 
 class _VisitTile extends StatelessWidget {
   final Visit visit;
-  const _VisitTile({required this.visit});
+  const _VisitTile({super.key, required this.visit});
 
   @override
   Widget build(BuildContext context) {
