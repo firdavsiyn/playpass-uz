@@ -104557,9 +104557,7 @@ e=A.TA(B.aty,B.YI,e)
 s=n.h(0,"nav.clubs")
 s.toString
 s=A.TA(B.atz,B.Z8,s)
-r=n.h(0,"nav.scan")
-r.toString
-r=A.TA(B.Of,B.Of,r)
+r=A.TA(B.Of,B.Of,"")
 q=n.h(0,"nav.subscription")
 q.toString
 q=A.TA(B.atw,B.Yu,q)

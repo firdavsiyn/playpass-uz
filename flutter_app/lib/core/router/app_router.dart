@@ -246,7 +246,7 @@ class MainShell extends ConsumerWidget {
                     BottomNavigationBarItem(
                       icon: const SizedBox(height: 24, width: 24),
                       activeIcon: const SizedBox(height: 24, width: 24),
-                      label: s['nav.scan']!,
+                      label: '',
                     ),
                     BottomNavigationBarItem(
                       icon: const Icon(Icons.card_membership_outlined, size: 24),
