@@ -1047,7 +1047,7 @@ async function sendNotification() {
     if (userIds.length === 0) { showToast('Нет получателей в этом сегменте', 'error'); return; }
 
     // Insert notifications into notifications table
-    const notifs = userIds.map(uid => ({ user_id: uid, title, body, is_read: false }));
+    const notifs = userIds.map(uid => ({ user_id: uid, title, body, type: 'push', is_read: false }));
     const { error } = await sb.from('notifications').insert(notifs);
     if (error) throw error;
 
@@ -1566,7 +1566,7 @@ async function sendBulkNotif() {
   const body = $('bulk-notif-body').value.trim();
   if (!title || !body) { showToast('Заполните заголовок и текст', 'error'); return; }
   try {
-    const notifs = [...selectedUsers].map(uid => ({ user_id: uid, title, body, is_read: false }));
+    const notifs = [...selectedUsers].map(uid => ({ user_id: uid, title, body, type: 'push', is_read: false }));
     const { error } = await sb.from('notifications').insert(notifs);
     if (error) throw error;
     showToast(`Отправлено ${notifs.length} уведомлений`);
