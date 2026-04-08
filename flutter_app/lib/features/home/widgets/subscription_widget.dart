@@ -56,9 +56,9 @@ class SubscriptionWidget extends StatelessWidget {
                       AppTheme.neonCyan.withValues(alpha: 0.1),
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(14),
+                  shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.card_membership_rounded,
+                child: const Icon(Icons.rocket_launch_rounded,
                     color: AppTheme.primaryLight, size: 28),
               ),
               const SizedBox(width: 16),
@@ -127,7 +127,7 @@ class _ActiveSubscription extends StatelessWidget {
         gradient: isFrozen
             ? null
             : LinearGradient(
-                colors: [color.withValues(alpha: 0.6), color.withValues(alpha: 0.15)],
+                colors: [color.withValues(alpha: 0.7), color.withValues(alpha: 0.2)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -135,7 +135,10 @@ class _ActiveSubscription extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: isFrozen
             ? []
-            : [BoxShadow(color: color.withValues(alpha: 0.15), blurRadius: 20, offset: const Offset(0, 4))],
+            : [
+                BoxShadow(color: color.withValues(alpha: 0.2), blurRadius: 24, offset: const Offset(0, 4)),
+                BoxShadow(color: color.withValues(alpha: 0.08), blurRadius: 40, spreadRadius: -4),
+              ],
       ),
       padding: const EdgeInsets.all(1.5),
       child: Container(
@@ -195,6 +198,13 @@ class _ActiveSubscription extends StatelessWidget {
                       ),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: color.withValues(alpha: 0.3)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: color.withValues(alpha: 0.15),
+                          blurRadius: 8,
+                          spreadRadius: -2,
+                        ),
+                      ],
                     ),
                     child: Text(
                       subscription.planName,
@@ -234,9 +244,26 @@ class _ActiveSubscription extends StatelessWidget {
                     ),
                   ],
                   const Spacer(),
-                  Text(
-                    '${subscription.daysRemaining} дн.',
-                    style: TextStyle(color: context.text3, fontSize: 13),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '${subscription.daysRemaining} дн.',
+                        style: TextStyle(
+                          color: context.text1,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 1),
+                      Text(
+                        'осталось',
+                        style: TextStyle(
+                          color: context.text3,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -247,19 +274,20 @@ class _ActiveSubscription extends StatelessWidget {
                 children: [
                   // Circular progress indicator with glow
                   SizedBox(
-                    width: 80,
-                    height: 80,
+                    width: 90,
+                    height: 90,
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
                         // Progress ring
                         CustomPaint(
-                          size: const Size(80, 80),
+                          size: const Size(90, 90),
                           painter: _NeonProgressPainter(
                             progress: subscription.isUnlimited ? 1.0 : subscription.hoursProgress,
                             color: isFrozen ? Colors.blueGrey : color,
+                            secondaryColor: isFrozen ? Colors.blueGrey : AppTheme.neonCyan,
                             bgColor: context.surface,
-                            glowEnabled: false,
+                            glowEnabled: !isFrozen,
                           ),
                         ),
                         // Center text
@@ -271,7 +299,7 @@ class _ActiveSubscription extends StatelessWidget {
                               style: TextStyle(
                                 color: isFrozen ? Colors.blueGrey : context.text1,
                                 fontSize: subscription.isUnlimited ? 28 : 22,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w900,
                               ),
                             ),
                             if (!subscription.isUnlimited)
@@ -279,7 +307,7 @@ class _ActiveSubscription extends StatelessWidget {
                                 'ч',
                                 style: TextStyle(
                                   color: isFrozen ? Colors.blueGrey.withValues(alpha: 0.6) : context.text3,
-                                  fontSize: 11,
+                                  fontSize: 12,
                                 ),
                               ),
                           ],
@@ -287,7 +315,7 @@ class _ActiveSubscription extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(width: 20),
+                  const SizedBox(width: 22),
                   // Info
                   Expanded(
                     child: Column(
@@ -302,7 +330,7 @@ class _ActiveSubscription extends StatelessWidget {
                             fontSize: 14,
                           ),
                         ),
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 8),
                         if (subscription.isUnlimited)
                           Text(
                             '1 визит в день',
@@ -314,24 +342,45 @@ class _ActiveSubscription extends StatelessWidget {
                             ),
                           ),
                         if (!subscription.isUnlimited) ...[
-                          // Mini progress bar
+                          // Mini progress bar with glow
                           ClipRRect(
                             borderRadius: BorderRadius.circular(4),
                             child: Container(
-                              height: 6,
+                              height: 7,
                               decoration: BoxDecoration(
                                 color: context.surface,
                                 borderRadius: BorderRadius.circular(4),
                               ),
-                              child: FractionallySizedBox(
-                                alignment: Alignment.centerLeft,
-                                widthFactor: subscription.hoursProgress,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: color,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                ),
+                              child: LayoutBuilder(
+                                builder: (context, constraints) {
+                                  final filledWidth = constraints.maxWidth * subscription.hoursProgress;
+                                  return Stack(
+                                    children: [
+                                      // Filled portion with glow
+                                      Positioned(
+                                        left: 0,
+                                        top: 0,
+                                        bottom: 0,
+                                        width: filledWidth,
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color: isFrozen ? Colors.blueGrey : color,
+                                            borderRadius: BorderRadius.circular(4),
+                                            boxShadow: isFrozen
+                                                ? []
+                                                : [
+                                                    BoxShadow(
+                                                      color: color.withValues(alpha: 0.5),
+                                                      blurRadius: 6,
+                                                      spreadRadius: -1,
+                                                    ),
+                                                  ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
                               ),
                             ),
                           ),
@@ -350,16 +399,18 @@ class _ActiveSubscription extends StatelessWidget {
   }
 }
 
-/// Neon-style circular progress painter
+/// Neon-style circular progress painter with multi-color gradient sweep
 class _NeonProgressPainter extends CustomPainter {
   final double progress;
   final Color color;
+  final Color secondaryColor;
   final Color bgColor;
   final bool glowEnabled;
 
   _NeonProgressPainter({
     required this.progress,
     required this.color,
+    required this.secondaryColor,
     required this.bgColor,
     this.glowEnabled = true,
   });
@@ -367,8 +418,9 @@ class _NeonProgressPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2 - 6;
-    const strokeWidth = 5.0;
+    final radius = size.width / 2 - 7;
+    const strokeWidth = 6.0;
+    final sweepAngle = 2 * math.pi * progress;
 
     // Background ring
     final bgPaint = Paint()
@@ -378,35 +430,64 @@ class _NeonProgressPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
     canvas.drawCircle(center, radius, bgPaint);
 
-    // Progress arc
+    if (progress <= 0) return;
+
+    final rect = Rect.fromCircle(center: center, radius: radius);
+
+    // Dual-color glow (subtle)
+    if (glowEnabled) {
+      // Primary color glow
+      final glowPaint1 = Paint()
+        ..color = color.withValues(alpha: 0.2)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth + 5
+        ..strokeCap = StrokeCap.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
+
+      canvas.drawArc(
+        rect,
+        -math.pi / 2,
+        sweepAngle,
+        false,
+        glowPaint1,
+      );
+
+      // Secondary (cyan) glow — more subtle
+      final glowPaint2 = Paint()
+        ..color = secondaryColor.withValues(alpha: 0.1)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth + 8
+        ..strokeCap = StrokeCap.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+
+      canvas.drawArc(
+        rect,
+        -math.pi / 2,
+        sweepAngle,
+        false,
+        glowPaint2,
+      );
+    }
+
+    // Progress arc with SweepGradient for multi-color effect
+    final gradient = SweepGradient(
+      startAngle: 0,
+      endAngle: 2 * math.pi,
+      colors: [color, secondaryColor, color],
+      stops: const [0.0, 0.5, 1.0],
+      transform: const GradientRotation(-math.pi / 2),
+    );
+
     final progressPaint = Paint()
-      ..color = color
+      ..shader = gradient.createShader(rect)
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
 
-    // Glow paint
-    if (glowEnabled) {
-      final glowPaint = Paint()
-        ..color = color.withValues(alpha: 0.3)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = strokeWidth + 4
-        ..strokeCap = StrokeCap.round
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
-
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius),
-        -math.pi / 2,
-        2 * math.pi * progress,
-        false,
-        glowPaint,
-      );
-    }
-
     canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
+      rect,
       -math.pi / 2,
-      2 * math.pi * progress,
+      sweepAngle,
       false,
       progressPaint,
     );
@@ -414,5 +495,9 @@ class _NeonProgressPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _NeonProgressPainter oldDelegate) =>
-      oldDelegate.progress != progress || oldDelegate.color != color;
+      oldDelegate.progress != progress ||
+      oldDelegate.color != color ||
+      oldDelegate.secondaryColor != secondaryColor ||
+      oldDelegate.bgColor != bgColor ||
+      oldDelegate.glowEnabled != glowEnabled;
 }

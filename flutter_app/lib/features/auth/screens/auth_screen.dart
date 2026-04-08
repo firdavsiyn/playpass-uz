@@ -48,7 +48,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     )..repeat(reverse: true);
     _bgController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 8),
+      duration: const Duration(seconds: 10),
     )..repeat();
   }
 
@@ -179,9 +179,28 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
               final angle = _bgController.value * 2 * math.pi;
               return Stack(
                 children: [
+                  // Top-right orb — purple, larger & more dramatic
                   Positioned(
                     top: -80 + math.sin(angle) * 30,
                     right: -60 + math.cos(angle) * 20,
+                    child: Container(
+                      width: 300,
+                      height: 300,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          colors: [
+                            AppTheme.primary.withValues(alpha: 0.12),
+                            AppTheme.primary.withValues(alpha: 0.0),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Bottom-left orb — cyan
+                  Positioned(
+                    bottom: 100 + math.cos(angle) * 25,
+                    left: -40 + math.sin(angle) * 15,
                     child: Container(
                       width: 250,
                       height: 250,
@@ -189,25 +208,26 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                         shape: BoxShape.circle,
                         gradient: RadialGradient(
                           colors: [
-                            AppTheme.primary.withValues(alpha: 0.15),
-                            AppTheme.primary.withValues(alpha: 0.0),
+                            AppTheme.neonCyan.withValues(alpha: 0.08),
+                            AppTheme.neonCyan.withValues(alpha: 0.0),
                           ],
                         ),
                       ),
                     ),
                   ),
+                  // Center-right orb — neonPink accent
                   Positioned(
-                    bottom: 100 + math.cos(angle) * 25,
-                    left: -40 + math.sin(angle) * 15,
+                    top: MediaQuery.of(context).size.height * 0.4,
+                    right: -20 + math.sin(angle + 1.5) * 18,
                     child: Container(
-                      width: 200,
-                      height: 200,
+                      width: 180,
+                      height: 180,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         gradient: RadialGradient(
                           colors: [
-                            AppTheme.neonCyan.withValues(alpha: 0.1),
-                            AppTheme.neonCyan.withValues(alpha: 0.0),
+                            const Color(0xFFF472B6).withValues(alpha: 0.06),
+                            const Color(0xFFF472B6).withValues(alpha: 0.0),
                           ],
                         ),
                       ),
@@ -225,7 +245,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 48),
 
                   // ── Animated Logo ──────────────────────────
                   Center(
@@ -234,25 +254,20 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                       builder: (_, child) {
                         final glow = 0.3 + _glowController.value * 0.4;
                         return Container(
-                          width: 80,
-                          height: 80,
+                          width: 88,
+                          height: 88,
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
                               colors: [AppTheme.primary, AppTheme.neonCyan],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(24),
                             boxShadow: [
                               BoxShadow(
                                 color: AppTheme.primary.withValues(alpha: glow),
-                                blurRadius: 30,
+                                blurRadius: 40,
                                 spreadRadius: -4,
-                              ),
-                              BoxShadow(
-                                color: AppTheme.neonCyan.withValues(alpha: glow * 0.6),
-                                blurRadius: 50,
-                                spreadRadius: -8,
                               ),
                             ],
                           ),
@@ -262,21 +277,25 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                       },
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
 
                   // ── Title ──────────────────────────────────
                   Center(
                     child: ShaderMask(
                       shaderCallback: (bounds) => const LinearGradient(
-                        colors: [AppTheme.primaryLight, AppTheme.neonCyan],
+                        colors: [
+                          AppTheme.primaryLight,
+                          Color(0xFFA78BFA),
+                          AppTheme.neonCyan,
+                        ],
                       ).createShader(bounds),
                       child: Text(
                         'PLAYPASS',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 32,
+                          fontSize: 34,
                           fontWeight: FontWeight.w900,
-                          letterSpacing: 6,
+                          letterSpacing: 8,
                         ),
                       ),
                     ),
@@ -287,7 +306,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                       ref.lang('auth.tagline'),
                       style: TextStyle(
                         color: context.text2,
-                        fontSize: 14,
+                        fontSize: 13,
                         letterSpacing: 0.5,
                       ),
                     ),
@@ -299,7 +318,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                     decoration: BoxDecoration(
                       color: context.surface,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppTheme.primary.withValues(alpha: 0.15)),
+                      border: Border.all(color: AppTheme.primary.withValues(alpha: 0.1)),
                     ),
                     child: TabBar(
                       controller: _tabController,
@@ -367,12 +386,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
               gradient: loading
                   ? null
                   : const LinearGradient(
-                      colors: [AppTheme.primary, Color(0xFF6366F1), AppTheme.neonCyan],
+                      colors: [Color(0xFF7C3AED), Color(0xFF6366F1), Color(0xFF06B6D4)],
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
                     ),
               color: loading ? context.surface : null,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(16),
               boxShadow: loading
                   ? []
                   : [
@@ -383,23 +402,50 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                       ),
                     ],
             ),
-            child: Center(
-              child: loading
-                  ? const SizedBox(
-                      height: 22,
-                      width: 22,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2.5, color: AppTheme.primaryLight),
-                    )
-                  : Text(
-                      label,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.5,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Stack(
+                children: [
+                  // Glossy inner highlight overlay
+                  if (!loading)
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: 27,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.white.withValues(alpha: 0.08),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
                       ),
                     ),
+                  Center(
+                    child: loading
+                        ? const SizedBox(
+                            height: 22,
+                            width: 22,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2.5, color: AppTheme.primaryLight),
+                          )
+                        : Text(
+                            label,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                  ),
+                ],
+              ),
             ),
           );
         },
@@ -450,27 +496,34 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
             onSubmitted: (_) => _login(),
           ),
 
-          if (_loginError != null) ...[
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: AppTheme.error.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppTheme.error.withValues(alpha: 0.2)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.error_outline, color: AppTheme.error, size: 16),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(_loginError!,
-                        style: const TextStyle(color: AppTheme.error, fontSize: 13)),
-                  ),
-                ],
-              ),
-            ),
-          ],
+          AnimatedSize(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeInOut,
+            alignment: Alignment.topCenter,
+            child: _loginError != null
+                ? Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: AppTheme.error.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: AppTheme.error.withValues(alpha: 0.2)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline, color: AppTheme.error, size: 16),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(_loginError!,
+                                style: const TextStyle(color: AppTheme.error, fontSize: 13)),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
 
           const SizedBox(height: 8),
           Align(
@@ -551,27 +604,34 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
             onSubmitted: (_) => _register(),
           ),
 
-          if (_regError != null) ...[
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: AppTheme.error.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppTheme.error.withValues(alpha: 0.2)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.error_outline, color: AppTheme.error, size: 16),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(_regError!,
-                        style: const TextStyle(color: AppTheme.error, fontSize: 13)),
-                  ),
-                ],
-              ),
-            ),
-          ],
+          AnimatedSize(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeInOut,
+            alignment: Alignment.topCenter,
+            child: _regError != null
+                ? Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: AppTheme.error.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: AppTheme.error.withValues(alpha: 0.2)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline, color: AppTheme.error, size: 16),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(_regError!,
+                                style: const TextStyle(color: AppTheme.error, fontSize: 13)),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
 
           const SizedBox(height: 24),
           _gradientButton(
@@ -596,7 +656,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
 
   Widget _inputLabel(String text) {
     return Text(text, style: TextStyle(
-      color: context.text2,
+      color: context.text3,
       fontSize: 13,
       fontWeight: FontWeight.w600,
       letterSpacing: 0.3,

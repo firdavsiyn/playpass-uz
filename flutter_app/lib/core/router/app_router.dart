@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -183,116 +184,171 @@ class MainShell extends ConsumerWidget {
     final t = ref.watch(localeProvider);
     final s = tr(t);
 
+    void onTap(int index) {
+      ref.read(activeTabIndexProvider.notifier).state = index;
+      shell.goBranch(
+        index,
+        initialLocation: index == shell.currentIndex,
+      );
+    }
+
     return Scaffold(
       body: shell,
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: context.navBg,
-          border: Border(
-            top: BorderSide(
-              color: AppTheme.primary.withValues(alpha: 0.15),
+      bottomNavigationBar: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.bottomCenter,
+        children: [
+          // --- Glassmorphism bottom nav ---
+          ClipRRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: context.navBg.withValues(alpha: 0.85),
+                  border: Border(
+                    top: BorderSide(
+                      color: AppTheme.primary.withValues(alpha: 0.08),
+                    ),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.primary.withValues(alpha: 0.10),
+                      blurRadius: 24,
+                      offset: const Offset(0, -4),
+                    ),
+                  ],
+                ),
+                child: BottomNavigationBar(
+                  currentIndex: shell.currentIndex,
+                  onTap: onTap,
+                  type: BottomNavigationBarType.fixed,
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  selectedItemColor: AppTheme.primary,
+                  unselectedItemColor: context.text3,
+                  selectedLabelStyle: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 11,
+                  ),
+                  unselectedLabelStyle: const TextStyle(fontSize: 11),
+                  items: [
+                    BottomNavigationBarItem(
+                      icon: const Icon(Icons.home_outlined, size: 24),
+                      activeIcon: const _NeonIcon(icon: Icons.home_rounded),
+                      label: s['nav.home']!,
+                    ),
+                    BottomNavigationBarItem(
+                      icon: const Icon(Icons.map_outlined, size: 24),
+                      activeIcon: const _NeonIcon(icon: Icons.map_rounded),
+                      label: s['nav.clubs']!,
+                    ),
+                    // Invisible placeholder — the real button is the floating overlay
+                    BottomNavigationBarItem(
+                      icon: const SizedBox(height: 24, width: 24),
+                      activeIcon: const SizedBox(height: 24, width: 24),
+                      label: s['nav.scan']!,
+                    ),
+                    BottomNavigationBarItem(
+                      icon: const Icon(Icons.card_membership_outlined, size: 24),
+                      activeIcon:
+                          const _NeonIcon(icon: Icons.card_membership_rounded),
+                      label: s['nav.subscription']!,
+                    ),
+                    BottomNavigationBarItem(
+                      icon: const Icon(Icons.person_outline_rounded, size: 24),
+                      activeIcon: const _NeonIcon(icon: Icons.person_rounded),
+                      label: s['nav.profile']!,
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: AppTheme.primary.withValues(alpha: 0.12),
-              blurRadius: 30,
-              offset: const Offset(0, -6),
+
+          // --- Floating Scanner Button ---
+          Positioned(
+            top: -16,
+            child: _ScannerButton(
+              active: shell.currentIndex == 2,
+              onTap: () => onTap(2),
             ),
-          ],
-        ),
-        child: BottomNavigationBar(
-          currentIndex: shell.currentIndex,
-          onTap: (index) {
-            ref.read(activeTabIndexProvider.notifier).state = index;
-            shell.goBranch(
-              index,
-              initialLocation: index == shell.currentIndex,
-            );
-          },
-          type: BottomNavigationBarType.fixed,
-          items: [
-            BottomNavigationBarItem(
-                icon: const Icon(Icons.home_outlined),
-                activeIcon: _NeonIcon(icon: Icons.home_rounded),
-                label: s['nav.home']!),
-            BottomNavigationBarItem(
-                icon: const Icon(Icons.map_outlined),
-                activeIcon: _NeonIcon(icon: Icons.map_rounded),
-                label: s['nav.clubs']!),
-            BottomNavigationBarItem(
-                icon: const _ScannerIcon(active: false),
-                activeIcon: const _ScannerIcon(active: true),
-                label: s['nav.scan']!),
-            BottomNavigationBarItem(
-                icon: const Icon(Icons.card_membership_outlined),
-                activeIcon: _NeonIcon(icon: Icons.card_membership_rounded),
-                label: s['nav.subscription']!),
-            BottomNavigationBarItem(
-                icon: const Icon(Icons.person_outline_rounded),
-                activeIcon: _NeonIcon(icon: Icons.person_rounded),
-                label: s['nav.profile']!),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
-/// Neon-glowing active tab icon
+/// Active tab icon — primary-colored icon with a small dot indicator below.
 class _NeonIcon extends StatelessWidget {
   final IconData icon;
   const _NeonIcon({required this.icon});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppTheme.primary.withValues(alpha: 0.2),
-            AppTheme.neonCyan.withValues(alpha: 0.08),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primary.withValues(alpha: 0.5),
-            blurRadius: 16,
-            spreadRadius: -4,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, color: AppTheme.primary, size: 24),
+        const SizedBox(height: 4),
+        Container(
+          width: 4,
+          height: 3,
+          decoration: BoxDecoration(
+            color: AppTheme.primary,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.primary.withValues(alpha: 0.6),
+                blurRadius: 4,
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Icon(icon, color: AppTheme.primaryLight, size: 24),
+        ),
+      ],
     );
   }
 }
 
-/// Special scanner icon with accent glow
-class _ScannerIcon extends StatelessWidget {
+/// Floating elevated scanner button with gradient and glow.
+class _ScannerButton extends StatelessWidget {
   final bool active;
-  const _ScannerIcon({required this.active});
+  final VoidCallback onTap;
+  const _ScannerButton({required this.active, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    if (!active) return const Icon(Icons.qr_code_scanner_rounded);
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF7C3AED), Color(0xFF06B6D4)],
-        ),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.neonCyan.withValues(alpha: 0.4),
-            blurRadius: 16,
-            spreadRadius: -4,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 56,
+        height: 56,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF7C3AED),
+              Color(0xFF6366F1),
+              Color(0xFF06B6D4),
+            ],
           ),
-        ],
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF7C3AED).withValues(alpha: active ? 0.6 : 0.35),
+              blurRadius: active ? 20 : 14,
+              spreadRadius: active ? 2 : 0,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: const Icon(
+          Icons.qr_code_scanner_rounded,
+          color: Colors.white,
+          size: 26,
+        ),
       ),
-      child: const Icon(Icons.qr_code_scanner_rounded, color: Colors.white, size: 24),
     );
   }
 }

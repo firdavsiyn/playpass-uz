@@ -67,10 +67,10 @@ class _ActiveSessionWidgetState extends State<ActiveSessionWidget> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: context.glass,
+        color: context.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppTheme.success.withValues(alpha: 0.3)),
-        boxShadow: AppTheme.neonGlow(color: AppTheme.success, radius: 16),
+        boxShadow: AppTheme.cardGlow(color: AppTheme.success),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -97,6 +97,7 @@ class _ActiveSessionWidgetState extends State<ActiveSessionWidget> {
                     color: AppTheme.error.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: AppTheme.error.withValues(alpha: 0.3)),
+                    boxShadow: [BoxShadow(color: AppTheme.error.withValues(alpha: 0.2), blurRadius: 8)],
                   ),
                   child: _ending
                       ? const SizedBox(width: 14, height: 14,
@@ -119,7 +120,7 @@ class _ActiveSessionWidgetState extends State<ActiveSessionWidget> {
                 _formatDuration(_elapsed),
                 style: const TextStyle(
                   color: AppTheme.success,
-                  fontSize: 24,
+                  fontSize: 26,
                   fontWeight: FontWeight.w800,
                   fontFeatures: [FontFeature.tabularFigures()],
                 ),

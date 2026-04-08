@@ -55,7 +55,7 @@ class _VisitTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.card,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppTheme.primary.withValues(alpha: 0.06)),
+        border: Border.all(color: context.border.withValues(alpha: 0.3)),
         boxShadow: AppTheme.cardGlow(),
       ),
       child: Row(
@@ -70,13 +70,7 @@ class _VisitTile extends StatelessWidget {
                   AppTheme.neonPurple.withValues(alpha: 0.1),
                 ],
               ),
-              borderRadius: BorderRadius.circular(10),
-              boxShadow: [
-                BoxShadow(
-                  color: AppTheme.primary.withValues(alpha: 0.15),
-                  blurRadius: 8,
-                ),
-              ],
+              borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(Icons.sports_esports, color: AppTheme.primaryLight, size: 22),
           ),
@@ -106,7 +100,8 @@ class _VisitTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
               color: AppTheme.success.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppTheme.success.withValues(alpha: 0.2)),
             ),
             child: Text(
               '${visit.hoursSpent}ч',
@@ -133,7 +128,7 @@ class _VisitTileSkeleton extends StatelessWidget {
       height: 64,
       decoration: BoxDecoration(
         color: context.card,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
       ),
     );
   }

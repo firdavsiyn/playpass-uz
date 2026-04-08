@@ -17,11 +17,12 @@ extension ThemeColors on BuildContext {
   Color get text3 => isDark ? AppTheme.textMuted : AppTheme.lightTextMuted;
 
   // Borders
-  Color get border => isDark ? const Color(0xFF2A1F4E) : const Color(0xFFE5E7EB);
-  Color get borderSubtle => isDark ? const Color(0xFF1A1335) : const Color(0xFFF0F0F0);
+  Color get border => isDark ? const Color(0xFF2A1F4E) : AppTheme.lightBorder;
+  Color get borderSubtle => isDark ? const Color(0xFF1A1040) : const Color(0xFFEDE9FE);
 
   // Glass
   Color get glass => isDark ? const Color(0x14FFFFFF) : const Color(0x0A000000);
+  Color get glassStrong => isDark ? const Color(0x28FFFFFF) : const Color(0x18000000);
 
   // Nav bar bg
   Color get navBg => isDark ? const Color(0xFF06060F) : Colors.white;
@@ -38,20 +39,22 @@ class AppTheme {
   static const Color neonPurple = Color(0xFF8B5CF6);
   static const Color neonBlue = Color(0xFF3B82F6);
   static const Color neonCyan = Color(0xFF06B6D4);
-  static const Color neonPink = Color(0xFFEC4899);
+  static const Color neonPink = Color(0xFFF472B6);      // Refined — softer pink for multi-color gradients
   static const Color neonGreen = Color(0xFF10B981);
+  static const Color neonMagenta = Color(0xFFF472B6);   // Alias for neonPink — used in gradient contexts
+  static const Color neonLavender = Color(0xFFA78BFA);  // NEW — softer purple for subtle accents
 
   // ── Background (dark theme) ─────────────────────────────
-  static const Color bgDark = Color(0xFF050510);        // Near-black with purple tint
-  static const Color bgCard = Color(0xFF0F0D1E);        // Dark card
-  static const Color bgCardDeep = Color(0xFF0A0916);    // Even darker card
-  static const Color bgSurface = Color(0xFF130F24);     // Elevated surface
-  static const Color bgGlass = Color(0x12FFFFFF);       // Glassmorphism overlay
+  static const Color bgDark = Color(0xFF040811);        // Deeper, richer dark — almost pure black with blue-purple hint
+  static const Color bgCard = Color(0xFF0C0A1D);        // Deeper card
+  static const Color bgCardDeep = Color(0xFF080716);    // Even darker card
+  static const Color bgSurface = Color(0xFF110E24);     // Richer elevated surface
+  static const Color bgGlass = Color(0x0EFFFFFF);       // More subtle glassmorphism overlay
 
   // ── Text ────────────────────────────────────────────────
   static const Color textPrimary = Color(0xFFF0EDFF);   // Slightly purple-tinted white
-  static const Color textSecondary = Color(0xFF9B8FC2); // Muted purple
-  static const Color textMuted = Color(0xFF5C5280);     // Deep muted
+  static const Color textSecondary = Color(0xFF8B7EB0); // Slightly richer muted purple
+  static const Color textMuted = Color(0xFF4E4470);     // Adjusted deep muted
 
   // ── Status Colors ───────────────────────────────────────
   static const Color success = Color(0xFF10B981);
@@ -109,17 +112,73 @@ class AppTheme {
     Color? glowColor,
     double borderAlpha = 0.15,
     bool intense = false,
-  }) => BoxDecoration(
-    color: bgCard,
-    borderRadius: BorderRadius.circular(borderRadius),
-    border: Border.all(
-      color: (glowColor ?? primary).withValues(alpha: borderAlpha),
-      width: intense ? 1.5 : 1.0,
-    ),
-    boxShadow: intense
-        ? neonGlow(color: glowColor ?? primary, radius: 16, spread: -2)
-        : cardGlow(color: glowColor),
-  );
+    bool gradientBorder = false,
+  }) {
+    final resolvedGlow = glowColor ?? primary;
+
+    if (gradientBorder) {
+      // Gradient border is achieved via a container with gradient + inner container
+      // Return the outer decoration; caller nests an inner container with bgCard fill
+      return BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            resolvedGlow.withValues(alpha: 0.6),
+            neonCyan.withValues(alpha: 0.3),
+            resolvedGlow.withValues(alpha: 0.1),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(borderRadius),
+        boxShadow: intense
+            ? neonGlow(color: resolvedGlow, radius: 16, spread: -2)
+            : cardGlow(color: resolvedGlow),
+      );
+    }
+
+    return BoxDecoration(
+      color: bgCard,
+      borderRadius: BorderRadius.circular(borderRadius),
+      border: Border.all(
+        color: resolvedGlow.withValues(alpha: borderAlpha),
+        width: intense ? 1.5 : 1.0,
+      ),
+      boxShadow: intense
+          ? neonGlow(color: resolvedGlow, radius: 16, spread: -2)
+          : cardGlow(color: resolvedGlow),
+    );
+  }
+
+  /// Glassmorphism card decoration — frosted glass effect with configurable opacity
+  static BoxDecoration glassCard({
+    double borderRadius = 16,
+    double opacity = 0.08,
+    Color? tintColor,
+    Color? borderColor,
+    double borderWidth = 1.0,
+  }) {
+    final tint = tintColor ?? Colors.white;
+    return BoxDecoration(
+      color: tint.withValues(alpha: opacity),
+      borderRadius: BorderRadius.circular(borderRadius),
+      border: Border.all(
+        color: (borderColor ?? Colors.white).withValues(alpha: opacity * 2.5),
+        width: borderWidth,
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.12),
+          blurRadius: 24,
+          offset: const Offset(0, 8),
+        ),
+        BoxShadow(
+          color: primary.withValues(alpha: 0.06),
+          blurRadius: 40,
+          spreadRadius: -4,
+        ),
+      ],
+    );
+  }
 
   /// Neon gradient — purple to cyan (primary brand gradient)
   static const LinearGradient neonGradient = LinearGradient(
@@ -132,6 +191,25 @@ class AppTheme {
     colors: [Color(0x407C3AED), Color(0x406366F1), Color(0x4006B6D4)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
+  );
+
+  /// Premium gradient — 4-color sweep for premium surfaces
+  static const LinearGradient premiumGradient = LinearGradient(
+    colors: [neonPurple, primary, Color(0xFF6366F1), neonCyan],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  /// Shimmer gradient — for loading shimmer / skeleton effects
+  static const LinearGradient shimmerGradient = LinearGradient(
+    colors: [
+      Color(0x00FFFFFF),
+      Color(0x18FFFFFF),
+      Color(0x00FFFFFF),
+    ],
+    stops: [0.0, 0.5, 1.0],
+    begin: Alignment(-1.5, -0.3),
+    end: Alignment(1.5, 0.3),
   );
 
   /// Button gradient — purple to cyan
@@ -421,12 +499,13 @@ class AppTheme {
   // ██  LIGHT THEME
   // ═══════════════════════════════════════════════════════════
 
-  static const Color lightBg = Color(0xFFF5F3FF);       // Light purple tint
-  static const Color lightCard = Colors.white;
-  static const Color lightSurface = Color(0xFFEDE9FE);  // Light purple surface
-  static const Color lightTextPrimary = Color(0xFF1A1033);
-  static const Color lightTextSecondary = Color(0xFF6B5F8A);
-  static const Color lightTextMuted = Color(0xFF9B8FC2);
+  static const Color lightBg = Color(0xFFF8F7FF);         // Softer blue-white, less harsh
+  static const Color lightCard = Color(0xFFFFFFFF);        // Pure white
+  static const Color lightSurface = Color(0xFFF0EDFF);     // Soft lavender surface
+  static const Color lightTextPrimary = Color(0xFF0F0A2E); // Deeper purple-black for better contrast
+  static const Color lightTextSecondary = Color(0xFF5B5080); // Richer secondary text
+  static const Color lightTextMuted = Color(0xFF9B90C0);   // Adjusted muted
+  static const Color lightBorder = Color(0xFFE8E5F5);      // Lavender border
 
   static ThemeData get lightTheme => ThemeData(
     useMaterial3: true,
@@ -463,9 +542,10 @@ class AppTheme {
     cardTheme: CardThemeData(
       color: lightCard,
       elevation: 0,
+      shadowColor: primary.withValues(alpha: 0.08),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: primary.withValues(alpha: 0.08)),
+        side: BorderSide(color: lightBorder),
       ),
     ),
 
@@ -474,7 +554,8 @@ class AppTheme {
         backgroundColor: primary,
         foregroundColor: Colors.white,
         minimumSize: const Size(double.infinity, 52),
-        elevation: 0,
+        elevation: 2,
+        shadowColor: primary.withValues(alpha: 0.25),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         textStyle: const TextStyle(fontFamily: 'Inter', fontSize: 15, fontWeight: FontWeight.w700),
       ),
@@ -483,34 +564,40 @@ class AppTheme {
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         foregroundColor: primary,
-        side: const BorderSide(color: primary),
+        side: BorderSide(color: primary.withValues(alpha: 0.4)),
         minimumSize: const Size(double.infinity, 52),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
     ),
 
+    // Input fields — polished light styling with subtle purple shadows
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: lightSurface,
+      fillColor: Colors.white,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: primary.withValues(alpha: 0.15)),
+        borderSide: BorderSide(color: lightBorder),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: primary.withValues(alpha: 0.15)),
+        borderSide: BorderSide(color: lightBorder),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: primary, width: 2),
+        borderSide: BorderSide(color: primary, width: 2),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: const BorderSide(color: error),
       ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: error, width: 2),
+      ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      hintStyle: const TextStyle(color: lightTextMuted),
-      labelStyle: const TextStyle(color: lightTextSecondary),
+      hintStyle: TextStyle(color: lightTextMuted, fontSize: 14),
+      labelStyle: TextStyle(color: lightTextSecondary),
+      floatingLabelStyle: const TextStyle(color: primary, fontWeight: FontWeight.w600),
     ),
 
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
@@ -523,20 +610,32 @@ class AppTheme {
       unselectedLabelStyle: const TextStyle(fontSize: 11),
     ),
 
+    // Tab Bar — light
+    tabBarTheme: TabBarThemeData(
+      indicator: BoxDecoration(
+        gradient: buttonGradient,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      indicatorSize: TabBarIndicatorSize.tab,
+      labelColor: Colors.white,
+      unselectedLabelColor: lightTextMuted,
+      labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+    ),
+
     textTheme: const TextTheme(
-      displayLarge: TextStyle(color: lightTextPrimary, fontWeight: FontWeight.w800),
-      displayMedium: TextStyle(color: lightTextPrimary, fontWeight: FontWeight.w800),
-      headlineLarge: TextStyle(color: lightTextPrimary, fontWeight: FontWeight.w800),
+      displayLarge: TextStyle(color: lightTextPrimary, fontWeight: FontWeight.w800, letterSpacing: -1),
+      displayMedium: TextStyle(color: lightTextPrimary, fontWeight: FontWeight.w800, letterSpacing: -0.5),
+      headlineLarge: TextStyle(color: lightTextPrimary, fontWeight: FontWeight.w800, letterSpacing: -0.5),
       headlineMedium: TextStyle(color: lightTextPrimary, fontWeight: FontWeight.w700),
       headlineSmall: TextStyle(color: lightTextPrimary, fontWeight: FontWeight.w700),
-      titleLarge: TextStyle(color: lightTextPrimary, fontWeight: FontWeight.w700),
+      titleLarge: TextStyle(color: lightTextPrimary, fontWeight: FontWeight.w700, letterSpacing: -0.3),
       titleMedium: TextStyle(color: lightTextPrimary, fontWeight: FontWeight.w600),
       bodyLarge: TextStyle(color: lightTextPrimary),
       bodyMedium: TextStyle(color: lightTextSecondary),
       bodySmall: TextStyle(color: lightTextMuted),
     ),
 
-    dividerTheme: DividerThemeData(color: primary.withValues(alpha: 0.08), thickness: 1),
+    dividerTheme: DividerThemeData(color: lightBorder, thickness: 1),
 
     snackBarTheme: SnackBarThemeData(
       backgroundColor: lightTextPrimary,
@@ -547,16 +646,28 @@ class AppTheme {
 
     dialogTheme: DialogThemeData(
       backgroundColor: lightCard,
+      shadowColor: primary.withValues(alpha: 0.1),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
+        side: BorderSide(color: lightBorder),
       ),
     ),
 
-    bottomSheetTheme: const BottomSheetThemeData(
+    bottomSheetTheme: BottomSheetThemeData(
       backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(
+      shadowColor: primary.withValues(alpha: 0.08),
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
+    ),
+
+    // Chip — light
+    chipTheme: ChipThemeData(
+      backgroundColor: lightSurface,
+      selectedColor: primary.withValues(alpha: 0.12),
+      side: BorderSide(color: lightBorder),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      labelStyle: TextStyle(color: lightTextSecondary, fontSize: 13),
     ),
   );
 }

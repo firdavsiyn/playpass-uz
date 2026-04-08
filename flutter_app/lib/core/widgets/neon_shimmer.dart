@@ -78,8 +78,8 @@ class _NeonShimmerState extends State<NeonShimmer>
               end: Alignment(-0.5 + 2.0 * _controller.value, 0),
               colors: const [
                 Color(0x00000000),
-                Color(0x337C3AED),
-                Color(0x2206B6D4),
+                Color(0x3D7C3AED),
+                Color(0x2D06B6D4),
                 Color(0x00000000),
               ],
               stops: const [0.0, 0.4, 0.6, 1.0],
@@ -114,7 +114,7 @@ class NeonSkeletonCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppTheme.bgCard,
           borderRadius: BorderRadius.circular(borderRadius),
-          border: Border.all(color: AppTheme.primary.withValues(alpha: 0.08)),
+          border: Border.all(color: AppTheme.primary.withValues(alpha: 0.05)),
         ),
       ),
     );

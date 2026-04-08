@@ -74,6 +74,7 @@ class _ProfileContent extends ConsumerWidget {
     final xpThresholds = {'novice': 100, 'regular': 500, 'pro': 1500, 'veteran': 5000, 'legend': 99999};
     final currentThreshold = xpThresholds[level] ?? 100;
     final xpProgress = (xp / currentThreshold).clamp(0.0, 1.0);
+    final xpPercent = (xpProgress * 100).round();
 
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -85,8 +86,8 @@ class _ProfileContent extends ConsumerWidget {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                AppTheme.primary.withValues(alpha: 0.4),
-                AppTheme.neonCyan.withValues(alpha: 0.15),
+                AppTheme.primary.withValues(alpha: 0.5),
+                AppTheme.neonCyan.withValues(alpha: 0.2),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -109,7 +110,7 @@ class _ProfileContent extends ConsumerWidget {
                     Stack(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(3),
+                          padding: const EdgeInsets.all(3.5),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             gradient: const LinearGradient(
@@ -164,18 +165,17 @@ class _ProfileContent extends ConsumerWidget {
                           Text(email,
                               style: TextStyle(color: context.text3, fontSize: 12)),
                           const SizedBox(height: 6),
-                          // Level badge
+                          // Level badge — compact with gradient bg, no border
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
-                                  AppTheme.primary.withValues(alpha: 0.2),
-                                  AppTheme.neonCyan.withValues(alpha: 0.1),
+                                  AppTheme.primary.withValues(alpha: 0.15),
+                                  AppTheme.neonCyan.withValues(alpha: 0.05),
                                 ],
                               ),
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: AppTheme.primary.withValues(alpha: 0.2)),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -186,7 +186,7 @@ class _ProfileContent extends ConsumerWidget {
                                   AppConstants.levelLabel(level),
                                   style: const TextStyle(
                                     color: AppTheme.primaryLight,
-                                    fontSize: 11,
+                                    fontSize: 10,
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
@@ -208,7 +208,7 @@ class _ProfileContent extends ConsumerWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('$xp XP', style: TextStyle(
+                        Text('$xp XP ($xpPercent%)', style: TextStyle(
                           color: AppTheme.neonCyan,
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
@@ -221,10 +221,10 @@ class _ProfileContent extends ConsumerWidget {
                     ),
                     const SizedBox(height: 6),
                     Container(
-                      height: 6,
+                      height: 7,
                       decoration: BoxDecoration(
                         color: context.surface,
-                        borderRadius: BorderRadius.circular(3),
+                        borderRadius: BorderRadius.circular(3.5),
                       ),
                       child: FractionallySizedBox(
                         alignment: Alignment.centerLeft,
@@ -234,12 +234,17 @@ class _ProfileContent extends ConsumerWidget {
                             gradient: const LinearGradient(
                               colors: [AppTheme.primary, AppTheme.neonCyan],
                             ),
-                            borderRadius: BorderRadius.circular(3),
+                            borderRadius: BorderRadius.circular(3.5),
                             boxShadow: [
                               BoxShadow(
-                                color: AppTheme.neonCyan.withValues(alpha: 0.4),
-                                blurRadius: 6,
+                                color: AppTheme.neonCyan.withValues(alpha: 0.5),
+                                blurRadius: 8,
                                 spreadRadius: -1,
+                              ),
+                              BoxShadow(
+                                color: AppTheme.primary.withValues(alpha: 0.3),
+                                blurRadius: 4,
+                                spreadRadius: 0,
                               ),
                             ],
                           ),
@@ -251,15 +256,15 @@ class _ProfileContent extends ConsumerWidget {
 
                 const SizedBox(height: 16),
 
-                // Stats row
+                // Stats row — glass containers with gaps
                 Row(
                   children: [
                     _StatItem(value: '$totalVisits', label: ref.lang('profile.visits_total'),
                         color: AppTheme.neonCyan),
-                    Container(width: 1, height: 30, color: context.border),
+                    const SizedBox(width: 8),
                     _StatItem(value: '${totalHours}h', label: 'Часов',
                         color: AppTheme.neonPurple),
-                    Container(width: 1, height: 30, color: context.border),
+                    const SizedBox(width: 8),
                     _StatItem(value: '$streakDays', label: 'Серия дн.',
                         color: AppTheme.warning),
                   ],
@@ -279,7 +284,7 @@ class _ProfileContent extends ConsumerWidget {
               color: context.card,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(color: AppTheme.primary.withValues(alpha: 0.2)),
-              boxShadow: AppTheme.neonGlow(radius: 16),
+              boxShadow: AppTheme.cardGlow(),
             ),
             child: Row(
               children: [
@@ -425,7 +430,7 @@ class _ProfileContent extends ConsumerWidget {
           child: Text(
             'PlayPass v1.0',
             style: TextStyle(
-              color: context.text3.withValues(alpha: 0.5),
+              color: context.text3.withValues(alpha: 0.3),
               fontSize: 12,
             ),
           ),
@@ -804,20 +809,27 @@ class _StatItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: Column(
-        children: [
-          Text(value, style: TextStyle(
-            color: color,
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-          )),
-          const SizedBox(height: 2),
-          Text(label, style: TextStyle(
-            color: context.text3,
-            fontSize: 10,
-            fontWeight: FontWeight.w500,
-          )),
-        ],
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        decoration: BoxDecoration(
+          color: context.glass,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          children: [
+            Text(value, style: TextStyle(
+              color: color,
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+            )),
+            const SizedBox(height: 2),
+            Text(label, style: TextStyle(
+              color: context.text3,
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+            )),
+          ],
+        ),
       ),
     );
   }
@@ -834,8 +846,11 @@ class _LangChip extends StatelessWidget {
       duration: const Duration(milliseconds: 200),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: selected ? AppTheme.primary : Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
+        gradient: selected
+            ? const LinearGradient(colors: [AppTheme.primary, Color(0xFF6366F1)])
+            : null,
+        color: selected ? null : Colors.transparent,
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
         label,
@@ -871,7 +886,7 @@ class _MenuItem extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
+        margin: const EdgeInsets.only(bottom: 6),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         decoration: BoxDecoration(
           color: context.card,
@@ -885,7 +900,7 @@ class _MenuItem extends StatelessWidget {
               height: 38,
               decoration: BoxDecoration(
                 color: iconColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: iconColor, size: 20),
             ),

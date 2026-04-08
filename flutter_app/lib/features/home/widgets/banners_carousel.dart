@@ -77,9 +77,9 @@ class _BannerCard extends StatelessWidget {
         }
       } : null,
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 4),
+        margin: const EdgeInsets.symmetric(horizontal: 6),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           gradient: imageUrl == null ? LinearGradient(
             colors: [color, color.withValues(alpha: 0.7)],
             begin: Alignment.topLeft,
@@ -90,15 +90,15 @@ class _BannerCard extends StatelessWidget {
             fit: BoxFit.cover,
           ) : null,
           boxShadow: [
-            BoxShadow(color: color.withValues(alpha: 0.2), blurRadius: 12, offset: const Offset(0, 4)),
+            BoxShadow(color: color.withValues(alpha: 0.2), blurRadius: 16, spreadRadius: -4, offset: const Offset(0, 4)),
           ],
         ),
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(18),
             gradient: imageUrl != null ? LinearGradient(
-              colors: [Colors.black.withValues(alpha: 0.6), Colors.transparent],
+              colors: [Colors.black.withValues(alpha: 0.5), Colors.transparent],
               begin: Alignment.bottomCenter,
               end: Alignment.topCenter,
             ) : null,
@@ -113,6 +113,7 @@ class _BannerCard extends StatelessWidget {
                       color: Colors.white,
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
+                      letterSpacing: -0.3,
                     )),
               if (description.isNotEmpty) ...[
                 const SizedBox(height: 4),

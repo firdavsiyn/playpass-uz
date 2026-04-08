@@ -54,11 +54,11 @@ class _ClubCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: context.card,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.primary.withValues(alpha: 0.12)),
+          border: Border.all(color: AppTheme.primary.withValues(alpha: 0.06)),
           boxShadow: [
             BoxShadow(
-              color: AppTheme.primary.withValues(alpha: 0.08),
-              blurRadius: 16,
+              color: AppTheme.primary.withValues(alpha: 0.06),
+              blurRadius: 12,
               offset: const Offset(0, 4),
             ),
           ],
@@ -174,7 +174,7 @@ class _ClubCard extends StatelessWidget {
                           club.isOpen ? 'LIVE' : 'OFF',
                           style: TextStyle(
                             color: statusColor,
-                            fontSize: 8,
+                            fontSize: 9,
                             fontWeight: FontWeight.w800,
                             letterSpacing: 0.5,
                           ),
@@ -268,7 +268,7 @@ class _ClubCardSkeleton extends StatelessWidget {
         decoration: BoxDecoration(
           color: context.card,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.primary.withValues(alpha: 0.08)),
+          border: Border.all(color: AppTheme.primary.withValues(alpha: 0.04)),
         ),
       ),
     );
