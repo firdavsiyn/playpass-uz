@@ -526,16 +526,16 @@ class _QuickActions extends ConsumerWidget {
           height: 80,
           child: Row(
             children: [
-              _QuickAction(icon: Icons.emoji_events_rounded, label: t['home_tournaments'] ?? 'Турниры',
+              _QuickAction(icon: Icons.emoji_events_rounded, label: t['home_tournaments'] ?? 'home_tournaments',
                   color: AppTheme.warning, onTap: () => context.push('/tournaments')),
               const SizedBox(width: 8),
-              _QuickAction(icon: Icons.people_rounded, label: t['home_lfg'] ?? 'Тиммейты',
+              _QuickAction(icon: Icons.people_rounded, label: t['home_lfg'] ?? 'home_lfg',
                   color: AppTheme.neonBlue, onTap: () => context.push('/lfg')),
               const SizedBox(width: 8),
-              _QuickAction(icon: Icons.leaderboard_rounded, label: t['home_leaderboard'] ?? 'Рейтинг',
+              _QuickAction(icon: Icons.leaderboard_rounded, label: t['home_leaderboard'] ?? 'home_leaderboard',
                   color: AppTheme.neonPurple, onTap: () => context.push('/leaderboard')),
               const SizedBox(width: 8),
-              _QuickAction(icon: Icons.newspaper_rounded, label: t['home_news'] ?? 'Новости',
+              _QuickAction(icon: Icons.newspaper_rounded, label: t['home_news'] ?? 'home_news',
                   color: AppTheme.success, onTap: () => context.push('/stories')),
             ],
           ),
@@ -545,16 +545,16 @@ class _QuickActions extends ConsumerWidget {
           height: 80,
           child: Row(
             children: [
-              _QuickAction(icon: Icons.map_rounded, label: t['home_map'] ?? 'Карта',
+              _QuickAction(icon: Icons.map_rounded, label: t['home_map'] ?? 'home_map',
                   color: AppTheme.neonCyan, onTap: () => context.push('/clubs-map')),
               const SizedBox(width: 8),
-              _QuickAction(icon: Icons.star_rounded, label: t['home_loyalty'] ?? 'XP',
+              _QuickAction(icon: Icons.star_rounded, label: t['home_loyalty'] ?? 'home_loyalty',
                   color: AppTheme.tierVip, onTap: () => context.push('/loyalty')),
               const SizedBox(width: 8),
-              _QuickAction(icon: Icons.sports_esports_rounded, label: t['home_stats'] ?? 'Профили',
+              _QuickAction(icon: Icons.sports_esports_rounded, label: t['home_stats'] ?? 'home_stats',
                   color: AppTheme.neonPink, onTap: () => context.push('/player-stats')),
               const SizedBox(width: 8),
-              _QuickAction(icon: Icons.local_offer_rounded, label: t['home_happy'] ?? 'Скидки',
+              _QuickAction(icon: Icons.local_offer_rounded, label: t['home_happy'] ?? 'home_happy',
                   color: AppTheme.neonPurple, onTap: () => context.push('/happy-hours')),
             ],
           ),
@@ -615,12 +615,12 @@ class _QuickAction extends StatelessWidget {
 
 // ── Savings Widget ─────────────────────────────────────────
 
-class _SavingsWidget extends StatelessWidget {
+class _SavingsWidget extends ConsumerWidget {
   final int saved;
   const _SavingsWidget({required this.saved});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final formattedSaved = '${(saved ~/ 1000)} 000';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -649,8 +649,8 @@ class _SavingsWidget extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Вы сэкономили', style: TextStyle(color: context.text2, fontSize: 12)),
-                Text('$formattedSaved сум', style: const TextStyle(color: AppTheme.success, fontSize: 16, fontWeight: FontWeight.w700)),
+                Text(ref.lang('home.you_saved'), style: TextStyle(color: context.text2, fontSize: 12)),
+                Text('$formattedSaved ${ref.lang('home.currency')}', style: const TextStyle(color: AppTheme.success, fontSize: 16, fontWeight: FontWeight.w700)),
               ],
             ),
           ),

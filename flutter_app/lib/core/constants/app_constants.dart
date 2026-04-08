@@ -1,4 +1,8 @@
 // ignore_for_file: constant_identifier_names
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../l10n/app_locale.dart';
+
 class AppConstants {
   // App name
   static const String appName = 'PlayPass';
@@ -133,6 +137,31 @@ class AppConstants {
     'pro' => 'Про',
     'legend' => 'Легенда',
     _ => level,
+  };
+
+  /// Locale-aware level label
+  static String localizedLevelLabel(String level, WidgetRef ref) => switch (level) {
+    'novice' => ref.lang('level.novice'),
+    'gamer' => ref.lang('level.gamer'),
+    'pro' => ref.lang('level.pro'),
+    'legend' => ref.lang('level.legend'),
+    _ => level,
+  };
+
+  /// Locale-aware zone label
+  static String localizedZoneLabel(String type, WidgetRef ref) => switch (type) {
+    'basic' => ref.lang('zone.basic'),
+    'pro' => ref.lang('zone.pro'),
+    'vip' => ref.lang('zone.vip'),
+    _ => type,
+  };
+
+  /// Locale-aware time slot label
+  static String localizedTimeSlotLabel(String slot, WidgetRef ref) => switch (slot) {
+    'day' => ref.lang('slot.day'),
+    'evening' => ref.lang('slot.evening'),
+    'night' => ref.lang('slot.night'),
+    _ => slot,
   };
 
   static String levelIcon(String level) => switch (level) {

@@ -90,7 +90,7 @@ class _ProfileContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final name = profile?['name'] as String? ?? 'Геймер';
+    final name = profile?['name'] as String? ?? ref.lang('level.gamer');
     final avatarUrl = profile?['avatar_url'] as String?;
     final email = Supabase.instance.client.auth.currentUser?.email ?? '';
     final referralCode = profile?['referral_code'] as String? ?? '';
@@ -213,7 +213,7 @@ class _ProfileContent extends ConsumerWidget {
                                 Text(AppConstants.levelIcon(level), style: const TextStyle(fontSize: 14)),
                                 const SizedBox(width: 4),
                                 Text(
-                                  AppConstants.levelLabel(level),
+                                  AppConstants.localizedLevelLabel(level, ref),
                                   style: const TextStyle(
                                     color: AppTheme.primaryLight,
                                     fontSize: 10,
@@ -292,10 +292,10 @@ class _ProfileContent extends ConsumerWidget {
                     _StatItem(value: '$totalVisits', label: ref.lang('profile.visits_total'),
                         color: AppTheme.neonCyan),
                     const SizedBox(width: 8),
-                    _StatItem(value: '${totalHours}h', label: 'Часов',
+                    _StatItem(value: '${totalHours}h', label: ref.lang('profile.hours_label'),
                         color: AppTheme.neonPurple),
                     const SizedBox(width: 8),
-                    _StatItem(value: '$streakDays', label: 'Серия дн.',
+                    _StatItem(value: '$streakDays', label: ref.lang('profile.streak_label'),
                         color: AppTheme.warning),
                   ],
                 ),
@@ -321,7 +321,7 @@ class _ProfileContent extends ConsumerWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('${ref.lang('profile.sub_label')}: ${subscription!.planName}',
+                    Text('${ref.lang('profile.sub_label')}: ${subscription!.localizedPlanName(ref)}',
                         style: TextStyle(
                             color: context.text1,
                             fontWeight: FontWeight.w600)),

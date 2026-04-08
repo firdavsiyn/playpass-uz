@@ -2,24 +2,26 @@ import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../models/subscription.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_locale.dart';
 
-class SubscriptionWidget extends StatelessWidget {
+class SubscriptionWidget extends ConsumerWidget {
   final Subscription? subscription;
   const SubscriptionWidget({super.key, this.subscription});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (subscription == null || (!subscription!.isActive && !subscription!.isFrozen)) {
-      return _buildNoSubscription(context);
+      return _buildNoSubscription(context, ref);
     }
     return _ActiveSubscription(subscription: subscription!);
   }
 
-  Widget _buildNoSubscription(BuildContext context) {
+  Widget _buildNoSubscription(BuildContext context, WidgetRef ref) {
     return GestureDetector(
       onTap: () {
         HapticFeedback.lightImpact();
@@ -70,13 +72,13 @@ class SubscriptionWidget extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Нет активной подписки',
+                    Text(ref.lang('sub_widget.no_active'),
                         style: TextStyle(
                             color: context.text1,
                             fontWeight: FontWeight.w700,
                             fontSize: 15)),
                     const SizedBox(height: 4),
-                    Text('Купите тариф и начните играть',
+                    Text(ref.lang('sub_widget.buy_cta'),
                         style:
                             TextStyle(color: context.text2, fontSize: 13)),
                   ],
@@ -116,12 +118,12 @@ Color _planGlowColor(String plan) {
   }
 }
 
-class _ActiveSubscription extends StatelessWidget {
+class _ActiveSubscription extends ConsumerWidget {
   final Subscription subscription;
   const _ActiveSubscription({required this.subscription});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final color = _planGlowColor(subscription.plan);
     final isFrozen = subscription.isFrozen;
 
@@ -174,7 +176,7 @@ class _ActiveSubscription extends StatelessWidget {
                           color: Colors.orange, size: 18),
                       const SizedBox(width: 8),
                       Text(
-                        'Подписка истекает через ${subscription.daysRemaining} дн.',
+                        '${ref.lang('sub_widget.expires_in')} ${subscription.daysRemaining} ${ref.lang('sub_widget.days_short')}',
                         style: const TextStyle(
                           color: Colors.orange,
                           fontSize: 13,
@@ -211,7 +213,7 @@ class _ActiveSubscription extends StatelessWidget {
                       ],
                     ),
                     child: Text(
-                      subscription.planName,
+                      subscription.localizedPlanName(ref),
                       style: TextStyle(
                         color: color,
                         fontSize: 12,
@@ -229,15 +231,15 @@ class _ActiveSubscription extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: Colors.blueGrey.withValues(alpha: 0.3)),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.ac_unit_rounded,
+                          const Icon(Icons.ac_unit_rounded,
                               color: Colors.blueGrey, size: 14),
-                          SizedBox(width: 4),
+                          const SizedBox(width: 4),
                           Text(
-                            'Заморожена',
-                            style: TextStyle(
+                            ref.lang('sub_widget.frozen'),
+                            style: const TextStyle(
                               color: Colors.blueGrey,
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -252,7 +254,7 @@ class _ActiveSubscription extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        '${subscription.daysRemaining} дн.',
+                        '${subscription.daysRemaining} ${ref.lang('sub_widget.days_short')}',
                         style: TextStyle(
                           color: context.text1,
                           fontSize: 14,
@@ -261,7 +263,7 @@ class _ActiveSubscription extends StatelessWidget {
                       ),
                       const SizedBox(height: 1),
                       Text(
-                        'осталось',
+                        ref.lang('sub_widget.remaining'),
                         style: TextStyle(
                           color: context.text3,
                           fontSize: 11,
@@ -308,7 +310,7 @@ class _ActiveSubscription extends StatelessWidget {
                             ),
                             if (!subscription.isUnlimited)
                               Text(
-                                'ч',
+                                ref.lang('sub_widget.hours_short'),
                                 style: TextStyle(
                                   color: isFrozen ? Colors.blueGrey.withValues(alpha: 0.6) : context.text3,
                                   fontSize: 12,
@@ -326,7 +328,7 @@ class _ActiveSubscription extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          subscription.isUnlimited ? 'Безлимит' : subscription.hoursSubtext,
+                          subscription.isUnlimited ? ref.lang('sub_widget.unlimited') : subscription.localizedHoursSubtext(ref),
                           style: TextStyle(
                             color: isFrozen
                                 ? Colors.blueGrey.withValues(alpha: 0.7)
@@ -337,7 +339,7 @@ class _ActiveSubscription extends StatelessWidget {
                         const SizedBox(height: 8),
                         if (subscription.isUnlimited)
                           Text(
-                            '1 визит в день',
+                            ref.lang('sub_widget.visit_per_day'),
                             style: TextStyle(
                               color: isFrozen
                                   ? Colors.blueGrey.withValues(alpha: 0.5)

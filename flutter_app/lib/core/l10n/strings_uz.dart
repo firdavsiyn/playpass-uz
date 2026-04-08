@@ -441,4 +441,113 @@ const Map<String, String> stringsUz = {
   'common.time_h': 'soat',
   'common.time_m': 'daq',
   'common.time_s': 's',
+
+  // ── Subscription widget (home) ─────────────────
+  'sub_widget.no_active': 'Faol obuna yo\'q',
+  'sub_widget.buy_cta': 'Tarif sotib oling va o\'ynashni boshlang',
+  'sub_widget.frozen': 'Muzlatilgan',
+  'sub_widget.expires_in': 'Obuna tugashiga',
+  'sub_widget.days_short': 'kun',
+  'sub_widget.remaining': 'qoldi',
+  'sub_widget.hours_short': 's',
+  'sub_widget.unlimited': 'Cheksiz',
+  'sub_widget.visit_per_day': 'Kuniga 1 tashrif',
+
+  // ── Clubs list screen ──────────────────────────
+  'clubs.on_map': 'Xaritada',
+  'clubs.by_zones': 'Zonalar bo\'yicha',
+  'clubs.favorites': 'Sevimlilar',
+  'clubs.free_seats': 'Bo\'sh',
+  'clubs.standard': 'Standart',
+  'clubs.nearby': 'Yaqinda',
+  'clubs.sort_rating': 'Reyting bo\'yicha',
+  'clubs.sort_price': 'Narx bo\'yicha',
+  'clubs.sort_name': 'Nomi bo\'yicha',
+  'clubs.nearest': 'Eng yaqin',
+  'clubs.count_suffix': 'ta klub',
+  'clubs.all_clubs': 'Barcha klublar',
+  'clubs.search_hint': 'Klub yoki zona qidirish...',
+  'clubs.on_map_count': 'ta klub xaritada',
+  'clubs.basic_label': 'Oddiy',
+  'clubs.standard_label': 'Standart',
+  'clubs.no_favorites': 'Sevimli klublar yo\'q',
+  'clubs.no_favorites_hint': 'Yurakchani bosib qo\'shing',
+  'clubs.no_nearby': 'Yaqin atrofda klublar topilmadi',
+  'clubs.allow_location': 'Joylashuvga ruxsat bering',
+  'clubs.near_you': 'Yaqiningizda',
+  'clubs.location_error': 'Joylashuvni aniqlab bo\'lmadi',
+  'clubs.error_loading': 'Yuklashda xatolik',
+
+  // ── Subscription screen ────────────────────────
+  'sub.frozen_label': 'Muzlatilgan',
+  'sub.days_remaining': 'kun qoldi',
+  'sub.no_active_label': 'Faol obuna yo\'q',
+  'sub.expired_label': 'Obuna tugagan',
+  'sub.visit_per_day': '1 tashrif/kun',
+  'sub.hours_per_month': 'soat/oy',
+  'sub.per_month_label': 'oyiga',
+  'sub.order_btn': 'Buyurtma berish',
+  'sub.promo_enter': 'Promokodni kiriting',
+  'sub.promo_title': 'Promokod',
+  'sub.promo_hint': 'Promokodni kiriting',
+  'sub.promo_activated': 'Promokod faollashtirildi!',
+  'sub.promo_hours': 'soat',
+  'sub.promo_days': 'kun',
+  'sub.promo_discount': 'chegirma',
+  'sub.promo_close': 'Yopish',
+  'sub.promo_cancel': 'Bekor qilish',
+  'sub.promo_activate': 'Faollashtirish',
+
+  // ── Profile stats ──────────────────────────────
+  'profile.hours_label': 'Soat',
+  'profile.streak_label': 'Ketma-ket kun',
+
+  // ── Home savings widget ────────────────────────
+  'home.you_saved': 'Siz tejadingiz',
+  'home.currency': 'so\'m',
+
+  // ── Nearby clubs row ───────────────────────────
+  'nearby.not_found': 'Klublar topilmadi',
+  'nearby.error': 'Yuklashda xatolik',
+
+  // ── Zone labels ────────────────────────────────
+  'zone.basic': 'Oddiy',
+  'zone.pro': 'Pro',
+  'zone.vip': 'VIP',
+
+  // ── Plan names ─────────────────────────────────
+  'plan.basic': 'Oddiy',
+  'plan.standard': 'Standart',
+  'plan.pro': 'Pro',
+  'plan.vip': 'VIP',
+
+  // ── Level labels ───────────────────────────────
+  'level.novice': 'Yangi o\'yinchi',
+  'level.gamer': 'Geymer',
+  'level.pro': 'Pro',
+  'level.legend': 'Legenda',
+
+  // ── Subscription model ─────────────────────────
+  'sub.unlimited_label': 'Cheksiz · kuniga 1 tashrif',
+  'sub.of_hours': '{n} soatdan',
+
+  // ── Time slot labels ───────────────────────────
+  'slot.day': 'Kunduz (08–20)',
+  'slot.evening': 'Kechqurun (20–00)',
+  'slot.night': 'Tun (00–08)',
+
+  // ── FAQ content ────────────────────────────────
+  'faq.title': 'Savol va javoblar',
+  'faq.q1': 'Obunani qanday faollashtirish mumkin?',
+  'faq.a1': 'To\'lovdan so\'ng obuna 30 daqiqa ichida avtomatik faollashtiriladi. Bildirishnoma olasiz.',
+  'faq.q2': 'Obunani muzlatish mumkinmi?',
+  'faq.a2': 'Ha, oyiga {n} kungacha muzlatishingiz mumkin. Profil bo\'limidagi kalendardan kunlarni tanlang.',
+  'faq.q3': 'Cheksiz tarif qanday ishlaydi?',
+  'faq.a3': 'Pro va VIP tariflar kuniga 1 tashrif, soat cheklovisiz.',
+  'faq.q4': 'Qaysi zonalar menga ochiq?',
+  'faq.a4': 'Oddiy: faqat oddiy zona. Standart va Pro: oddiy + pro zonalar. VIP: barcha zonalar.',
+  'faq.q5': 'Tarifni o\'zgartirish mumkinmi?',
+  'faq.a5': 'Ha, "Obuna sotib olish" bo\'limiga o\'ting va yangi tarifni tanlang. Qolgan kunlar hisobga olinadi.',
+  'faq.q6': 'Referal dastur qanday ishlaydi?',
+  'faq.a6': 'Do\'stingizni referal kod bilan taklif qiling va obunangizga +{n} soat oling.',
 };

@@ -1,4 +1,7 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../core/constants/app_constants.dart';
+import '../core/l10n/app_locale.dart';
 
 class Subscription {
   final String id;
@@ -56,6 +59,21 @@ class Subscription {
     if (isUnlimited) return 'Безлимит · 1 визит/день';
     return 'из ${hoursTotal ?? 0} часов';
   }
+
+  /// Localized version of hoursSubtext using ref.lang()
+  String localizedHoursSubtext(WidgetRef ref) {
+    if (isUnlimited) return ref.lang('sub.unlimited_label');
+    return ref.lang('sub.of_hours').replaceAll('{n}', '${hoursTotal ?? 0}');
+  }
+
+  /// Localized plan name using ref.lang()
+  String localizedPlanName(WidgetRef ref) => switch (plan) {
+    'basic' => ref.lang('plan.basic'),
+    'standard' => ref.lang('plan.standard'),
+    'pro' => ref.lang('plan.pro'),
+    'vip' => ref.lang('plan.vip'),
+    _ => plan,
+  };
 
   double get hoursProgress {
     if (isUnlimited) return 1.0;

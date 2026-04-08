@@ -138,7 +138,7 @@ class ClubsListScreen extends ConsumerWidget {
                       ref.read(searchQueryProvider.notifier).state = v,
                   style: const TextStyle(fontSize: 14),
                   decoration: InputDecoration(
-                    hintText: 'Найти клуб или зону...',
+                    hintText: ref.lang('clubs.search_hint'),
                     hintStyle: TextStyle(color: context.text3),
                     prefixIcon:
                         Icon(Icons.search_rounded, color: context.text3, size: 22),
@@ -166,7 +166,7 @@ class ClubsListScreen extends ConsumerWidget {
                     icon: Icons.map_rounded,
                     iconColor: AppTheme.success,
                     iconBg: AppTheme.success.withValues(alpha: 0.12),
-                    label: 'На карте',
+                    label: ref.lang('clubs.on_map'),
                     selected: false,
                     onTap: () {
                       Navigator.of(context).push(
@@ -181,7 +181,7 @@ class ClubsListScreen extends ConsumerWidget {
                     icon: Icons.sports_esports_rounded,
                     iconColor: AppTheme.primary,
                     iconBg: AppTheme.primary.withValues(alpha: 0.12),
-                    label: 'По зонам',
+                    label: ref.lang('clubs.by_zones'),
                     selected: viewMode == 'zones',
                     onTap: () => ref.read(viewModeProvider.notifier).state =
                         viewMode == 'zones' ? 'list' : 'zones',
@@ -191,7 +191,7 @@ class ClubsListScreen extends ConsumerWidget {
                     icon: Icons.favorite_rounded,
                     iconColor: const Color(0xFFE91E8C),
                     iconBg: const Color(0xFFE91E8C).withValues(alpha: 0.12),
-                    label: 'Избранные',
+                    label: ref.lang('clubs.favorites'),
                     selected: viewMode == 'favorites',
                     onTap: () => ref.read(viewModeProvider.notifier).state =
                         viewMode == 'favorites' ? 'list' : 'favorites',
@@ -210,7 +210,7 @@ class ClubsListScreen extends ConsumerWidget {
                 children: [
                   _QuickChip(
                     icon: Icons.local_fire_department_rounded,
-                    label: 'Свободные',
+                    label: ref.lang('clubs.free_seats'),
                     color: AppTheme.success,
                     selected: ref.watch(filterFreeProvider),
                     onTap: () {
@@ -233,7 +233,7 @@ class ClubsListScreen extends ConsumerWidget {
                   ),
                   _QuickChip(
                     icon: Icons.computer_rounded,
-                    label: 'Стандарт',
+                    label: ref.lang('clubs.standard'),
                     color: AppTheme.primary,
                     selected: ref.watch(selectedTierProvider) == 'standard',
                     onTap: () {
@@ -256,7 +256,7 @@ class ClubsListScreen extends ConsumerWidget {
                   ),
                   _QuickChip(
                     icon: Icons.near_me_rounded,
-                    label: 'Рядом',
+                    label: ref.lang('clubs.nearby'),
                     color: AppTheme.info,
                     selected: viewMode == 'nearby',
                     onTap: () => ref.read(viewModeProvider.notifier).state =
@@ -280,10 +280,10 @@ class ClubsListScreen extends ConsumerWidget {
                       final sortMode = ref.watch(sortModeProvider);
                       final selected = sortMode == mode;
                       final label = mode == 'rating'
-                          ? 'По рейтингу'
+                          ? ref.lang('clubs.sort_rating')
                           : mode == 'price'
-                              ? 'По цене'
-                              : 'По имени';
+                              ? ref.lang('clubs.sort_price')
+                              : ref.lang('clubs.sort_name');
                       return Padding(
                         padding: const EdgeInsets.only(right: 6),
                         child: GestureDetector(
@@ -369,7 +369,7 @@ class ClubsListScreen extends ConsumerWidget {
                       itemBuilder: (_, __) => const NeonSkeletonCard(height: 200, borderRadius: 16),
                     ),
                   error: (e, _) => Center(
-                    child: Text('Ошибка: $e',
+                    child: Text('${ref.lang('common.error')}: $e',
                         style: const TextStyle(color: AppTheme.error)),
                   ),
                 ),
@@ -624,7 +624,7 @@ class _FullscreenMapScreenState extends ConsumerState<FullscreenMapScreen> {
                               borderRadius: BorderRadius.circular(14),
                             ),
                             child: Text(
-                              '${filtered.length} клубов на карте',
+                              '${filtered.length} ${ref.lang('clubs.on_map_count')}',
                               style: TextStyle(
                                 color: context.text1,
                                 fontWeight: FontWeight.w600,
@@ -647,7 +647,7 @@ class _FullscreenMapScreenState extends ConsumerState<FullscreenMapScreen> {
                       child: Row(
                         children: [
                           _MapFilterChip(
-                            label: 'Все',
+                            label: ref.lang('clubs.all'),
                             selected: _tierFilter == null && !_psFilter,
                             onTap: () => setState(() {
                               _tierFilter = null;
@@ -664,7 +664,7 @@ class _FullscreenMapScreenState extends ConsumerState<FullscreenMapScreen> {
                             }),
                           ),
                           _MapFilterChip(
-                            label: 'Стандарт',
+                            label: ref.lang('clubs.standard_label'),
                             color: AppTheme.primary,
                             selected: _tierFilter == 'standard',
                             onTap: () => setState(() {
@@ -674,7 +674,7 @@ class _FullscreenMapScreenState extends ConsumerState<FullscreenMapScreen> {
                             }),
                           ),
                           _MapFilterChip(
-                            label: 'Базовый',
+                            label: ref.lang('clubs.basic_label'),
                             color: AppTheme.success,
                             selected: _tierFilter == 'basic',
                             onTap: () => setState(() {
@@ -701,7 +701,7 @@ class _FullscreenMapScreenState extends ConsumerState<FullscreenMapScreen> {
         loading: () => const Center(
             child: CircularProgressIndicator(color: AppTheme.primary)),
         error: (e, _) => Center(
-            child: Text('Ошибка: $e',
+            child: Text('${ref.lang('common.error')}: $e',
                 style: const TextStyle(color: AppTheme.error))),
       ),
     );
@@ -806,10 +806,10 @@ class _FavoritesView extends ConsumerWidget {
             Icon(Icons.favorite_border_rounded,
                 color: context.text3.withValues(alpha: 0.4), size: 56),
             const SizedBox(height: 12),
-            Text('Нет избранных клубов',
+            Text(ref.lang('clubs.no_favorites'),
                 style: TextStyle(color: context.text3, fontSize: 15)),
             const SizedBox(height: 6),
-            Text('Нажмите на сердечко, чтобы добавить',
+            Text(ref.lang('clubs.no_favorites_hint'),
                 style: TextStyle(color: context.text3.withValues(alpha: 0.6), fontSize: 12)),
           ],
         ),
@@ -865,14 +865,14 @@ class _ListView extends ConsumerWidget {
                     const Icon(Icons.near_me_rounded,
                         size: 18, color: AppTheme.primary),
                     const SizedBox(width: 6),
-                    Text('Ближайшие',
+                    Text(ref.lang('clubs.nearest'),
                         style: TextStyle(
                           color: context.text1,
                           fontWeight: FontWeight.w700,
                           fontSize: 16,
                         )),
                     const Spacer(),
-                    Text('${nearby.length} клубов',
+                    Text('${nearby.length} ${ref.lang('clubs.count_suffix')}',
                         style: TextStyle(color: context.text3, fontSize: 12)),
                   ],
                 ),
@@ -900,7 +900,7 @@ class _ListView extends ConsumerWidget {
         // Section title
         Row(
           children: [
-            Text('Все клубы',
+            Text(ref.lang('clubs.all_clubs'),
                 style: TextStyle(
                   color: context.text1,
                   fontWeight: FontWeight.w700,
@@ -922,13 +922,13 @@ class _ListView extends ConsumerWidget {
   }
 }
 
-class _NearbyClubChip extends StatelessWidget {
+class _NearbyClubChip extends ConsumerWidget {
   final Club club;
   final VoidCallback onTap;
   const _NearbyClubChip({required this.club, required this.onTap});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -983,7 +983,7 @@ class _NearbyClubChip extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 4),
-                      Text(club.isOpen ? 'Открыт' : 'Закрыт',
+                      Text(club.isOpen ? ref.lang('clubs.open') : ref.lang('clubs.closed'),
                           style: TextStyle(
                             color:
                                 club.isOpen ? AppTheme.success : AppTheme.error,
@@ -1147,7 +1147,7 @@ class _ClubListCard extends ConsumerWidget {
                         Icon(Icons.computer, size: 14, color: context.text3),
                         const SizedBox(width: 2),
                         Text(
-                          '${club.pcCount} ПК',
+                          '${club.pcCount} ${ref.lang('clubs.pc')}',
                           style:
                               TextStyle(color: context.text3, fontSize: 12),
                         ),
@@ -1193,7 +1193,7 @@ class _ClubListCard extends ConsumerWidget {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          club.isOpen ? 'Открыт' : 'Закрыт',
+                          club.isOpen ? ref.lang('clubs.open') : ref.lang('clubs.closed'),
                           style: TextStyle(
                             color: club.isOpen
                                 ? AppTheme.success
@@ -1216,12 +1216,12 @@ class _ClubListCard extends ConsumerWidget {
 
 // ── Zones view (grouped by tier) ───────────────────────────
 
-class _ZonesView extends StatelessWidget {
+class _ZonesView extends ConsumerWidget {
   final List<Club> clubs;
   const _ZonesView({required this.clubs});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final vip = clubs.where((c) => c.tier == 'vip').toList();
     final standard = clubs.where((c) => c.tier == 'standard').toList();
     final basic = clubs.where((c) => c.tier == 'basic').toList();
@@ -1233,6 +1233,7 @@ class _ZonesView extends StatelessWidget {
           _ZoneSectionHeader(
             label: 'VIP',
             count: vip.length,
+            countSuffix: ref.lang('clubs.count_suffix'),
             color: const Color(0xFFFBBF24),
             icon: Icons.star_rounded,
           ),
@@ -1245,8 +1246,9 @@ class _ZonesView extends StatelessWidget {
         ],
         if (standard.isNotEmpty) ...[
           _ZoneSectionHeader(
-            label: 'Стандарт',
+            label: ref.lang('clubs.standard_label'),
             count: standard.length,
+            countSuffix: ref.lang('clubs.count_suffix'),
             color: AppTheme.primary,
             icon: Icons.computer_rounded,
           ),
@@ -1259,8 +1261,9 @@ class _ZonesView extends StatelessWidget {
         ],
         if (basic.isNotEmpty) ...[
           _ZoneSectionHeader(
-            label: 'Базовый',
+            label: ref.lang('clubs.basic_label'),
             count: basic.length,
+            countSuffix: ref.lang('clubs.count_suffix'),
             color: AppTheme.success,
             icon: Icons.videogame_asset_rounded,
           ),
@@ -1278,11 +1281,13 @@ class _ZonesView extends StatelessWidget {
 class _ZoneSectionHeader extends StatelessWidget {
   final String label;
   final int count;
+  final String countSuffix;
   final Color color;
   final IconData icon;
   const _ZoneSectionHeader({
     required this.label,
     required this.count,
+    this.countSuffix = 'clubs',
     required this.color,
     required this.icon,
   });
@@ -1303,7 +1308,7 @@ class _ZoneSectionHeader extends StatelessWidget {
               style: TextStyle(
                   color: color, fontWeight: FontWeight.w700, fontSize: 15)),
           const Spacer(),
-          Text('$count клубов',
+          Text('$count $countSuffix',
               style: TextStyle(color: color.withValues(alpha: 0.7), fontSize: 12)),
         ],
       ),
@@ -1330,10 +1335,10 @@ class _NearbyView extends ConsumerWidget {
                 Icon(Icons.location_off_rounded,
                     color: context.text3.withValues(alpha: 0.4), size: 56),
                 const SizedBox(height: 12),
-                Text('Клубов поблизости не найдено',
+                Text(ref.lang('clubs.no_nearby'),
                     style: TextStyle(color: context.text3, fontSize: 15)),
                 const SizedBox(height: 6),
-                Text('Разрешите доступ к геолокации',
+                Text(ref.lang('clubs.allow_location'),
                     style: TextStyle(
                         color: context.text3.withValues(alpha: 0.6), fontSize: 12)),
               ],
@@ -1348,14 +1353,14 @@ class _NearbyView extends ConsumerWidget {
                 const Icon(Icons.near_me_rounded,
                     size: 18, color: AppTheme.info),
                 const SizedBox(width: 6),
-                Text('Рядом с вами',
+                Text(ref.lang('clubs.near_you'),
                     style: TextStyle(
                       color: context.text1,
                       fontWeight: FontWeight.w700,
                       fontSize: 16,
                     )),
                 const Spacer(),
-                Text('${clubs.length} клубов',
+                Text('${clubs.length} ${ref.lang('clubs.count_suffix')}',
                     style: TextStyle(color: context.text3, fontSize: 12)),
               ],
             ),
@@ -1376,7 +1381,7 @@ class _NearbyView extends ConsumerWidget {
             Icon(Icons.location_off_rounded,
                 color: context.text3.withValues(alpha: 0.4), size: 56),
             const SizedBox(height: 12),
-            Text('Не удалось определить местоположение',
+            Text(ref.lang('clubs.location_error'),
                 style: TextStyle(color: context.text3, fontSize: 14)),
           ],
         ),

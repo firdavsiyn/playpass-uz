@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../core/widgets/neon_shimmer.dart';
 import '../../../models/subscription.dart';
 import '../../../services/supabase_service.dart';
@@ -36,9 +37,8 @@ class MySubscriptionScreen extends ConsumerWidget {
               bottom: false,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                // TODO: Localize — hardcoded Russian, needs ref.lang()
                 child: Text(
-                  'Мой абонемент',
+                  ref.lang('sub.my'),
                   style: TextStyle(
                     color: context.text1,
                     fontSize: 28,
@@ -65,9 +65,8 @@ class MySubscriptionScreen extends ConsumerWidget {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
-              // TODO: Localize — hardcoded Russian, needs ref.lang()
               child: Text(
-                'Купить абонемент и допуслуги',
+                ref.lang('sub.actions'),
                 style: TextStyle(
                   color: context.text3,
                   fontSize: 14,
@@ -88,32 +87,31 @@ class MySubscriptionScreen extends ConsumerWidget {
                 ),
                 child: Column(
                   children: [
-                    // TODO: Localize all action tile titles below — hardcoded Russian, needs ref.lang()
                     _ActionTile(
                       icon: Icons.card_membership_rounded,
                       iconColor: AppTheme.primary,
-                      title: 'Купить абонемент',
+                      title: ref.lang('sub.buy'),
                       onTap: () => context.push('/plans'),
                     ),
                     const _Divider(),
                     _ActionTile(
                       icon: Icons.confirmation_number_outlined,
                       iconColor: const Color(0xFF22C55E),
-                      title: 'Активировать промокод',
+                      title: ref.lang('sub.promo'),
                       onTap: () => _showPromoDialog(context, ref),
                     ),
                     const _Divider(),
                     _ActionTile(
                       icon: Icons.card_giftcard_rounded,
                       iconColor: const Color(0xFFEF4444),
-                      title: 'Купить абонемент в подарок',
+                      title: ref.lang('sub.gift_buy'),
                       onTap: () => _showGiftInfo(context),
                     ),
                     const _Divider(),
                     _ActionTile(
                       icon: Icons.redeem_rounded,
                       iconColor: const Color(0xFF8B5CF6),
-                      title: 'Активировать сертификат',
+                      title: ref.lang('sub.gift_redeem'),
                       onTap: () => context.push('/gift/redeem'),
                     ),
                   ],
@@ -134,8 +132,8 @@ class MySubscriptionScreen extends ConsumerWidget {
                 child: _ActionTile(
                   icon: Icons.help_outline_rounded,
                   iconColor: context.text3,
-                  title: 'Вопросы и ответы',
-                  onTap: () => _showFAQ(context),
+                  title: ref.lang('sub.faq'),
+                  onTap: () => _showFAQ(context, ref: ref),
                 ),
               ),
             ),
@@ -145,9 +143,8 @@ class MySubscriptionScreen extends ConsumerWidget {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
-              // TODO: Localize — hardcoded Russian, needs ref.lang()
               child: Text(
-                'Сравнение тарифов',
+                ref.lang('sub.compare'),
                 style: TextStyle(
                   color: context.text3,
                   fontSize: 14,
@@ -198,7 +195,7 @@ class MySubscriptionScreen extends ConsumerWidget {
     context.push('/gift/purchase');
   }
 
-  void _showFAQ(BuildContext context) {
+  void _showFAQ(BuildContext context, {required WidgetRef ref}) {
     showModalBottomSheet(
       context: context,
       backgroundColor: context.card,
@@ -225,25 +222,18 @@ class MySubscriptionScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            // TODO: Localize — all FAQ strings below are hardcoded Russian, needs ref.lang()
-            Text('Вопросы и ответы',
+            Text(ref.lang('faq.title'),
                 style: TextStyle(
                     color: context.text1,
                     fontSize: 22,
                     fontWeight: FontWeight.w700)),
             const SizedBox(height: 20),
-            _faqItem('Как активировать подписку?',
-                'После оплаты подписка активируется автоматически в течение 30 минут. Вы получите уведомление.'),
-            _faqItem('Можно ли заморозить подписку?',
-                'Да, вы можете заморозить до ${AppConstants.freezeMaxDaysPerMonth} дней в месяц. Выберите конкретные дни в календаре через раздел Профиль.'),
-            _faqItem('Как работает безлимитный тариф?',
-                'Тарифы Про и VIP дают 1 визит в день без ограничения по часам.'),
-            _faqItem('Какие зоны мне доступны?',
-                'Базовый: только базовая зона. Стандарт и Про: базовая + про зоны. VIP: все зоны включая VIP.'),
-            _faqItem('Можно ли сменить тариф?',
-                'Да, перейдите в "Купить абонемент" и выберите новый тариф. Оставшиеся дни будут учтены.'),
-            _faqItem('Как работает реферальная программа?',
-                'Пригласите друга по реферальному коду и получите +${AppConstants.referralBonusHours} часа к подписке.'),
+            _faqItem(ref.lang('faq.q1'), ref.lang('faq.a1')),
+            _faqItem(ref.lang('faq.q2'), ref.lang('faq.a2').replaceAll('{n}', '${AppConstants.freezeMaxDaysPerMonth}')),
+            _faqItem(ref.lang('faq.q3'), ref.lang('faq.a3')),
+            _faqItem(ref.lang('faq.q4'), ref.lang('faq.a4')),
+            _faqItem(ref.lang('faq.q5'), ref.lang('faq.a5')),
+            _faqItem(ref.lang('faq.q6'), ref.lang('faq.a6').replaceAll('{n}', '${AppConstants.referralBonusHours}')),
           ],
         ),
       ),
@@ -275,12 +265,12 @@ class MySubscriptionScreen extends ConsumerWidget {
 
 // ── Subscription Card ───────────────────────────────────────
 
-class _SubscriptionCard extends StatelessWidget {
+class _SubscriptionCard extends ConsumerWidget {
   final Subscription? subscription;
   const _SubscriptionCard({this.subscription});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final sub = subscription;
     final hasActive = sub != null && (sub.isActive || sub.isFrozen);
 
@@ -309,7 +299,7 @@ class _SubscriptionCard extends StatelessWidget {
             ? AppTheme.neonGlow(color: glowColor, radius: 20)
             : [],
       ),
-      child: hasActive ? _activeContent(context, sub!) : _expiredContent(context),
+      child: hasActive ? _activeContent(context, ref, sub!) : _expiredContent(context, ref),
     );
   }
 
@@ -327,7 +317,7 @@ class _SubscriptionCard extends StatelessWidget {
     _ => AppTheme.neonBlue,
   };
 
-  Widget _activeContent(BuildContext context, Subscription sub) {
+  Widget _activeContent(BuildContext context, WidgetRef ref, Subscription sub) {
     final config = sub.planConfig;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -342,7 +332,7 @@ class _SubscriptionCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
-                sub.planName,
+                sub.localizedPlanName(ref),
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 13,
@@ -358,14 +348,13 @@ class _SubscriptionCard extends StatelessWidget {
                   color: Colors.blueGrey.withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.ac_unit_rounded, color: Colors.white70, size: 14),
-                    SizedBox(width: 4),
-                    // TODO: Localize — hardcoded Russian, needs ref.lang()
-                    Text('Заморожена',
-                        style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
+                    const Icon(Icons.ac_unit_rounded, color: Colors.white70, size: 14),
+                    const SizedBox(width: 4),
+                    Text(ref.lang('sub.frozen_label'),
+                        style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
                   ],
                 ),
               ),
@@ -381,7 +370,7 @@ class _SubscriptionCard extends StatelessWidget {
         if (sub.isUnlimited) ...[
           const Text('∞',
               style: TextStyle(color: Colors.white, fontSize: 52, fontWeight: FontWeight.w800)),
-          Text(sub.hoursSubtext,
+          Text(sub.localizedHoursSubtext(ref),
               style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 15)),
         ] else ...[
           Row(
@@ -392,7 +381,7 @@ class _SubscriptionCard extends StatelessWidget {
               const SizedBox(width: 8),
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
-                child: Text(sub.hoursSubtext,
+                child: Text(sub.localizedHoursSubtext(ref),
                     style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 15)),
               ),
             ],
@@ -416,9 +405,8 @@ class _SubscriptionCard extends StatelessWidget {
             Icon(Icons.calendar_today_rounded,
                 color: Colors.white.withValues(alpha: 0.6), size: 16),
             const SizedBox(width: 6),
-            // TODO: Localize — hardcoded Russian, needs ref.lang()
             Text(
-              '${sub.daysRemaining} дней осталось',
+              '${sub.daysRemaining} ${ref.lang('sub.days_remaining')}',
               style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 14),
             ),
             if (!sub.isFrozen && sub.daysRemaining <= 3) ...[
@@ -429,8 +417,8 @@ class _SubscriptionCard extends StatelessWidget {
                   color: Colors.orange.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Text('Истекает!',
-                    style: TextStyle(color: Colors.orange, fontSize: 11, fontWeight: FontWeight.w700)),
+                child: Text(ref.lang('sub.expires'),
+                    style: const TextStyle(color: Colors.orange, fontSize: 11, fontWeight: FontWeight.w700)),
               ),
             ],
           ],
@@ -448,7 +436,7 @@ class _SubscriptionCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                AppConstants.zoneLabel(z),
+                AppConstants.localizedZoneLabel(z, ref),
                 style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12),
               ),
             )).toList(),
@@ -458,7 +446,7 @@ class _SubscriptionCard extends StatelessWidget {
     );
   }
 
-  Widget _expiredContent(BuildContext context) {
+  Widget _expiredContent(BuildContext context, WidgetRef ref) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -466,18 +454,16 @@ class _SubscriptionCard extends StatelessWidget {
           children: [
             const Icon(Icons.info_outline_rounded, color: Colors.white54, size: 20),
             const SizedBox(width: 8),
-            // TODO: Localize — hardcoded Russian, needs ref.lang()
-            const Text('Нет активного абонемента',
-                style: TextStyle(color: Colors.white70, fontSize: 15, fontWeight: FontWeight.w600)),
+            Text(ref.lang('sub.no_active_label'),
+                style: const TextStyle(color: Colors.white70, fontSize: 15, fontWeight: FontWeight.w600)),
             const Spacer(),
             Icon(Icons.arrow_forward_ios_rounded,
                 color: Colors.white.withValues(alpha: 0.4), size: 16),
           ],
         ),
         const SizedBox(height: 16),
-        // TODO: Localize — hardcoded Russian, needs ref.lang()
-        const Text('Абонемент закончился',
-            style: TextStyle(color: Colors.white38, fontSize: 14)),
+        Text(ref.lang('sub.expired_label'),
+            style: const TextStyle(color: Colors.white38, fontSize: 14)),
         const SizedBox(height: 16),
         SizedBox(
           width: double.infinity,
@@ -489,9 +475,8 @@ class _SubscriptionCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            // TODO: Localize — hardcoded Russian, needs ref.lang()
-            child: const Text('Купить абонемент',
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+            child: Text(ref.lang('sub.buy'),
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
           ),
         ),
       ],
@@ -584,16 +569,16 @@ class _Divider extends StatelessWidget {
 
 // ── Promo dialog ───────────────────────────────────────────
 
-class _PromoDialog extends StatefulWidget {
+class _PromoDialog extends ConsumerStatefulWidget {
   final TextEditingController controller;
   final VoidCallback onApplied;
   const _PromoDialog({required this.controller, required this.onApplied});
 
   @override
-  State<_PromoDialog> createState() => _PromoDialogState();
+  ConsumerState<_PromoDialog> createState() => _PromoDialogState();
 }
 
-class _PromoDialogState extends State<_PromoDialog> {
+class _PromoDialogState extends ConsumerState<_PromoDialog> {
   bool _loading = false;
   String? _error;
   String? _success;
@@ -601,8 +586,7 @@ class _PromoDialogState extends State<_PromoDialog> {
   Future<void> _apply() async {
     final code = widget.controller.text.trim();
     if (code.isEmpty) {
-      // TODO: Localize — hardcoded Russian, needs ref.lang()
-      setState(() => _error = 'Введите промокод');
+      setState(() => _error = ref.lang('sub.promo_enter'));
       return;
     }
     setState(() { _loading = true; _error = null; _success = null; });
@@ -611,11 +595,11 @@ class _PromoDialogState extends State<_PromoDialog> {
       final type = result['type'] as String;
       final value = result['value'] as int;
       final bonus = type == 'hours'
-          ? '+$value часов'
+          ? '+$value ${ref.lang('sub.promo_hours')}'
           : type == 'days'
-              ? '+$value дней'
-              : '${value}% скидка';
-      setState(() => _success = 'Промокод активирован! $bonus');
+              ? '+$value ${ref.lang('sub.promo_days')}'
+              : '${value}% ${ref.lang('sub.promo_discount')}';
+      setState(() => _success = '${ref.lang('sub.promo_activated')} $bonus');
       widget.onApplied();
     } catch (e) {
       setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
@@ -628,7 +612,7 @@ class _PromoDialogState extends State<_PromoDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       backgroundColor: context.card,
-      title: Text('Промокод',
+      title: Text(ref.lang('sub.promo_title'),
           style: TextStyle(color: context.text1)),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -639,7 +623,7 @@ class _PromoDialogState extends State<_PromoDialog> {
             textCapitalization: TextCapitalization.characters,
             style: TextStyle(color: context.text1, letterSpacing: 2),
             decoration: InputDecoration(
-              hintText: 'Введите промокод',
+              hintText: ref.lang('sub.promo_hint'),
               errorText: _error,
             ),
           ),
@@ -670,7 +654,7 @@ class _PromoDialogState extends State<_PromoDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: Text(_success != null ? 'Закрыть' : 'Отмена'),
+          child: Text(_success != null ? ref.lang('sub.promo_close') : ref.lang('sub.promo_cancel')),
         ),
         if (_success == null)
           ElevatedButton(
@@ -679,7 +663,7 @@ class _PromoDialogState extends State<_PromoDialog> {
                 ? const SizedBox(
                     width: 18, height: 18,
                     child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                : const Text('Активировать'),
+                : Text(ref.lang('sub.promo_activate')),
           ),
       ],
     );
@@ -688,7 +672,7 @@ class _PromoDialogState extends State<_PromoDialog> {
 
 // ── Mini plan card ──────────────────────────────────────────
 
-class _MiniPlanCard extends StatelessWidget {
+class _MiniPlanCard extends ConsumerWidget {
   final PlanConfig plan;
   final VoidCallback onTap;
 
@@ -712,7 +696,7 @@ class _MiniPlanCard extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -735,7 +719,7 @@ class _MiniPlanCard extends StatelessWidget {
           children: [
             // Plan name
             Text(
-              plan.name,
+              ref.lang('plan.${plan.id}'),
               style: TextStyle(
                 color: _color,
                 fontSize: 18,
@@ -745,7 +729,7 @@ class _MiniPlanCard extends StatelessWidget {
             const SizedBox(height: 6),
             // Hours
             Text(
-              plan.isUnlimited ? '1 визит/день' : '${plan.hours} ч/мес',
+              plan.isUnlimited ? ref.lang('sub.visit_per_day') : '${plan.hours} ${ref.lang('sub.hours_per_month')}',
               style: TextStyle(color: context.text2, fontSize: 13),
             ),
             const Spacer(),
@@ -759,7 +743,7 @@ class _MiniPlanCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 4),
-            Text('в месяц',
+            Text(ref.lang('sub.per_month_label'),
                 style: TextStyle(color: context.text3, fontSize: 12)),
             const SizedBox(height: 10),
             // Button
@@ -771,7 +755,7 @@ class _MiniPlanCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
-                'Оформить',
+                ref.lang('sub.order_btn'),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: _color,

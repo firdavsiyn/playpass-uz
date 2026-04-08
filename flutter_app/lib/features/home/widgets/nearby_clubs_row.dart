@@ -6,17 +6,18 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../models/club.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../core/widgets/neon_shimmer.dart';
 
-class NearbyClubsRow extends StatelessWidget {
+class NearbyClubsRow extends ConsumerWidget {
   final AsyncValue<List<Club>> clubsAsync;
   const NearbyClubsRow({super.key, required this.clubsAsync});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return clubsAsync.when(
       data: (clubs) => clubs.isEmpty
-          ? Text('Клубы не найдены', style: TextStyle(color: context.text3))
+          ? Text(ref.lang('nearby.not_found'), style: TextStyle(color: context.text3))
           : SizedBox(
               height: 175,
               child: ListView.separated(
@@ -35,7 +36,7 @@ class NearbyClubsRow extends StatelessWidget {
           itemBuilder: (_, __) => const _ClubCardSkeleton(),
         ),
       ),
-      error: (_, __) => const Text('Ошибка загрузки', style: TextStyle(color: AppTheme.error)),
+      error: (_, __) => Text(ref.lang('nearby.error'), style: const TextStyle(color: AppTheme.error)),
     );
   }
 }

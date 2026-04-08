@@ -441,4 +441,113 @@ const Map<String, String> stringsRu = {
   'common.time_h': 'ч',
   'common.time_m': 'м',
   'common.time_s': 'с',
+
+  // ── Subscription widget (home) ─────────────────
+  'sub_widget.no_active': 'Нет активной подписки',
+  'sub_widget.buy_cta': 'Купите тариф и начните играть',
+  'sub_widget.frozen': 'Заморожена',
+  'sub_widget.expires_in': 'Подписка истекает через',
+  'sub_widget.days_short': 'дн.',
+  'sub_widget.remaining': 'осталось',
+  'sub_widget.hours_short': 'ч',
+  'sub_widget.unlimited': 'Безлимит',
+  'sub_widget.visit_per_day': '1 визит в день',
+
+  // ── Clubs list screen ──────────────────────────
+  'clubs.on_map': 'На карте',
+  'clubs.by_zones': 'По зонам',
+  'clubs.favorites': 'Избранные',
+  'clubs.free_seats': 'Свободные',
+  'clubs.standard': 'Стандарт',
+  'clubs.nearby': 'Рядом',
+  'clubs.sort_rating': 'По рейтингу',
+  'clubs.sort_price': 'По цене',
+  'clubs.sort_name': 'По имени',
+  'clubs.nearest': 'Ближайшие',
+  'clubs.count_suffix': 'клубов',
+  'clubs.all_clubs': 'Все клубы',
+  'clubs.search_hint': 'Найти клуб или зону...',
+  'clubs.on_map_count': 'клубов на карте',
+  'clubs.basic_label': 'Базовый',
+  'clubs.standard_label': 'Стандарт',
+  'clubs.no_favorites': 'Нет избранных клубов',
+  'clubs.no_favorites_hint': 'Нажмите на сердечко, чтобы добавить',
+  'clubs.no_nearby': 'Клубов поблизости не найдено',
+  'clubs.allow_location': 'Разрешите доступ к геолокации',
+  'clubs.near_you': 'Рядом с вами',
+  'clubs.location_error': 'Не удалось определить местоположение',
+  'clubs.error_loading': 'Ошибка загрузки',
+
+  // ── Subscription screen ────────────────────────
+  'sub.frozen_label': 'Заморожена',
+  'sub.days_remaining': 'дней осталось',
+  'sub.no_active_label': 'Нет активного абонемента',
+  'sub.expired_label': 'Абонемент закончился',
+  'sub.visit_per_day': '1 визит/день',
+  'sub.hours_per_month': 'ч/мес',
+  'sub.per_month_label': 'в месяц',
+  'sub.order_btn': 'Оформить',
+  'sub.promo_enter': 'Введите промокод',
+  'sub.promo_title': 'Промокод',
+  'sub.promo_hint': 'Введите промокод',
+  'sub.promo_activated': 'Промокод активирован!',
+  'sub.promo_hours': 'часов',
+  'sub.promo_days': 'дней',
+  'sub.promo_discount': 'скидка',
+  'sub.promo_close': 'Закрыть',
+  'sub.promo_cancel': 'Отмена',
+  'sub.promo_activate': 'Активировать',
+
+  // ── Profile stats ──────────────────────────────
+  'profile.hours_label': 'Часов',
+  'profile.streak_label': 'Серия дн.',
+
+  // ── Home savings widget ────────────────────────
+  'home.you_saved': 'Вы сэкономили',
+  'home.currency': 'сум',
+
+  // ── Nearby clubs row ───────────────────────────
+  'nearby.not_found': 'Клубы не найдены',
+  'nearby.error': 'Ошибка загрузки',
+
+  // ── Zone labels ────────────────────────────────
+  'zone.basic': 'Базовая',
+  'zone.pro': 'Про',
+  'zone.vip': 'VIP',
+
+  // ── Plan names ─────────────────────────────────
+  'plan.basic': 'Базовый',
+  'plan.standard': 'Стандарт',
+  'plan.pro': 'Про',
+  'plan.vip': 'VIP',
+
+  // ── Level labels ───────────────────────────────
+  'level.novice': 'Новичок',
+  'level.gamer': 'Геймер',
+  'level.pro': 'Про',
+  'level.legend': 'Легенда',
+
+  // ── Subscription model ─────────────────────────
+  'sub.unlimited_label': 'Безлимит · 1 визит/день',
+  'sub.of_hours': 'из {n} часов',
+
+  // ── Time slot labels ───────────────────────────
+  'slot.day': 'День (08–20)',
+  'slot.evening': 'Вечер (20–00)',
+  'slot.night': 'Ночь (00–08)',
+
+  // ── FAQ content ────────────────────────────────
+  'faq.title': 'Вопросы и ответы',
+  'faq.q1': 'Как активировать подписку?',
+  'faq.a1': 'После оплаты подписка активируется автоматически в течение 30 минут. Вы получите уведомление.',
+  'faq.q2': 'Можно ли заморозить подписку?',
+  'faq.a2': 'Да, вы можете заморозить до {n} дней в месяц. Выберите конкретные дни в календаре через раздел Профиль.',
+  'faq.q3': 'Как работает безлимитный тариф?',
+  'faq.a3': 'Тарифы Про и VIP дают 1 визит в день без ограничения по часам.',
+  'faq.q4': 'Какие зоны мне доступны?',
+  'faq.a4': 'Базовый: только базовая зона. Стандарт и Про: базовая + про зоны. VIP: все зоны включая VIP.',
+  'faq.q5': 'Можно ли сменить тариф?',
+  'faq.a5': 'Да, перейдите в "Купить абонемент" и выберите новый тариф. Оставшиеся дни будут учтены.',
+  'faq.q6': 'Как работает реферальная программа?',
+  'faq.a6': 'Пригласите друга по реферальному коду и получите +{n} часа к подписке.',
 };
