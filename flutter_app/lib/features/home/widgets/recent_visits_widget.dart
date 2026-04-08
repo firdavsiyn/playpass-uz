@@ -45,16 +45,9 @@ class _VisitTile extends StatelessWidget {
   final Visit visit;
   const _VisitTile({required this.visit});
 
-  Color _zoneBadgeColor(BuildContext context) => switch (visit.zoneType) {
-    'pro' => const Color(0xFF3B82F6),
-    'vip' => const Color(0xFFF59E0B),
-    _ => context.text3,
-  };
-
   @override
   Widget build(BuildContext context) {
     final dateStr = DateFormat('d MMM, HH:mm', 'ru').format(visit.createdAt);
-    final zoneColor = _zoneBadgeColor(context);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -92,36 +85,18 @@ class _VisitTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Flexible(
-                      child: Text(
-                        visit.clubName,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: context.text1,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                      decoration: BoxDecoration(
-                        color: zoneColor.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        visit.zoneLabel,
-                        style: TextStyle(color: zoneColor, fontSize: 10, fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  ],
+                Text(
+                  visit.clubName,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: context.text1,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '$dateStr · ${visit.timeSlotLabel}',
+                  dateStr,
                   style: TextStyle(color: context.text3, fontSize: 12),
                 ),
               ],
@@ -134,7 +109,7 @@ class _VisitTile extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
-              '-${visit.hoursDeducted}ч',
+              '${visit.hoursSpent}ч',
               style: const TextStyle(
                 color: AppTheme.success,
                 fontSize: 12,

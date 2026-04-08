@@ -333,7 +333,7 @@ class _MonthlySummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final totalHours =
-        visits.fold(0, (sum, v) => sum + v.hoursDeducted);
+        visits.fold(0, (sum, v) => sum + v.hoursSpent);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -390,21 +390,9 @@ class _VisitRow extends StatelessWidget {
   final Visit visit;
   const _VisitRow({required this.visit});
 
-  Color _zoneBadgeColor(BuildContext context) {
-    switch (visit.zoneType) {
-      case 'pro':
-        return AppTheme.info;
-      case 'vip':
-        return const Color(0xFFF59E0B);
-      default:
-        return context.text3;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final dateFmt = DateFormat('d MMM · HH:mm', 'ru');
-    final zoneColor = _zoneBadgeColor(context);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -435,41 +423,18 @@ class _VisitRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Flexible(
-                      child: Text(
-                        visit.clubName,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: context.text1,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: zoneColor.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        visit.zoneLabel,
-                        style: TextStyle(
-                          color: zoneColor,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 10,
-                        ),
-                      ),
-                    ),
-                  ],
+                Text(
+                  visit.clubName,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: context.text1,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${dateFmt.format(visit.createdAt)}  ·  ${visit.timeSlotLabel}',
+                  dateFmt.format(visit.createdAt),
                   style: TextStyle(
                       color: context.text3, fontSize: 12),
                 ),
@@ -484,7 +449,7 @@ class _VisitRow extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
-              '${visit.hoursDeducted} ч',
+              '${visit.hoursSpent} ч',
               style: const TextStyle(
                 color: AppTheme.success,
                 fontWeight: FontWeight.w600,

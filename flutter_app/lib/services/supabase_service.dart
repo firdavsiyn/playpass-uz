@@ -238,7 +238,7 @@ class SupabaseService {
     final userId = _userId;
     var query = _client
         .from('visits')
-        .select('id, user_id, club_id, zone, hours_spent, created_at, clubs(name)')
+        .select('id, user_id, club_id, hours_spent, created_at, clubs(name)')
         .eq('user_id', userId);
 
     if (month != null && year != null) {
