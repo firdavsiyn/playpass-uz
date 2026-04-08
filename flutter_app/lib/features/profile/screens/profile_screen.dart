@@ -66,105 +66,206 @@ class _ProfileContent extends ConsumerWidget {
     final referralCode = profile?['referral_code'] as String? ?? '';
     final level = profile?['level'] as String? ?? 'novice';
     final totalVisits = profile?['total_visits'] as int? ?? 0;
+    final xp = profile?['xp'] as int? ?? 0;
+    final totalHours = profile?['total_hours'] as int? ?? 0;
+    final streakDays = profile?['streak_days'] as int? ?? 0;
+
+    // XP progress to next level
+    final xpThresholds = {'novice': 100, 'regular': 500, 'pro': 1500, 'veteran': 5000, 'legend': 99999};
+    final currentThreshold = xpThresholds[level] ?? 100;
+    final xpProgress = (xp / currentThreshold).clamp(0.0, 1.0);
 
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       children: [
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
 
-        // Avatar + Name + Email
-        Row(
-          children: [
-            Stack(
-              children: [
-                AppAvatar.large(imageUrl: avatarUrl, name: name),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: GestureDetector(
-                    onTap: () => _pickAndUploadAvatar(context, ref),
-                    child: Container(
-                      width: 24,
-                      height: 24,
-                      decoration: BoxDecoration(
-                        color: AppTheme.primary,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: context.bg, width: 2),
-                      ),
-                      child: const Icon(Icons.camera_alt_rounded, size: 12, color: Colors.white),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(name, style: Theme.of(context).textTheme.titleLarge),
-                  const SizedBox(height: 4),
-                  Text(email,
-                      style: TextStyle(
-                          color: context.text3, fontSize: 13)),
-                ],
-              ),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 16),
-
-        // Level card
+        // ── Player Card (gaming style) ────────────────────
         Container(
-          padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: context.card,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppTheme.primary.withValues(alpha: 0.1)),
-            boxShadow: AppTheme.cardGlow(),
+            gradient: LinearGradient(
+              colors: [
+                AppTheme.primary.withValues(alpha: 0.4),
+                AppTheme.neonCyan.withValues(alpha: 0.15),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(20),
           ),
-          child: Row(
-            children: [
-              Text(AppConstants.levelIcon(level), style: const TextStyle(fontSize: 28)),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          padding: const EdgeInsets.all(1.5),
+          child: Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: context.card,
+              borderRadius: BorderRadius.circular(19),
+            ),
+            child: Column(
+              children: [
+                // Avatar + Name row
+                Row(
                   children: [
-                    Text(
-                      AppConstants.levelLabel(level),
-                      style: TextStyle(
-                        color: context.text1,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                      ),
+                    // Avatar with gradient ring
+                    Stack(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(3),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: const LinearGradient(
+                              colors: [AppTheme.primary, AppTheme.neonCyan],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.primary.withValues(alpha: 0.4),
+                                blurRadius: 16,
+                                spreadRadius: -4,
+                              ),
+                            ],
+                          ),
+                          child: AppAvatar.large(imageUrl: avatarUrl, name: name),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: GestureDetector(
+                            onTap: () => _pickAndUploadAvatar(context, ref),
+                            child: Container(
+                              width: 26,
+                              height: 26,
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [AppTheme.primary, AppTheme.neonCyan],
+                                ),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: context.card, width: 2),
+                              ),
+                              child: const Icon(Icons.camera_alt_rounded, size: 12, color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    Text(
-                      '$totalVisits ${ref.lang('profile.visits_total')}',
-                      style: TextStyle(color: context.text3, fontSize: 12),
+                    const SizedBox(width: 16),
+                    // Name + Level
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(name, style: TextStyle(
+                            color: context.text1,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.3,
+                          )),
+                          const SizedBox(height: 2),
+                          Text(email,
+                              style: TextStyle(color: context.text3, fontSize: 12)),
+                          const SizedBox(height: 6),
+                          // Level badge
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  AppTheme.primary.withValues(alpha: 0.2),
+                                  AppTheme.neonCyan.withValues(alpha: 0.1),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: AppTheme.primary.withValues(alpha: 0.2)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(AppConstants.levelIcon(level), style: const TextStyle(fontSize: 14)),
+                                const SizedBox(width: 4),
+                                Text(
+                                  AppConstants.levelLabel(level),
+                                  style: const TextStyle(
+                                    color: AppTheme.primaryLight,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-              ),
-              if (referralCode.isNotEmpty)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primary.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    referralCode,
-                    style: const TextStyle(
-                      color: AppTheme.primary,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1,
+
+                const SizedBox(height: 16),
+
+                // XP Progress bar
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('$xp XP', style: TextStyle(
+                          color: AppTheme.neonCyan,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        )),
+                        Text('$currentThreshold XP', style: TextStyle(
+                          color: context.text3,
+                          fontSize: 11,
+                        )),
+                      ],
                     ),
-                  ),
+                    const SizedBox(height: 6),
+                    Container(
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: context.surface,
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                      child: FractionallySizedBox(
+                        alignment: Alignment.centerLeft,
+                        widthFactor: xpProgress,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [AppTheme.primary, AppTheme.neonCyan],
+                            ),
+                            borderRadius: BorderRadius.circular(3),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.neonCyan.withValues(alpha: 0.4),
+                                blurRadius: 6,
+                                spreadRadius: -1,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-            ],
+
+                const SizedBox(height: 16),
+
+                // Stats row
+                Row(
+                  children: [
+                    _StatItem(value: '$totalVisits', label: ref.lang('profile.visits_total'),
+                        color: AppTheme.neonCyan),
+                    Container(width: 1, height: 30, color: context.border),
+                    _StatItem(value: '${totalHours}h', label: 'Часов',
+                        color: AppTheme.neonPurple),
+                    Container(width: 1, height: 30, color: context.border),
+                    _StatItem(value: '$streakDays', label: 'Серия дн.',
+                        color: AppTheme.warning),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
 
@@ -689,6 +790,34 @@ class _ThemeToggle extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _StatItem extends StatelessWidget {
+  final String value;
+  final String label;
+  final Color color;
+  const _StatItem({required this.value, required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Column(
+        children: [
+          Text(value, style: TextStyle(
+            color: color,
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+          )),
+          const SizedBox(height: 2),
+          Text(label, style: TextStyle(
+            color: context.text3,
+            fontSize: 10,
+            fontWeight: FontWeight.w500,
+          )),
+        ],
       ),
     );
   }
