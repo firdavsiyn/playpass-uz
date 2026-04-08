@@ -578,7 +578,7 @@ class SupabaseService {
   Future<List<Map<String, dynamic>>> getAllAchievements() async {
     final res = await _client
         .from('achievements')
-        .select('id, name, description, icon_url, xp_reward, sort_order')
+        .select('id, name_ru, name_uz, desc_ru, desc_uz, icon, category, threshold, sort_order')
         .order('sort_order');
     return (res as List).cast<Map<String, dynamic>>();
   }

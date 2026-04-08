@@ -111610,7 +111610,7 @@ wW(){var s=0,r=A.r(t.D),q,p=this,o
 var $async$wW=A.m(function(a,b){if(a===1)return A.o(b,r)
 for(;;)switch(s){case 0:o=J
 s=3
-return A.j(p.a.b_("achievements").cP(0,"id, name, description, icon_url, xp_reward, sort_order").wi(0,"sort_order"),$async$wW)
+return A.j(p.a.b_("achievements").cP(0,"id, name_ru, name_uz, desc_ru, desc_uz, icon, category, threshold, sort_order").wi(0,"sort_order"),$async$wW)
 case 3:q=o.eG(b,t.P)
 s=1
 break
