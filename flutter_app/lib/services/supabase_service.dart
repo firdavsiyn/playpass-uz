@@ -1164,4 +1164,68 @@ class SupabaseService {
         sin(dLon / 2) * sin(dLon / 2);
     return r * 2 * atan2(sqrt(a), sqrt(1 - a));
   }
+
+  // ── Notifications ─────────────────────────────────────────
+
+  /// Get user's notifications, newest first
+  Future<List<Map<String, dynamic>>> getNotifications({int limit = 50}) async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) return [];
+    final data = await Supabase.instance.client
+        .from('notifications')
+        .select('id, title, body, type, event, is_read, created_at')
+        .eq('user_id', userId)
+        .order('created_at', ascending: false)
+        .limit(limit);
+    return List<Map<String, dynamic>>.from(data);
+  }
+
+  /// Get unread notification count
+  Future<int> getUnreadNotificationCount() async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) return 0;
+    final data = await Supabase.instance.client
+        .from('notifications')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('is_read', false);
+    return (data as List).length;
+  }
+
+  /// Mark a notification as read
+  Future<void> markNotificationRead(String notifId) async {
+    await Supabase.instance.client
+        .from('notifications')
+        .update({'is_read': true})
+        .eq('id', notifId);
+  }
+
+  /// Mark all notifications as read
+  Future<void> markAllNotificationsRead() async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) return;
+    await Supabase.instance.client
+        .from('notifications')
+        .update({'is_read': true})
+        .eq('user_id', userId)
+        .eq('is_read', false);
+  }
+
+  /// Subscribe to new notifications via realtime
+  RealtimeChannel subscribeToNotifications(void Function(Map<String, dynamic>) onNew) {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) throw Exception('Not authenticated');
+    return Supabase.instance.client
+        .channel('notifications_$userId')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.insert,
+          schema: 'public',
+          table: 'notifications',
+          filter: PostgresChangeFilter(type: PostgresChangeFilterType.eq, column: 'user_id', value: userId),
+          callback: (payload) {
+            onNew(payload.newRecord);
+          },
+        )
+        .subscribe();
+  }
 }

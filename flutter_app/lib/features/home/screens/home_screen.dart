@@ -35,6 +35,10 @@ final activeSessionProvider = FutureProvider<Map<String, dynamic>?>((ref) async 
   return SupabaseService().getActiveSession();
 });
 
+final unreadNotifCountProvider = FutureProvider<int>((ref) async {
+  return SupabaseService().getUnreadNotificationCount();
+});
+
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -159,10 +163,37 @@ class HomeScreen extends ConsumerWidget {
                     ],
                   ),
                   actions: [
-                    IconButton(
-                      icon: Icon(Icons.notifications_outlined, color: context.text2, size: 22),
-                      onPressed: () => context.push('/notifications-settings'),
-                    ),
+                    Consumer(builder: (context, ref, _) {
+                      final count = ref.watch(unreadNotifCountProvider).valueOrNull ?? 0;
+                      return IconButton(
+                        icon: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Icon(Icons.notifications_outlined, color: context.text1),
+                            if (count > 0)
+                              Positioned(
+                                right: -4,
+                                top: -4,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.error,
+                                    shape: BoxShape.circle,
+                                    boxShadow: [BoxShadow(color: AppTheme.error.withValues(alpha: 0.4), blurRadius: 6)],
+                                  ),
+                                  constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                                  child: Text(
+                                    count > 99 ? '99+' : '$count',
+                                    style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w700),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        onPressed: () => context.push('/notifications'),
+                      );
+                    }),
                     const SizedBox(width: 4),
                   ],
                 ),
