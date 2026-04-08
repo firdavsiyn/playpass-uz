@@ -121,8 +121,8 @@
         </div>
       </div>
       <div class="filters-row">
-        <input type="date" id="filter-from" onchange="loadVisits()" />
-        <input type="date" id="filter-to" onchange="loadVisits()" />
+        <input type="date" id="filter-from" onchange="currentPage = 1; loadVisits()" />
+        <input type="date" id="filter-to" onchange="currentPage = 1; loadVisits()" />
         <input type="text" id="filter-search" data-i18n-ph="visits_search" placeholder="Поиск по имени..." oninput="filterVisitsTable()" />
       </div>
       <div class="card">
@@ -199,7 +199,7 @@
         <h1 data-i18n="book_title">Бронирование</h1>
         <div class="header-actions">
           <button class="btn-secondary btn-inline" onclick="exportBookingsCSV()" data-i18n="book_export">Экспорт CSV</button>
-          <input type="date" id="booking-date" onchange="loadBookings()" />
+          <input type="date" id="booking-date" onchange="currentPage = 1; loadBookings()" />
         </div>
       </div>
       <div class="card">

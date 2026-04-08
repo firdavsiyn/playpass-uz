@@ -11,8 +11,10 @@ let currentAdmin = null;
 let clubsCache = [];
 let usersCache = [];
 let usersCurrentPage = 1;
+let usersTotalPages = 1;
 const USERS_PER_PAGE = 20;
 let logsCurrentPage = 1;
+let logsTotalPages = 1;
 const LOGS_PER_PAGE = 30;
 let liveChannel = null;
 let charts = {};
@@ -120,6 +122,8 @@ function esc(str) {
   div.textContent = String(str);
   return div.innerHTML;
 }
+
+function escAttr(s) { return String(s).replace(/['"<>&]/g, c => ({'\'':'&#39;','"':'&quot;','<':'&lt;','>':'&gt;','&':'&amp;'})[c]); }
 
 function toDateInput(d) {
   return d.toISOString().split('T')[0];
@@ -362,7 +366,9 @@ function startLiveVisits() {
       loadRecentVisits();
       const el = $('s-today');
       if (el && el.textContent !== '—') el.textContent = fmt(parseInt(el.textContent.replace(/\s/g, '')) + 1);
-    }).subscribe();
+    }).subscribe((status) => {
+      if (status === 'CHANNEL_ERROR') console.error('Live channel error');
+    });
 }
 
 function exportDashboardCSV() {
@@ -404,9 +410,9 @@ function renderClubs(clubs) {
       <td>${c.rating ? Number(c.rating).toFixed(1) : '—'}</td>
       <td><span class="${statusClass}">${statusText}</span></td>
       <td>
-        <button class="btn-small btn-edit" onclick="editClubModal('${c.id}')">✏️</button>
-        <button class="btn-small btn-delete" onclick="toggleClubStatus('${c.id}', ${isActive})">${isActive ? '🔒' : '🔓'}</button>
-        ${isPending ? `<button class="btn-small btn-approve" onclick="verifyClub('${c.id}')">Верифицировать</button>` : ''}
+        <button class="btn-small btn-edit" onclick="editClubModal('${escAttr(c.id)}')">✏️</button>
+        <button class="btn-small btn-delete" onclick="toggleClubStatus('${escAttr(c.id)}', ${isActive})">${isActive ? '🔒' : '🔓'}</button>
+        ${isPending ? `<button class="btn-small btn-approve" onclick="verifyClub('${escAttr(c.id)}')">Верифицировать</button>` : ''}
       </td>
     </tr>`;
   }).join('');
@@ -567,7 +573,7 @@ async function deleteOldPhotos(oldPhotos, newPhotos) {
     // Extract path from URL: ...club-photos/clubId/filename.jpg
     const match = url.match(/club-photos\/(.+)$/);
     if (match) {
-      await sb.storage.from('club-photos').remove([match[1]]).catch(() => {});
+      await sb.storage.from('club-photos').remove([match[1]]).catch(e => console.warn('Photo cleanup failed:', e));
     }
     // If it's an unsplash URL, just skip storage deletion
   }
@@ -613,6 +619,7 @@ function workingHoursHtml(wh) {
 function toggle247(on) {
   WEEK_DAYS.forEach(d => {
     const o = $(`wh-${d.key}-open`), c = $(`wh-${d.key}-close`), cb = $(`wh-${d.key}-closed`);
+    if (!o || !c || !cb) return;
     if (on) {
       o.value = '00:00'; o.disabled = true;
       c.value = '24:00'; c.disabled = true;
@@ -628,6 +635,7 @@ function toggle247(on) {
 function toggleDayClosed(dayKey, closed) {
   const openInput = $(`wh-${dayKey}-open`);
   const closeInput = $(`wh-${dayKey}-close`);
+  if (!openInput || !closeInput) return;
   if (closed) {
     openInput.disabled = true; openInput.value = '';
     closeInput.disabled = true; closeInput.value = '';
@@ -680,7 +688,7 @@ function clubFormHtml(club = null) {
     </div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal()">${t('btn_cancel')}</button>
-      <button class="btn-primary btn-inline" id="save-club-btn" onclick="saveClub('${club?.id || ''}')">${club ? t('btn_save') : t('btn_add')}</button>
+      <button class="btn-primary btn-inline" id="save-club-btn" onclick="saveClub('${escAttr(club?.id || '')}')">${club ? t('btn_save') : t('btn_add')}</button>
     </div>`;
 }
 
@@ -776,8 +784,9 @@ async function loadUsers() {
     if (error) throw error;
     usersCache = data || [];
     const totalPages = Math.ceil((count || 0) / USERS_PER_PAGE);
+    usersTotalPages = totalPages || 1;
     renderUsers(usersCache);
-    $('users-page-info').textContent = `${usersCurrentPage} / ${totalPages || 1}`;
+    $('users-page-info').textContent = `${usersCurrentPage} / ${usersTotalPages}`;
     $('users-prev').disabled = usersCurrentPage <= 1;
     $('users-next').disabled = usersCurrentPage >= totalPages;
   } catch (e) { console.error(e); }
@@ -796,13 +805,13 @@ function renderUsers(users) {
       <td><span class="badge badge-primary">${esc(u.level || 'newbie')}</span></td>
       <td>${fmtDate(u.created_at)}</td>
       <td>
-        <button class="btn-small btn-view" onclick="viewUserModal('${u.id}')">👤</button>
-        <button class="btn-small btn-edit" onclick="manageSubModal('${u.id}')">📋</button>
+        <button class="btn-small btn-view" onclick="viewUserModal('${escAttr(u.id)}')">👤</button>
+        <button class="btn-small btn-edit" onclick="manageSubModal('${escAttr(u.id)}')">📋</button>
       </td></tr>`;
   }).join('');
 }
 
-function usersPage(dir) { usersCurrentPage += dir; if (usersCurrentPage < 1) usersCurrentPage = 1; loadUsers(); }
+function usersPage(dir) { usersCurrentPage += dir; if (usersCurrentPage < 1) usersCurrentPage = 1; if (usersCurrentPage > usersTotalPages) usersCurrentPage = usersTotalPages; loadUsers(); }
 
 function filterUsers() {
   const q = $('users-search').value.toLowerCase();
@@ -844,8 +853,8 @@ async function manageSubModal(userId) {
       <div class="form-group"><label>Продлить на (дней)</label><input type="number" id="extend-days" value="30" min="1" /></div>
       <div class="form-group"><label>Добавить часов</label><input type="number" id="add-hours" value="0" min="0" /></div>
       <div class="modal-actions">
-        <button class="btn-primary btn-inline" onclick="extendSubscription('${userId}', '${sub.plan}')">Продлить</button>
-        <button class="btn-small btn-reject" style="padding:10px 16px" onclick="cancelSubscription('${userId}')">Отменить подписку</button>
+        <button class="btn-primary btn-inline" onclick="extendSubscription('${escAttr(userId)}', '${escAttr(sub.plan)}')">Продлить</button>
+        <button class="btn-small btn-reject" style="padding:10px 16px" onclick="cancelSubscription('${escAttr(userId)}')">Отменить подписку</button>
       </div>
     ` : `
       <div class="form-group"><label>Назначить план</label><select id="assign-plan">
@@ -854,7 +863,7 @@ async function manageSubModal(userId) {
       </select></div>
       <div class="form-group"><label>Срок (дней)</label><input type="number" id="assign-days" value="30" min="1" /></div>
       <div class="modal-actions">
-        <button class="btn-primary btn-inline" onclick="assignSubscription('${userId}')">Назначить</button>
+        <button class="btn-primary btn-inline" onclick="assignSubscription('${escAttr(userId)}')">Назначить</button>
       </div>
     `}`;
   openModal();
@@ -946,8 +955,8 @@ function renderPendingPayments(items) {
     <td>${esc(p.user_phone || '—')}</td>
     <td class="text-truncate">${esc(p.payment_note || '—')}</td>
     <td>
-      <button class="btn-small btn-approve" onclick="approvePayment('${p.id}','${p.user_id}','${p.plan}',${p.amount_uzs || 0})">Принять</button>
-      <button class="btn-small btn-reject" onclick="rejectPayment('${p.id}')">Отклонить</button>
+      <button class="btn-small btn-approve" onclick="approvePayment('${escAttr(p.id)}','${escAttr(p.user_id)}','${escAttr(p.plan)}',${p.amount_uzs || 0})">Принять</button>
+      <button class="btn-small btn-reject" onclick="rejectPayment('${escAttr(p.id)}')">Отклонить</button>
     </td></tr>`).join('');
 }
 
@@ -1001,7 +1010,7 @@ function exportPaymentsCSV() {
   sb.from('subscription_requests').select('*, users(name)').eq('status', 'approved').order('created_at', { ascending: false }).then(({ data }) => {
     downloadCSV('payments.csv', ['Дата', 'Пользователь', 'Тариф', 'Сумма'],
       (data || []).map(p => [fmtDateTime(p.created_at), p.users?.name, p.plan, p.amount_uzs]));
-  }).catch(e => { alert('Ошибка экспорта: ' + e.message); });
+  }).catch(e => { showToast('Ошибка экспорта: ' + e.message, 'error'); });
 }
 
 /* ═══════════════════════════════════════════════
@@ -1097,7 +1106,7 @@ function renderPromos(promos) {
       <td>${p.expires_at ? fmtDate(p.expires_at) : 'Бессрочно'}</td>
       <td>${statusBadge}</td>
       <td>
-        <button class="btn-small btn-delete" onclick="togglePromo('${p.id}', ${p.is_active})">${p.is_active ? 'Выкл' : 'Вкл'}</button>
+        <button class="btn-small btn-delete" onclick="togglePromo('${escAttr(p.id)}', ${p.is_active})">${p.is_active ? 'Выкл' : 'Вкл'}</button>
       </td></tr>`;
   }).join('');
 }
@@ -1161,7 +1170,7 @@ function exportPromosCSV() {
   sb.from('promo_codes').select('*').order('created_at', { ascending: false }).then(({ data }) => {
     downloadCSV('promos.csv', ['Код', 'Тип', 'Скидка', 'Исп.', 'Макс', 'Активен', 'Истекает'],
       (data || []).map(p => [p.code, p.discount_type, p.discount_value, p.used_count, p.max_uses || '∞', p.is_active, fmtDate(p.expires_at)]));
-  }).catch(e => { alert('Ошибка экспорта: ' + e.message); });
+  }).catch(e => { showToast('Ошибка экспорта: ' + e.message, 'error'); });
 }
 
 /* ═══════════════════════════════════════════════
@@ -1190,7 +1199,7 @@ function renderReviews(reviews) {
     <td>${fmtDate(r.created_at)}</td><td>${esc(r.users?.name || '—')}</td><td>${esc(r.clubs?.name || '—')}</td>
     <td><span class="stars">${'★'.repeat(r.rating || 0)}${'☆'.repeat(5 - (r.rating || 0))}</span></td>
     <td class="text-truncate">${esc(r.text || '—')}${photosHtml}</td>
-    <td><button class="btn-small btn-delete" onclick="deleteReview('${r.id}')">Удалить</button></td></tr>`;
+    <td><button class="btn-small btn-delete" onclick="deleteReview('${escAttr(r.id)}')">Удалить</button></td></tr>`;
   }).join('');
 }
 
@@ -1240,8 +1249,9 @@ async function loadLogs() {
     const { data, error, count } = await sb.from('admin_logs').select('*', { count: 'exact' }).order('created_at', { ascending: false }).range(from, to);
     if (error) throw error;
     const totalPages = Math.ceil((count || 0) / LOGS_PER_PAGE);
+    logsTotalPages = totalPages || 1;
     renderLogs(data || []);
-    $('logs-page-info').textContent = `${logsCurrentPage} / ${totalPages || 1}`;
+    $('logs-page-info').textContent = `${logsCurrentPage} / ${logsTotalPages}`;
     $('logs-prev').disabled = logsCurrentPage <= 1;
     $('logs-next').disabled = logsCurrentPage >= totalPages;
   } catch (e) { console.error(e); }
@@ -1258,13 +1268,13 @@ function renderLogs(logs) {
     <td class="text-truncate">${esc(l.details || '—')}</td></tr>`).join('');
 }
 
-function logsPage(dir) { logsCurrentPage += dir; if (logsCurrentPage < 1) logsCurrentPage = 1; loadLogs(); }
+function logsPage(dir) { logsCurrentPage += dir; if (logsCurrentPage < 1) logsCurrentPage = 1; if (logsCurrentPage > logsTotalPages) logsCurrentPage = logsTotalPages; loadLogs(); }
 
 function exportLogsCSV() {
   sb.from('admin_logs').select('*').order('created_at', { ascending: false }).limit(500).then(({ data }) => {
     downloadCSV('admin_logs.csv', ['Дата', 'Админ', 'Действие', 'Тип', 'ID', 'Детали'],
       (data || []).map(l => [fmtDateTime(l.created_at), l.admin_name, l.action, l.entity_type, l.entity_id, l.details]));
-  }).catch(e => { alert('Ошибка экспорта: ' + e.message); });
+  }).catch(e => { showToast('Ошибка экспорта: ' + e.message, 'error'); });
 }
 
 /* ═══════════════════════════════════════════════
@@ -1351,7 +1361,7 @@ function filterMapClubs(query) {
   } else {
     box.innerHTML = matches.map(m => {
       const color = MAP_COLORS[m.club.status] || '#6B7280';
-      return `<div class="map-search-item" onclick="focusMapClub('${m.club.id}')">
+      return `<div class="map-search-item" onclick="focusMapClub('${escAttr(m.club.id)}')">
         <span class="legend-dot" style="background:${color};flex-shrink:0"></span>
         <div>
           <div class="map-search-name">${esc(m.club.name)}</div>
@@ -1416,7 +1426,7 @@ function renderTickets(tickets) {
     <td class="text-truncate">${esc(t.subject)}</td>
     <td><span class="priority-${t.priority}">${t.priority === 'urgent' ? 'СРОЧНО' : t.priority === 'high' ? 'Высокий' : t.priority === 'normal' ? 'Обычный' : 'Низкий'}</span></td>
     <td><span class="badge ${statusClasses[t.status] || 'badge-muted'}">${statusLabels[t.status] || t.status}</span></td>
-    <td><button class="btn-small btn-view" onclick="viewTicketModal('${t.id}')">Открыть</button></td>
+    <td><button class="btn-small btn-view" onclick="viewTicketModal('${escAttr(t.id)}')">Открыть</button></td>
   </tr>`).join('');
 }
 
@@ -1454,7 +1464,7 @@ async function viewTicketModal(id) {
     </select></div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal()">Отмена</button>
-      <button class="btn-primary btn-inline" onclick="replyTicket('${t.id}')">Сохранить</button>
+      <button class="btn-primary btn-inline" onclick="replyTicket('${escAttr(t.id)}')">Сохранить</button>
     </div>`;
   openModal();
 }
@@ -1603,9 +1613,9 @@ function renderBanners(banners) {
         <div class="banner-card-footer">
           <span class="banner-card-date">${fmtDate(b.created_at)}${b.ends_at ? ' — до ' + fmtDate(b.ends_at) : ''}</span>
           <div class="banner-card-actions">
-            <button class="btn-small btn-edit" onclick="editBannerModal('${b.id}')">✏️</button>
-            <button class="btn-small btn-delete" onclick="toggleBanner('${b.id}', ${b.is_active})">${b.is_active ? 'Скрыть' : 'Показать'}</button>
-            <button class="btn-small btn-delete" onclick="deleteBanner('${b.id}')">X</button>
+            <button class="btn-small btn-edit" onclick="editBannerModal('${escAttr(b.id)}')">✏️</button>
+            <button class="btn-small btn-delete" onclick="toggleBanner('${escAttr(b.id)}', ${b.is_active})">${b.is_active ? 'Скрыть' : 'Показать'}</button>
+            <button class="btn-small btn-delete" onclick="deleteBanner('${escAttr(b.id)}')">X</button>
           </div>
         </div>
       </div>
@@ -1643,7 +1653,7 @@ function bannerFormHtml(b = null) {
     <div class="form-group"><label>Порядок</label><input type="number" id="banner-sort" value="${b?.sort_order ?? 0}" /></div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal()">Отмена</button>
-      <button class="btn-primary btn-inline" onclick="saveBanner('${b?.id || ''}')">${b ? 'Сохранить' : 'Создать'}</button>
+      <button class="btn-primary btn-inline" onclick="saveBanner('${escAttr(b?.id || '')}')">${b ? 'Сохранить' : 'Создать'}</button>
     </div>`;
 }
 
@@ -1701,6 +1711,7 @@ async function loadAllBookings() {
   try {
     const dateEl = $('bookings-date-filter');
     const statusEl = $('bookings-status-filter');
+    if (!dateEl) return;
     if (!dateEl.value) dateEl.value = toDateInput(new Date());
     const date = dateEl.value;
     const statusFilter = statusEl.value;
@@ -1933,7 +1944,7 @@ function copyReportText() {
   const r = window.__lastReport;
   if (!r) return;
   const text = `PlayPass — Еженедельный отчёт (${r.from} — ${r.to})\nНовых пользователей: ${r.newUsers} | Выручка: ${fmt(r.weekRevenue)} UZS | Визитов: ${r.weekVisits} | Новых подписок: ${r.newSubs}\nВсего: ${r.totalUsers} юзеров, ${r.activeSubs} подписок, ${r.totalClubs} клубов, ${r.openTickets} тикетов`;
-  navigator.clipboard.writeText(text).then(() => showToast('Скопировано')).catch(() => {});
+  navigator.clipboard.writeText(text).then(() => showToast('Скопировано')).catch(e => console.warn('Clipboard copy failed:', e));
 }
 
 function exportFinanceCSV() {

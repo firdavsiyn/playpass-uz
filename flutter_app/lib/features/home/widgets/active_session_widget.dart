@@ -53,6 +53,7 @@ class _ActiveSessionWidgetState extends State<ActiveSessionWidget> {
       widget.onEnded();
     } catch (e) {
       if (mounted) {
+        // TODO: Localize error message — needs ref.lang() access or localization passed via constructor
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Ошибка: $e')),
         );
@@ -86,6 +87,7 @@ class _ActiveSessionWidgetState extends State<ActiveSessionWidget> {
                 ),
               ),
               const SizedBox(width: 8),
+              // TODO: Localize — needs ref.lang() access or localization passed via constructor
               const Text('Активная сессия',
                   style: TextStyle(color: AppTheme.success, fontSize: 12, fontWeight: FontWeight.w700)),
               const Spacer(),
@@ -102,6 +104,7 @@ class _ActiveSessionWidgetState extends State<ActiveSessionWidget> {
                   child: _ending
                       ? const SizedBox(width: 14, height: 14,
                           child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.error))
+                      // TODO: Localize — needs ref.lang() access or localization passed via constructor
                       : const Text('Завершить',
                           style: TextStyle(color: AppTheme.error, fontSize: 12, fontWeight: FontWeight.w600)),
                 ),

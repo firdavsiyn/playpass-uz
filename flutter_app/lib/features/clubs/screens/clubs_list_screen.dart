@@ -109,7 +109,7 @@ class ClubsListScreen extends ConsumerWidget {
                   ),
                   const Spacer(),
                   GestureDetector(
-                    onTap: () => context.push('/notifications'),
+                    onTap: () => context.push('/notifications-settings'),
                     child: Container(
                       width: 40, height: 40,
                       decoration: BoxDecoration(

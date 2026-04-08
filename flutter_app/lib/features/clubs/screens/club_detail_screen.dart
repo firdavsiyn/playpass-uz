@@ -71,8 +71,9 @@ class _ClubDetail extends ConsumerWidget {
   }
 
   void _call() async {
-    if (club.contactPhone == null) return;
-    final cleaned = club.contactPhone!.replaceAll(RegExp(r'[^\d+]'), '');
+    final phone = club.contactPhone;
+    if (phone == null) return;
+    final cleaned = phone.replaceAll(RegExp(r'[^\d+]'), '');
     final url = Uri.parse('tel:$cleaned');
     if (await canLaunchUrl(url)) {
       await launchUrl(url);

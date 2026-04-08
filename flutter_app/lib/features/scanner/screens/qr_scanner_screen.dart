@@ -116,13 +116,14 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen>
   Future<void> _onQrDetected(BarcodeCapture capture) async {
     if (_processed || _state != ScanState.scanning) return;
     final barcode = capture.barcodes.firstOrNull;
-    if (barcode == null || barcode.rawValue == null) return;
+    final rawValue = barcode?.rawValue;
+    if (rawValue == null || rawValue.isEmpty) return;
 
     _processed = true;
     setState(() => _state = ScanState.processing);
     _scanner?.stop();
 
-    final raw = barcode!.rawValue!;
+    final raw = rawValue;
 
     // Parse deep link: playpassuz://checkin?z=ZONE_ID&h=QR_HMAC
     // Legacy format: playpassuz://checkin?c=CLUB_ID&t=QR_TOKEN

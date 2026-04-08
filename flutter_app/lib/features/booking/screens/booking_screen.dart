@@ -99,7 +99,8 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
             data: (bookings) {
               final active = bookings
                   .where((b) =>
-                      b['status'] == 'confirmed' || b['status'] == 'active')
+                      (b['status'] as String? ?? 'pending') == 'confirmed' ||
+                      (b['status'] as String? ?? 'pending') == 'active')
                   .toList();
               if (active.isEmpty) return const SizedBox.shrink();
               return Column(
@@ -133,7 +134,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                         booking: b,
                         onCancel: () async {
                           await SupabaseService()
-                              .cancelBooking(b['id'] as String);
+                              .cancelBooking(b['id'] as String? ?? '');
                           ref.invalidate(_myBookingsProvider);
                         },
                       )),
@@ -424,10 +425,12 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
           bookingsAsync.when(
             data: (bookings) {
               final past = bookings
-                  .where((b) =>
-                      b['status'] == 'completed' ||
-                      b['status'] == 'cancelled' ||
-                      b['status'] == 'no_show')
+                  .where((b) {
+                    final status = b['status'] as String? ?? 'pending';
+                    return status == 'completed' ||
+                        status == 'cancelled' ||
+                        status == 'no_show';
+                  })
                   .take(5)
                   .toList();
               if (past.isEmpty) return const SizedBox.shrink();

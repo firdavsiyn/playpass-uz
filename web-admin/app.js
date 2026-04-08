@@ -18,6 +18,7 @@ let currentPage = 1;
 const PAGE_SIZE = 50;
 let realtimeChannel = null;
 let sessionTimer = null;
+let pcTimerInterval = null;
 let analyticsCharts = {};
 let currentLang = localStorage.getItem('lang') || 'ru';
 const $ = (id) => document.getElementById(id);
@@ -71,6 +72,7 @@ function formatDateTime(d) { return d.toLocaleString(currentLang === 'uz' ? 'uz-
 function formatTime(d) { return d.toLocaleTimeString(currentLang === 'uz' ? 'uz-UZ' : 'ru', { hour: '2-digit', minute: '2-digit' }); }
 function toDateInput(d) { return d.toISOString().split('T')[0]; }
 function escHtml(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function esc(s) { return String(s).replace(/['"<>&]/g, c => ({'\'':'&#39;','"':'&quot;','<':'&lt;','>':'&gt;','&':'&amp;'})[c]); }
 
 function showToast(msg, type) {
   const el = $('toast');
@@ -236,8 +238,13 @@ async function subscribeRealtime() {
   realtimeChannel = sb.channel(`club_admin_${currentClub.id}`)
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'visits', filter: `club_id=eq.${currentClub.id}` }, async (payload) => {
       const v = payload.new;
-      const { data: u } = await sb.from('users').select('name').eq('id', v.user_id).single();
-      v.user_name = u?.name;
+      try {
+        const { data: u } = await sb.from('users').select('name').eq('id', v.user_id).single();
+        v.user_name = u?.name || 'Unknown';
+      } catch(e) {
+        v.user_name = '—';
+        console.error('Failed to fetch user:', e);
+      }
       prependLiveVisit(v);
     }).subscribe();
 }
@@ -358,7 +365,6 @@ function downloadQrPdf() {
 /* ═══════════════════════════════════════════════
    5. PC MANAGEMENT
    ═══════════════════════════════════════════════ */
-let pcTimerInterval = null;
 
 async function loadPcs() {
   if (!currentClub) return;
@@ -403,7 +409,7 @@ function renderPcGrid(pcs) {
       const userName = p.status === 'busy' && p.users ? escHtml(p.users.name) : '';
       const sub = p.users?.subscriptions?.[0];
       const balanceHrs = sub ? (sub.hours_balance === -1 ? '∞' : sub.hours_balance + 'ч') : '';
-      return `<div class="pc-card pc-${p.status}" onclick="showEditPcModal('${p.id}')">
+      return `<div class="pc-card pc-${p.status}" onclick="showEditPcModal('${esc(p.id)}')">
         <div class="pc-number">${p.pc_number}</div>
         <div class="pc-label">${escHtml(p.label || '')}</div>
         <span class="pc-status-dot"></span>
@@ -478,8 +484,8 @@ function pcFormHtml(pc = null) {
     <div class="form-group"><label>${t('pcs_label_status')}</label><select id="pc-status">${statuses.map(s => `<option value="${s}" ${pc?.status === s ? 'selected' : ''}>${t('pcs_status_' + s)}</option>`).join('')}</select></div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal()">${t('btn_cancel')}</button>
-      <button class="btn-primary btn-inline" onclick="savePc('${pc?.id || ''}')">${t('btn_save')}</button>
-      ${pc ? `<button class="btn-delete" onclick="deletePc('${pc.id}')" style="margin-left:auto">${t('btn_delete')}</button>` : ''}
+      <button class="btn-primary btn-inline" onclick="savePc('${esc(pc?.id || '')}')">${t('btn_save')}</button>
+      ${pc ? `<button class="btn-delete" onclick="deletePc('${esc(pc.id)}')" style="margin-left:auto">${t('btn_delete')}</button>` : ''}
     </div>`;
 }
 
@@ -561,7 +567,7 @@ function renderSessionsTable(sessions) {
     const userName = s.users?.name || '—';
     const start = s.session_start ? formatTime(new Date(s.session_start)) : '—';
     const elapsedMin = s.session_start ? Math.floor((Date.now() - new Date(s.session_start).getTime()) / 60000) : 0;
-    const elapsedStr = elapsedMin < 60 ? `${elapsedMin} ${t('min_ago')}` : `${Math.floor(elapsedMin / 60)}${t('hr_ago').charAt(0)} ${elapsedMin % 60}${t('min_ago').charAt(0)}`;
+    const elapsedStr = elapsedMin < 60 ? `${elapsedMin} ${t('min_ago')}` : `${Math.floor(elapsedMin / 60)}ч ${elapsedMin % 60}м`;
     const sub = s.users?.subscriptions?.[0];
     const remaining = sub ? (sub.hours_balance === -1 ? t('sess_unlimited') : `${sub.hours_balance}ч`) : '—';
     return `<tr data-session-start="${s.session_start}">
@@ -570,7 +576,7 @@ function renderSessionsTable(sessions) {
       <td>${start}</td>
       <td class="sess-elapsed">${elapsedStr}</td>
       <td>${remaining}</td>
-      <td><button class="btn-small btn-reject" onclick="endSession('${s.id}')">${t('sess_end')}</button></td>
+      <td><button class="btn-small btn-reject" onclick="endSession('${esc(s.id)}')">${t('sess_end')}</button></td>
     </tr>`;
   }).join('');
 }
@@ -581,7 +587,7 @@ function updateSessionTimers() {
     if (!start) return;
     const elapsedMin = Math.floor((Date.now() - new Date(start).getTime()) / 60000);
     const cell = row.querySelector('.sess-elapsed');
-    if (cell) cell.textContent = elapsedMin < 60 ? `${elapsedMin} ${t('min_ago')}` : `${Math.floor(elapsedMin / 60)}${t('hr_ago').charAt(0)} ${elapsedMin % 60}${t('min_ago').charAt(0)}`;
+    if (cell) cell.textContent = elapsedMin < 60 ? `${elapsedMin} ${t('min_ago')}` : `${Math.floor(elapsedMin / 60)}ч ${elapsedMin % 60}м`;
   });
 }
 
@@ -624,13 +630,13 @@ function renderBookingsTable(bookings) {
     if (b.status === 'confirmed' && graceExpires && now > new Date(b.booking_time) && now < graceExpires) {
       const minsLeft = Math.ceil((graceExpires - now) / 60000);
       statusHtml = `<span class="badge badge-warning">⏳ ${minsLeft} мин</span>`;
-      actions = `<button class="btn-small btn-approve" onclick="activateBooking('${b.id}')">Пришёл</button><button class="btn-small btn-reject" onclick="cancelBookingAdmin('${b.id}')">Отмена</button>`;
+      actions = `<button class="btn-small btn-approve" onclick="activateBooking('${esc(b.id)}')">Пришёл</button><button class="btn-small btn-reject" onclick="cancelBookingAdmin('${esc(b.id)}')">Отмена</button>`;
     } else if (b.status === 'confirmed') {
       statusHtml = `<span class="badge badge-info">Подтверждён</span>`;
-      actions = `<button class="btn-small btn-approve" onclick="activateBooking('${b.id}')">Пришёл</button><button class="btn-small btn-reject" onclick="cancelBookingAdmin('${b.id}')">Отмена</button>`;
+      actions = `<button class="btn-small btn-approve" onclick="activateBooking('${esc(b.id)}')">Пришёл</button><button class="btn-small btn-reject" onclick="cancelBookingAdmin('${esc(b.id)}')">Отмена</button>`;
     } else if (b.status === 'active') {
       statusHtml = `<span class="badge badge-success">Активен</span>`;
-      actions = `<button class="btn-small btn-approve" onclick="completeBooking('${b.id}')">Завершить</button>`;
+      actions = `<button class="btn-small btn-approve" onclick="completeBooking('${esc(b.id)}')">Завершить</button>`;
     } else if (b.status === 'no_show') {
       statusHtml = `<span class="badge badge-danger">Неявка</span>`;
     } else if (b.status === 'completed') {
@@ -639,7 +645,7 @@ function renderBookingsTable(bookings) {
       statusHtml = `<span class="badge badge-muted">Отменён</span>`;
     } else if (b.status === 'pending') {
       statusHtml = `<span class="badge badge-warning">Ожидает</span>`;
-      actions = `<button class="btn-small btn-approve" onclick="confirmBooking('${b.id}')">Принять</button><button class="btn-small btn-reject" onclick="cancelBookingAdmin('${b.id}')">Отмена</button>`;
+      actions = `<button class="btn-small btn-approve" onclick="confirmBooking('${esc(b.id)}')">Принять</button><button class="btn-small btn-reject" onclick="cancelBookingAdmin('${esc(b.id)}')">Отмена</button>`;
     }
 
     return `<tr>
@@ -698,7 +704,7 @@ function renderStaffTable(staff) {
     <td>${escHtml(s.phone || '—')}</td>
     <td>${shiftMap[s.shift_pattern] || s.shift_pattern}</td>
     <td style="color:${s.is_active ? 'var(--success)' : 'var(--text-muted)'}">${s.is_active ? t('staff_active') : t('staff_inactive')}</td>
-    <td><button class="btn-edit" onclick="showEditStaffModal('${s.id}')">✏️</button> <button class="btn-small btn-secondary" onclick="toggleStaffActive('${s.id}', ${s.is_active})">${s.is_active ? '⏸' : '▶'}</button></td>
+    <td><button class="btn-edit" onclick="showEditStaffModal('${esc(s.id)}')">✏️</button> <button class="btn-small btn-secondary" onclick="toggleStaffActive('${esc(s.id)}', ${s.is_active})">${s.is_active ? '⏸' : '▶'}</button></td>
   </tr>`).join('');
 }
 
@@ -727,7 +733,7 @@ function staffFormHtml(s = null) {
     <div class="form-group"><label>${t('staff_label_shift')}</label><select id="staff-shift">${shifts.map(sh => `<option value="${sh}" ${s?.shift_pattern === sh ? 'selected' : ''}>${t('staff_shift_' + sh)}</option>`).join('')}</select></div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal()">${t('btn_cancel')}</button>
-      <button class="btn-primary btn-inline" onclick="saveStaff('${s?.id || ''}')">${t('btn_save')}</button>
+      <button class="btn-primary btn-inline" onclick="saveStaff('${esc(s?.id || '')}')">${t('btn_save')}</button>
     </div>`;
 }
 
@@ -816,7 +822,7 @@ async function exportPCsCSV() {
   if (!currentClub) return;
   const { data, error } = await sb.from('club_pcs').select('*').eq('club_id', currentClub.id).order('pc_number');
   if (error) { showToast(t('error_prefix') + ': ' + error.message, 'error'); return; }
-  if (!data?.length) { showToast(t('visits_empty'), 'error'); return; }
+  if (!data?.length) { showToast(t('no_data') || 'Нет данных для экспорта', 'error'); return; }
   const rows = [[t('pcs_label_number'), t('pcs_label_zone'), t('pcs_label_name'), t('pcs_label_status')]];
   data.forEach(pc => rows.push([pc.pc_number, pc.zone || 'main', pc.label || '', t('pcs_status_' + (pc.status || 'free'))]));
   _downloadCSV(`pcs_${currentClub.name}_${toDateInput(new Date())}.csv`, rows);

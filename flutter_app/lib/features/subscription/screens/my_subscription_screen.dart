@@ -29,6 +29,7 @@ class MySubscriptionScreen extends ConsumerWidget {
               bottom: false,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                // TODO: Localize — hardcoded Russian, needs ref.lang()
                 child: Text(
                   'Мой абонемент',
                   style: TextStyle(
@@ -57,6 +58,7 @@ class MySubscriptionScreen extends ConsumerWidget {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
+              // TODO: Localize — hardcoded Russian, needs ref.lang()
               child: Text(
                 'Купить абонемент и допуслуги',
                 style: TextStyle(
@@ -79,6 +81,7 @@ class MySubscriptionScreen extends ConsumerWidget {
                 ),
                 child: Column(
                   children: [
+                    // TODO: Localize all action tile titles below — hardcoded Russian, needs ref.lang()
                     _ActionTile(
                       icon: Icons.card_membership_rounded,
                       iconColor: AppTheme.primary,
@@ -135,6 +138,7 @@ class MySubscriptionScreen extends ConsumerWidget {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
+              // TODO: Localize — hardcoded Russian, needs ref.lang()
               child: Text(
                 'Сравнение тарифов',
                 style: TextStyle(
@@ -213,6 +217,7 @@ class MySubscriptionScreen extends ConsumerWidget {
                 ),
               ),
             ),
+            // TODO: Localize — all FAQ strings below are hardcoded Russian, needs ref.lang()
             Text('Вопросы и ответы',
                 style: TextStyle(
                     color: context.text1,
@@ -350,6 +355,7 @@ class _SubscriptionCard extends StatelessWidget {
                   children: [
                     Icon(Icons.ac_unit_rounded, color: Colors.white70, size: 14),
                     SizedBox(width: 4),
+                    // TODO: Localize — hardcoded Russian, needs ref.lang()
                     Text('Заморожена',
                         style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
                   ],
@@ -402,6 +408,7 @@ class _SubscriptionCard extends StatelessWidget {
             Icon(Icons.calendar_today_rounded,
                 color: Colors.white.withValues(alpha: 0.6), size: 16),
             const SizedBox(width: 6),
+            // TODO: Localize — hardcoded Russian, needs ref.lang()
             Text(
               '${sub.daysRemaining} дней осталось',
               style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 14),
@@ -451,6 +458,7 @@ class _SubscriptionCard extends StatelessWidget {
           children: [
             const Icon(Icons.info_outline_rounded, color: Colors.white54, size: 20),
             const SizedBox(width: 8),
+            // TODO: Localize — hardcoded Russian, needs ref.lang()
             const Text('Нет активного абонемента',
                 style: TextStyle(color: Colors.white70, fontSize: 15, fontWeight: FontWeight.w600)),
             const Spacer(),
@@ -459,6 +467,7 @@ class _SubscriptionCard extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
+        // TODO: Localize — hardcoded Russian, needs ref.lang()
         const Text('Абонемент закончился',
             style: TextStyle(color: Colors.white38, fontSize: 14)),
         const SizedBox(height: 16),
@@ -472,6 +481,7 @@ class _SubscriptionCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
+            // TODO: Localize — hardcoded Russian, needs ref.lang()
             child: const Text('Купить абонемент',
                 style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
           ),
@@ -587,6 +597,7 @@ class _PromoDialogState extends State<_PromoDialog> {
   Future<void> _apply() async {
     final code = widget.controller.text.trim();
     if (code.isEmpty) {
+      // TODO: Localize — hardcoded Russian, needs ref.lang()
       setState(() => _error = 'Введите промокод');
       return;
     }

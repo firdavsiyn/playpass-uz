@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../services/supabase_service.dart';
 
@@ -10,7 +11,9 @@ class FavoritesNotifier extends StateNotifier<Set<String>> {
     try {
       final ids = await SupabaseService().getFavoriteClubIds();
       state = ids.toSet();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('Favorites load error: $e');
+    }
   }
 
   bool isFavorite(String clubId) => state.contains(clubId);
