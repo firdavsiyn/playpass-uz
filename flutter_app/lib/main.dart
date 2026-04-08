@@ -98,12 +98,16 @@ class PlayPassApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
     final themeMode = ref.watch(themeModeProvider);
+    final effectiveTheme = themeMode == 'auto'
+        ? ((DateTime.now().hour >= 7 && DateTime.now().hour < 20) ? 'light' : 'dark')
+        : themeMode;
+    final isDark = effectiveTheme == 'dark';
 
     return MaterialApp.router(
       title: 'PlayPass',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: themeMode == 'dark' ? ThemeMode.dark : ThemeMode.light,
+      themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
       locale: const Locale('ru'),

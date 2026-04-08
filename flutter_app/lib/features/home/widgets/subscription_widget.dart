@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../models/subscription.dart';
@@ -20,7 +21,10 @@ class SubscriptionWidget extends StatelessWidget {
 
   Widget _buildNoSubscription(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.push('/plans'),
+      onTap: () {
+        HapticFeedback.lightImpact();
+        context.push('/plans');
+      },
       // Gradient border wrapper
       child: Container(
         decoration: BoxDecoration(

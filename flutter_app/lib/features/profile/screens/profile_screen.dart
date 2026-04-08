@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -11,6 +12,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/widgets/app_avatar.dart';
+import '../../../core/widgets/neon_shimmer.dart';
 import '../../../models/subscription.dart';
 
 final profileProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
@@ -36,9 +38,26 @@ class ProfileScreen extends ConsumerWidget {
     // During refresh after name/avatar change, keep showing old profile
     final Widget body;
     if (profileAsync.isLoading && !profileAsync.hasValue) {
-      body = const Center(child: CircularProgressIndicator());
+      body = SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(16),
+        child: Column(children: [
+          const NeonSkeletonCard(height: 200, borderRadius: 20),
+          const SizedBox(height: 16),
+          ...List.generate(6, (_) => const Padding(
+            padding: EdgeInsets.only(bottom: 8),
+            child: NeonSkeletonCard(height: 56, borderRadius: 14),
+          )),
+        ]),
+      );
     } else if (profileAsync.hasError && !profileAsync.hasValue) {
-      body = Center(child: Text('${ref.lang('common.error')}: ${profileAsync.error}'));
+      body = SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height - 100,
+          child: Center(child: Text('${ref.lang('common.error')}: ${profileAsync.error}')),
+        ),
+      );
     } else {
       body = _ProfileContent(
         profile: profileAsync.valueOrNull,
@@ -48,7 +67,18 @@ class ProfileScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(ref.lang('profile.title'))),
-      body: body,
+      body: RefreshIndicator(
+        color: AppTheme.primary,
+        onRefresh: () async {
+          ref.invalidate(profileProvider);
+          ref.invalidate(subscriptionProvider);
+          await Future.wait([
+            ref.read(profileProvider.future),
+            ref.read(subscriptionProvider.future),
+          ]).catchError((_) {});
+        },
+        child: body,
+      ),
     );
   }
 }
@@ -767,33 +797,81 @@ class _LanguageToggle extends ConsumerWidget {
 class _ThemeToggle extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isDark = ref.watch(themeModeProvider) == 'dark';
+    final themeMode = ref.watch(themeModeProvider);
 
+    final IconData icon;
+    final String label;
+    if (themeMode == 'dark') {
+      icon = Icons.dark_mode_rounded;
+      label = ref.lang('profile.dark_theme');
+    } else if (themeMode == 'light') {
+      icon = Icons.light_mode_rounded;
+      label = ref.lang('profile.light_theme');
+    } else {
+      icon = Icons.auto_awesome_rounded;
+      label = 'Auto';
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardTheme.color,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppTheme.primary.withValues(alpha: 0.05)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon,
+              color: Theme.of(context).textTheme.bodyLarge?.color, size: 22),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Text(label,
+                style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color, fontSize: 15)),
+          ),
+          Container(
+            padding: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              color: context.surface,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _ThemeChip(label: '\u2600\uFE0F', value: 'light', current: themeMode),
+                _ThemeChip(label: '\uD83C\uDF19', value: 'dark', current: themeMode),
+                _ThemeChip(label: '\u23F0', value: 'auto', current: themeMode),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ThemeChip extends ConsumerWidget {
+  final String label;
+  final String value;
+  final String current;
+  const _ThemeChip({required this.label, required this.value, required this.current});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selected = current == value;
     return GestureDetector(
-      onTap: () => ref.read(themeModeProvider.notifier).toggle(),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      onTap: () => ref.read(themeModeProvider.notifier).setMode(value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: Theme.of(context).cardTheme.color,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppTheme.primary.withValues(alpha: 0.05)),
+          gradient: selected ? const LinearGradient(colors: [AppTheme.primary, Color(0xFF6366F1)]) : null,
+          color: selected ? null : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
         ),
-        child: Row(
-          children: [
-            Icon(isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
-                color: Theme.of(context).textTheme.bodyLarge?.color, size: 22),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Text(isDark ? ref.lang('profile.dark_theme') : ref.lang('profile.light_theme'),
-                  style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color, fontSize: 15)),
-            ),
-            Switch(
-              value: isDark,
-              activeColor: AppTheme.primary,
-              onChanged: (_) => ref.read(themeModeProvider.notifier).toggle(),
-            ),
-          ],
+        child: Text(
+          label,
+          style: TextStyle(fontSize: 14),
         ),
       ),
     );
@@ -884,7 +962,10 @@ class _MenuItem extends StatelessWidget {
     final c = color ?? context.text1;
     final iconColor = color ?? AppTheme.primaryLight;
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onTap();
+      },
       child: Container(
         margin: const EdgeInsets.only(bottom: 6),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),

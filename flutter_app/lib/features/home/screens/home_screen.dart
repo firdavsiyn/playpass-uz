@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -197,7 +198,24 @@ class HomeScreen extends ConsumerWidget {
                         error: (_, __) => const _SubscriptionError(),
                       ),
 
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 12),
+
+                      // ── Savings indicator ──────────────────────
+                      subscriptionAsync.when(
+                        data: (sub) {
+                          if (sub == null || !sub.isActive) return const SizedBox.shrink();
+                          final hoursUsed = (sub.hoursTotal ?? 0) - (sub.hoursBalance ?? 0);
+                          // Average hourly rate at clubs is ~25,000 UZS
+                          final regularCost = hoursUsed * 25000;
+                          final subCost = sub.priceUzs;
+                          final saved = regularCost - subCost;
+                          if (saved <= 0) return const SizedBox.shrink();
+                          return _SavingsWidget(saved: saved);
+                        },
+                        loading: () => const SizedBox.shrink(),
+                        error: (_, __) => const SizedBox.shrink(),
+                      ),
+                      const SizedBox(height: 12),
 
                       // ── Scan Button ────────────────────────────
                       subscriptionAsync.when(
@@ -344,6 +362,7 @@ class _ScanButtonState extends ConsumerState<_ScanButton>
 
     return GestureDetector(
       onTap: () {
+        HapticFeedback.mediumImpact();
         if (widget.isFrozen) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(ref.lang('home.frozen'))),
@@ -518,7 +537,10 @@ class _QuickAction extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: GestureDetector(
-        onTap: onTap,
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onTap();
+        },
         child: Container(
           decoration: BoxDecoration(
             color: context.glass,
@@ -548,6 +570,54 @@ class _QuickAction extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ── Savings Widget ─────────────────────────────────────────
+
+class _SavingsWidget extends StatelessWidget {
+  final int saved;
+  const _SavingsWidget({required this.saved});
+
+  @override
+  Widget build(BuildContext context) {
+    final formattedSaved = '${(saved ~/ 1000)} 000';
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppTheme.success.withValues(alpha: 0.08),
+            AppTheme.neonCyan.withValues(alpha: 0.04),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppTheme.success.withValues(alpha: 0.15)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppTheme.success.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.savings_rounded, color: AppTheme.success, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Вы сэкономили', style: TextStyle(color: context.text2, fontSize: 12)),
+                Text('$formattedSaved сум', style: const TextStyle(color: AppTheme.success, fontSize: 16, fontWeight: FontWeight.w700)),
+              ],
+            ),
+          ),
+          Icon(Icons.trending_up_rounded, color: AppTheme.success.withValues(alpha: 0.6), size: 24),
+        ],
       ),
     );
   }

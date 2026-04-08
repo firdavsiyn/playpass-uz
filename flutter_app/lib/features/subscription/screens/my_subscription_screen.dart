@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/neon_shimmer.dart';
 import '../../../models/subscription.dart';
 import '../../../services/supabase_service.dart';
 
@@ -21,7 +22,13 @@ class MySubscriptionScreen extends ConsumerWidget {
     final subAsync = ref.watch(_mySubProvider);
 
     return Scaffold(
-      body: CustomScrollView(
+      body: RefreshIndicator(
+        color: AppTheme.primary,
+        onRefresh: () async {
+          ref.invalidate(_mySubProvider);
+          await ref.read(_mySubProvider.future).catchError((_) {});
+        },
+        child: CustomScrollView(
         slivers: [
           // ── Header ──────────────────────────────────
           SliverToBoxAdapter(
@@ -171,6 +178,7 @@ class MySubscriptionScreen extends ConsumerWidget {
           // Bottom spacing
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
+      ),
       ),
     );
   }
@@ -494,17 +502,13 @@ class _SubscriptionCard extends StatelessWidget {
 class _SubscriptionCardSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: 180,
-      decoration: BoxDecoration(
-        color: context.card,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: const Center(
-        child: CircularProgressIndicator(color: AppTheme.primary),
-      ),
-    );
+    return Column(children: [
+      const NeonSkeletonCard(height: 180, borderRadius: 20),
+      const SizedBox(height: 16),
+      const NeonSkeletonCard(height: 80, borderRadius: 16),
+      const SizedBox(height: 8),
+      const NeonSkeletonCard(height: 80, borderRadius: 16),
+    ]);
   }
 }
 

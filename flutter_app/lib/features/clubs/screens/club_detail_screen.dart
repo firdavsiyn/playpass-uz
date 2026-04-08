@@ -11,6 +11,7 @@ import '../../../models/club_zone.dart';
 import '../../../models/review.dart';
 import '../../../services/supabase_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/neon_shimmer.dart';
 import '../../../core/constants/app_constants.dart';
 import '../providers/favorites_provider.dart';
 import '../widgets/add_review_dialog.dart';
@@ -49,7 +50,31 @@ class ClubDetailScreen extends ConsumerWidget {
         data: (club) => club == null
             ? const Center(child: Text('Клуб не найден'))
             : _ClubDetail(club: club),
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              expandedHeight: 250,
+              flexibleSpace: FlexibleSpaceBar(
+                background: NeonShimmer(
+                  borderRadius: 0,
+                  child: Container(height: 250, color: AppTheme.bgCard),
+                ),
+              ),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.all(16),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  const NeonSkeletonCard(height: 24, borderRadius: 8),
+                  const SizedBox(height: 12),
+                  const NeonSkeletonCard(height: 100, borderRadius: 16),
+                  const SizedBox(height: 12),
+                  const NeonSkeletonCard(height: 60, borderRadius: 16),
+                ]),
+              ),
+            ),
+          ],
+        ),
         error: (e, _) => Center(child: Text('Ошибка: $e')),
       ),
     );
@@ -102,7 +127,16 @@ class _ClubDetail extends ConsumerWidget {
     final reviewsAsync = ref.watch(clubReviewsProvider(club.id));
     final currentSlot = AppConstants.getCurrentTimeSlot();
 
-    return CustomScrollView(
+    return RefreshIndicator(
+      color: AppTheme.primary,
+      onRefresh: () async {
+        ref.invalidate(clubDetailProvider(club.id));
+        ref.invalidate(clubZonesProvider(club.id));
+        ref.invalidate(clubReviewsProvider(club.id));
+        ref.invalidate(clubOccupancyProvider(club.id));
+        await ref.read(clubDetailProvider(club.id).future);
+      },
+      child: CustomScrollView(
       slivers: [
         // ── Photo gallery ──────────────────────────────
         SliverAppBar(
@@ -110,33 +144,36 @@ class _ClubDetail extends ConsumerWidget {
           pinned: true,
           backgroundColor: context.bg,
           flexibleSpace: FlexibleSpaceBar(
-            background: club.photos.isNotEmpty
-                ? _PhotoGallery(photos: club.photos)
-                : Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          AppTheme.primary.withValues(alpha: 0.3),
-                          context.bg,
-                        ],
+            background: Hero(
+              tag: 'club_image_${club.id}',
+              child: club.photos.isNotEmpty
+                  ? _PhotoGallery(photos: club.photos)
+                  : Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            AppTheme.primary.withValues(alpha: 0.3),
+                            context.bg,
+                          ],
+                        ),
+                      ),
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.sports_esports,
+                                size: 64, color: context.text3.withValues(alpha: 0.5)),
+                            const SizedBox(height: 8),
+                            Text(club.name,
+                                style: TextStyle(
+                                    color: context.text3, fontSize: 16)),
+                          ],
+                        ),
                       ),
                     ),
-                    child: Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.sports_esports,
-                              size: 64, color: context.text3.withValues(alpha: 0.5)),
-                          const SizedBox(height: 8),
-                          Text(club.name,
-                              style: TextStyle(
-                                  color: context.text3, fontSize: 16)),
-                        ],
-                      ),
-                    ),
-                  ),
+            ),
           ),
           leading: _AppBarButton(
             icon: Icons.arrow_back_ios_new_rounded,
@@ -493,6 +530,7 @@ class _ClubDetail extends ConsumerWidget {
           ),
         ),
       ],
+    ),
     );
   }
 

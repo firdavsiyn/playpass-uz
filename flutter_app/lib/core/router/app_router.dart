@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -185,6 +186,7 @@ class MainShell extends ConsumerWidget {
     final s = tr(t);
 
     void onTap(int index) {
+      HapticFeedback.lightImpact();
       ref.read(activeTabIndexProvider.notifier).state = index;
       shell.goBranch(
         index,
@@ -319,7 +321,10 @@ class _ScannerButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        HapticFeedback.mediumImpact();
+        onTap();
+      },
       child: Container(
         width: 56,
         height: 56,

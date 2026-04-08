@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -48,7 +49,10 @@ class _ClubCard extends StatelessWidget {
     final statusColor = club.isOpen ? AppTheme.success : AppTheme.error;
 
     return GestureDetector(
-      onTap: () => context.push('/clubs/${club.id}'),
+      onTap: () {
+        HapticFeedback.lightImpact();
+        context.push('/clubs/${club.id}');
+      },
       child: Container(
         width: 150,
         decoration: BoxDecoration(
@@ -69,22 +73,41 @@ class _ClubCard extends StatelessWidget {
             // Photo with overlay badges
             Stack(
               children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                  child: club.thumbnail != null
-                      ? CachedNetworkImage(
-                          imageUrl: club.thumbnail!,
-                          height: 100,
-                          width: 150,
-                          fit: BoxFit.cover,
-                          placeholder: (_, __) => Container(
+                Hero(
+                  tag: 'club_image_${club.id}',
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                    child: club.thumbnail != null
+                        ? CachedNetworkImage(
+                            imageUrl: club.thumbnail!,
                             height: 100,
-                            color: context.surface,
-                            child: const Center(
-                              child: Icon(Icons.image_outlined, color: AppTheme.textMuted, size: 24),
+                            width: 150,
+                            fit: BoxFit.cover,
+                            placeholder: (_, __) => Container(
+                              height: 100,
+                              color: context.surface,
+                              child: const Center(
+                                child: Icon(Icons.image_outlined, color: AppTheme.textMuted, size: 24),
+                              ),
                             ),
-                          ),
-                          errorWidget: (_, __, ___) => Container(
+                            errorWidget: (_, __, ___) => Container(
+                              height: 100,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    AppTheme.primary.withValues(alpha: 0.15),
+                                    AppTheme.neonCyan.withValues(alpha: 0.08),
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                              ),
+                              child: const Center(
+                                child: Icon(Icons.sports_esports_rounded, color: AppTheme.textMuted, size: 28),
+                              ),
+                            ),
+                          )
+                        : Container(
                             height: 100,
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
@@ -97,26 +120,10 @@ class _ClubCard extends StatelessWidget {
                               ),
                             ),
                             child: const Center(
-                              child: Icon(Icons.sports_esports_rounded, color: AppTheme.textMuted, size: 28),
+                              child: Icon(Icons.sports_esports_rounded, color: AppTheme.textMuted, size: 32),
                             ),
                           ),
-                        )
-                      : Container(
-                          height: 100,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                AppTheme.primary.withValues(alpha: 0.15),
-                                AppTheme.neonCyan.withValues(alpha: 0.08),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                          ),
-                          child: const Center(
-                            child: Icon(Icons.sports_esports_rounded, color: AppTheme.textMuted, size: 32),
-                          ),
-                        ),
+                  ),
                 ),
 
                 // Gradient overlay at bottom of image

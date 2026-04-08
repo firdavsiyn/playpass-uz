@@ -7,6 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import '../../../models/club.dart';
 import '../../../services/supabase_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/neon_shimmer.dart';
 import '../../../core/l10n/app_locale.dart';
 import '../providers/favorites_provider.dart';
 import '../widgets/yandex_map_widget.dart';
@@ -315,44 +316,62 @@ class ClubsListScreen extends ConsumerWidget {
 
             // ── Content ───────────────────────────────────
             Expanded(
-              child: clubsAsync.when(
-                data: (clubs) {
-                  var filtered = query.isEmpty
-                      ? clubs
-                      : clubs
-                          .where((c) =>
-                              c.name.toLowerCase().contains(query.toLowerCase()))
-                          .toList();
-
-                  // Apply "Свободные" filter — hide clubs with >80% occupancy
-                  if (ref.watch(filterFreeProvider)) {
-                    final occ = ref.watch(clubsOccupancyProvider).valueOrNull ?? {};
-                    filtered = filtered.where((c) {
-                      final count = occ[c.id] ?? 0;
-                      if (c.pcCount == 0) return true;
-                      return (count / c.pcCount * 100) < 80;
-                    }).toList();
-                  }
-
-                  if (viewMode == 'map') {
-                    return _MapView(clubs: filtered, allClubs: clubs);
-                  }
-                  if (viewMode == 'favorites') {
-                    return _FavoritesView(allClubs: clubs);
-                  }
-                  if (viewMode == 'zones') {
-                    return _ZonesView(clubs: filtered);
-                  }
-                  if (viewMode == 'nearby') {
-                    return _NearbyView();
-                  }
-                  return _ListView(clubs: filtered);
+              child: RefreshIndicator(
+                color: AppTheme.primary,
+                onRefresh: () async {
+                  ref.invalidate(_allClubsProvider);
+                  ref.invalidate(nearbyClubsListProvider);
+                  ref.invalidate(clubsOccupancyProvider);
+                  await ref.read(_allClubsProvider.future);
                 },
-                loading: () =>
-                    const Center(child: CircularProgressIndicator(color: AppTheme.primary)),
-                error: (e, _) => Center(
-                  child: Text('Ошибка: $e',
-                      style: const TextStyle(color: AppTheme.error)),
+                child: clubsAsync.when(
+                  data: (clubs) {
+                    var filtered = query.isEmpty
+                        ? clubs
+                        : clubs
+                            .where((c) =>
+                                c.name.toLowerCase().contains(query.toLowerCase()))
+                            .toList();
+
+                    // Apply "Свободные" filter — hide clubs with >80% occupancy
+                    if (ref.watch(filterFreeProvider)) {
+                      final occ = ref.watch(clubsOccupancyProvider).valueOrNull ?? {};
+                      filtered = filtered.where((c) {
+                        final count = occ[c.id] ?? 0;
+                        if (c.pcCount == 0) return true;
+                        return (count / c.pcCount * 100) < 80;
+                      }).toList();
+                    }
+
+                    if (viewMode == 'map') {
+                      return _MapView(clubs: filtered, allClubs: clubs);
+                    }
+                    if (viewMode == 'favorites') {
+                      return _FavoritesView(allClubs: clubs);
+                    }
+                    if (viewMode == 'zones') {
+                      return _ZonesView(clubs: filtered);
+                    }
+                    if (viewMode == 'nearby') {
+                      return _NearbyView();
+                    }
+                    return _ListView(clubs: filtered);
+                  },
+                  loading: () => GridView.builder(
+                      padding: const EdgeInsets.all(16),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 0.75,
+                        mainAxisSpacing: 12,
+                        crossAxisSpacing: 12,
+                      ),
+                      itemCount: 6,
+                      itemBuilder: (_, __) => const NeonSkeletonCard(height: 200, borderRadius: 16),
+                    ),
+                  error: (e, _) => Center(
+                    child: Text('Ошибка: $e',
+                        style: const TextStyle(color: AppTheme.error)),
+                  ),
                 ),
               ),
             ),
@@ -1009,23 +1028,26 @@ class _ClubListCard extends ConsumerWidget {
         ),
         child: Row(
           children: [
-            ClipRRect(
-              borderRadius:
-                  const BorderRadius.horizontal(left: Radius.circular(16)),
-              child: club.thumbnail != null
-                  ? CachedNetworkImage(
-                      imageUrl: club.thumbnail!,
-                      width: 100,
-                      height: 110,
-                      fit: BoxFit.cover,
-                    )
-                  : Container(
-                      width: 100,
-                      height: 110,
-                      color: context.surface,
-                      child: Icon(Icons.sports_esports,
-                          color: context.text3, size: 36),
-                    ),
+            Hero(
+              tag: 'club_image_${club.id}',
+              child: ClipRRect(
+                borderRadius:
+                    const BorderRadius.horizontal(left: Radius.circular(16)),
+                child: club.thumbnail != null
+                    ? CachedNetworkImage(
+                        imageUrl: club.thumbnail!,
+                        width: 100,
+                        height: 110,
+                        fit: BoxFit.cover,
+                      )
+                    : Container(
+                        width: 100,
+                        height: 110,
+                        color: context.surface,
+                        child: Icon(Icons.sports_esports,
+                            color: context.text3, size: 36),
+                      ),
+              ),
             ),
             Expanded(
               child: Padding(
