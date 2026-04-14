@@ -436,11 +436,29 @@ const Map<String, String> stringsUz = {
   'gift.create_price': 'Sovg\'a rasmiylashtirish · {price} UZS',
 
   // ── Common extras ────────────────────────
-  'common.error_prefix': 'Xatolik: ',
+  'common.error_prefix': 'Xato',
   'common.club_default': 'Klub',
   'common.time_h': 'soat',
   'common.time_m': 'daq',
   'common.time_s': 's',
+
+  // ── Notifications screen ─────────────────
+  'notif.title': 'Bildirishnomalar',
+  'notif.mark_all_read': 'Hammasini o\'qilgan',
+  'notif.empty': 'Bildirishnomalar yo\'q',
+
+  // ── Visit history screen ─────────────────
+  'visits.title': 'Tashriflar tarixi',
+  'visits.empty_month': 'Bu oyda tashriflar yo\'q',
+  'visits.all_loaded': 'Barcha tashriflar yuklandi',
+  'visits.total_visits': 'Jami tashriflar',
+  'visits.total_hours': 'Jami soat',
+  'visits.fav_club': 'Sevimli klub',
+  'visits.visits_word': 'ta tashrif',
+
+  // ── Favorites screen extras ──────────────
+  'fav.empty_title': 'Sevimli klublar yo\'q',
+  'fav.empty_sub': 'Klub kartochkasidagi yurakni bosing',
 
   // ── Subscription widget (home) ─────────────────
   'sub_widget.no_active': 'Faol obuna yo\'q',

@@ -436,11 +436,29 @@ const Map<String, String> stringsRu = {
   'gift.create_price': 'Оформить подарок · {price} UZS',
 
   // ── Common extras ────────────────────────
-  'common.error_prefix': 'Ошибка: ',
+  'common.error_prefix': 'Ошибка',
   'common.club_default': 'Клуб',
   'common.time_h': 'ч',
   'common.time_m': 'м',
   'common.time_s': 'с',
+
+  // ── Notifications screen ─────────────────
+  'notif.title': 'Уведомления',
+  'notif.mark_all_read': 'Прочитать все',
+  'notif.empty': 'Нет уведомлений',
+
+  // ── Visit history screen ─────────────────
+  'visits.title': 'История визитов',
+  'visits.empty_month': 'В этом месяце визитов нет',
+  'visits.all_loaded': 'Все визиты загружены',
+  'visits.total_visits': 'Всего визитов',
+  'visits.total_hours': 'Всего часов',
+  'visits.fav_club': 'Любимый клуб',
+  'visits.visits_word': 'визитов',
+
+  // ── Favorites screen extras ──────────────
+  'fav.empty_title': 'Нет избранных клубов',
+  'fav.empty_sub': 'Нажмите на сердечко в карточке клуба',
 
   // ── Subscription widget (home) ─────────────────
   'sub_widget.no_active': 'Нет активной подписки',

@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../models/visit.dart';
 import '../../../services/supabase_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_locale.dart';
 
 final selectedMonthProvider = StateProvider<DateTime>((ref) {
   final now = DateTime.now();
@@ -141,7 +142,7 @@ class _VisitHistoryScreenState extends ConsumerState<VisitHistoryScreen> {
       backgroundColor: context.bg,
       appBar: AppBar(
         backgroundColor: context.bg,
-        title: const Text('История визитов'),
+        title: Text(ref.lang('visits.title')),
       ),
       body: RefreshIndicator(
         onRefresh: () async {
@@ -214,7 +215,7 @@ class _VisitHistoryScreenState extends ConsumerState<VisitHistoryScreen> {
             else if (historyState.error != null &&
                 historyState.visits.isEmpty)
               Center(
-                child: Text('Ошибка: ${historyState.error}',
+                child: Text('${ref.lang('common.error_prefix')}: ${historyState.error}',
                     style: const TextStyle(color: AppTheme.error)),
               )
             else ...[
@@ -225,7 +226,7 @@ class _VisitHistoryScreenState extends ConsumerState<VisitHistoryScreen> {
                   padding: const EdgeInsets.all(32),
                   child: Center(
                     child: Text(
-                      'В этом месяце визитов нет',
+                      ref.lang('visits.empty_month'),
                       style: TextStyle(color: context.text3),
                     ),
                   ),
@@ -249,7 +250,7 @@ class _VisitHistoryScreenState extends ConsumerState<VisitHistoryScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   child: Center(
                     child: Text(
-                      'Все визиты загружены',
+                      ref.lang('visits.all_loaded'),
                       style: TextStyle(color: context.text3, fontSize: 13),
                     ),
                   ),
@@ -264,12 +265,12 @@ class _VisitHistoryScreenState extends ConsumerState<VisitHistoryScreen> {
 
 // ── All-time stats ─────────────────────────────────────────
 
-class _AllTimeStats extends StatelessWidget {
+class _AllTimeStats extends ConsumerWidget {
   final Map<String, dynamic> stats;
   const _AllTimeStats({required this.stats});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final totalVisits = stats['total_visits'] as int? ?? 0;
     final totalHours = stats['total_hours'] as int? ?? 0;
     final favoriteClub = stats['favorite_club'] as Map<String, dynamic>?;
@@ -283,7 +284,7 @@ class _AllTimeStats extends StatelessWidget {
               child: _StatCard(
                 icon: Icons.calendar_today_rounded,
                 value: '$totalVisits',
-                label: 'Всего визитов',
+                label: ref.lang('visits.total_visits'),
                 color: AppTheme.primary,
               ),
             ),
@@ -292,7 +293,7 @@ class _AllTimeStats extends StatelessWidget {
               child: _StatCard(
                 icon: Icons.timer_rounded,
                 value: '$totalHours ч',
-                label: 'Всего часов',
+                label: ref.lang('visits.total_hours'),
                 color: const Color(0xFF8B5CF6),
               ),
             ),
@@ -333,9 +334,9 @@ class _AllTimeStats extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Любимый клуб',
-                        style: TextStyle(
+                      Text(
+                        ref.lang('visits.fav_club'),
+                        style: const TextStyle(
                             color: Color(0xFFF59E0B),
                             fontSize: 11,
                             fontWeight: FontWeight.w600),
@@ -370,7 +371,7 @@ class _AllTimeStats extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'визитов',
+                      ref.lang('visits.visits_word'),
                       style: TextStyle(
                           color: context.text3, fontSize: 11),
                     ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../models/club.dart';
 import '../../../services/supabase_service.dart';
 import '../../clubs/providers/favorites_provider.dart';
@@ -20,7 +21,7 @@ class FavoritesScreen extends ConsumerWidget {
     final clubsAsync = ref.watch(_favoriteClubsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Избранные клубы')),
+      appBar: AppBar(title: Text(ref.lang('fav.title'))),
       body: clubsAsync.when(
         data: (clubs) {
           if (clubs.isEmpty) {
@@ -33,10 +34,10 @@ class FavoritesScreen extends ConsumerWidget {
                     Icon(Icons.favorite_border_rounded,
                         size: 64, color: context.text3.withValues(alpha: 0.3)),
                     const SizedBox(height: 16),
-                    Text('Нет избранных клубов',
+                    Text(ref.lang('fav.empty_title'),
                         style: TextStyle(color: context.text3, fontSize: 16)),
                     const SizedBox(height: 8),
-                    Text('Нажмите на сердечко на карточке клуба',
+                    Text(ref.lang('fav.empty_sub'),
                         style: TextStyle(color: context.text3, fontSize: 13)),
                   ],
                 ),
@@ -50,7 +51,7 @@ class FavoritesScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Ошибка: $e')),
+        error: (e, _) => Center(child: Text('${ref.lang('common.error_prefix')}: $e')),
       ),
     );
   }

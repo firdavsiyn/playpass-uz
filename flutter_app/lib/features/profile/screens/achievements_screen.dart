@@ -78,7 +78,7 @@ class AchievementsScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('${ref.lang('common.error_prefix')}$e')),
+        error: (e, _) => Center(child: Text('${ref.lang('common.error_prefix')}: $e')),
       ),
     );
   }

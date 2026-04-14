@@ -111,7 +111,7 @@ class ReferralScreen extends ConsumerWidget {
               ),
             ),
             error: (e, _) => Center(
-              child: Text('${ref.lang('common.error_prefix')}$e',
+              child: Text('${ref.lang('common.error_prefix')}: $e',
                   style: const TextStyle(color: AppTheme.error)),
             ),
           ),
@@ -240,7 +240,7 @@ class ReferralScreen extends ConsumerWidget {
               ),
             ),
             error: (e, _) => Center(
-              child: Text('${ref.lang('common.error_prefix')}$e',
+              child: Text('${ref.lang('common.error_prefix')}: $e',
                   style: const TextStyle(color: AppTheme.error)),
             ),
           ),

@@ -212,6 +212,10 @@ const LANG = {
     no_export_data: 'Нет данных для экспорта',
     min_ago: 'мин назад',
     hr_ago: 'ч назад',
+    client_arrived: 'Клиент пришёл — сессия активна',
+    booking_completed: 'Бронь завершена',
+    qr_error: 'Ошибка генерации QR',
+    load_error: 'Ошибка загрузки',
   },
 
   uz: {
@@ -424,5 +428,9 @@ const LANG = {
     no_export_data: 'Eksport uchun ma\'lumot yo\'q',
     min_ago: 'daq oldin',
     hr_ago: 'soat oldin',
+    client_arrived: 'Mijoz keldi — sessiya faol',
+    booking_completed: 'Band qilish tugadi',
+    qr_error: 'QR yaratishda xato',
+    load_error: 'Yuklashda xato',
   },
 };

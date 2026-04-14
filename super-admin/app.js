@@ -559,7 +559,7 @@ async function uploadClubPhotos(clubId) {
     const { error } = await sb.storage.from('club-photos').upload(path, file, {
       cacheControl: '3600', upsert: false,
     });
-    if (error) { console.error('Upload error:', error); showToast(`Ошибка загрузки: ${file.name}`, 'error'); continue; }
+    if (error) { console.error('Upload error:', error); showToast(`${t('load_error')}: ${file.name}`, 'error'); continue; }
     const { data: urlData } = sb.storage.from('club-photos').getPublicUrl(path);
     uploaded.push(urlData.publicUrl);
   }
@@ -1611,7 +1611,7 @@ function renderBanners(banners) {
         <div class="banner-card-title">${esc(b.title)}</div>
         <div class="banner-card-desc">${esc(b.description || '')}</div>
         <div class="banner-card-footer">
-          <span class="banner-card-date">${fmtDate(b.created_at)}${b.ends_at ? ' — до ' + fmtDate(b.ends_at) : ''}</span>
+          <span class="banner-card-date">${fmtDate(b.created_at)}${b.expires_at ? ' — до ' + fmtDate(b.expires_at) : ''}</span>
           <div class="banner-card-actions">
             <button class="btn-small btn-edit" onclick="editBannerModal('${escAttr(b.id)}')">✏️</button>
             <button class="btn-small btn-delete" onclick="toggleBanner('${escAttr(b.id)}', ${b.is_active})">${b.is_active ? 'Скрыть' : 'Показать'}</button>
@@ -1624,7 +1624,7 @@ function renderBanners(banners) {
 }
 
 function showAddBannerModal() {
-  $('modal-title').textContent = 'Новый баннер';
+  $('modal-title').textContent = t('modal_new_banner');
   $('modal-body').innerHTML = bannerFormHtml();
   openModal();
 }
@@ -1632,7 +1632,7 @@ function showAddBannerModal() {
 function editBannerModal(id) {
   const b = bannersCache.find(x => x.id === id);
   if (!b) return;
-  $('modal-title').textContent = 'Редактировать';
+  $('modal-title').textContent = t('modal_edit_banner');
   $('modal-body').innerHTML = bannerFormHtml(b);
   openModal();
 }
@@ -1662,17 +1662,17 @@ async function saveBanner(id) {
     expires_at: $('banner-end').value ? new Date($('banner-end').value).toISOString() : null,
     sort_order: parseInt($('banner-sort').value) || 0,
   };
-  if (!payload.title) { showToast('Введите заголовок', 'error'); return; }
+  if (!payload.title) { showToast(t('banner_title_required'), 'error'); return; }
   try {
     if (id) {
       const { error } = await sb.from('banners').update(payload).eq('id', id);
       if (error) throw error;
-      showToast('Баннер обновлён'); logAction(t('log_banner_updated'), 'banner', id, payload.title);
+      showToast(t('banner_updated')); logAction(t('log_banner_updated'), 'banner', id, payload.title);
     } else {
       payload.is_active = true;
       const { error } = await sb.from('banners').insert(payload);
       if (error) throw error;
-      showToast('Баннер создан'); logAction(t('log_banner_created'), 'banner', null, payload.title);
+      showToast(t('banner_created')); logAction(t('log_banner_created'), 'banner', null, payload.title);
     }
     closeModal(); loadBanners();
   } catch (e) { showToast(e.message, 'error'); }
@@ -1682,7 +1682,7 @@ async function toggleBanner(id, isActive) {
   try {
     const { error } = await sb.from('banners').update({ is_active: !isActive }).eq('id', id);
     if (error) throw error;
-    showToast(isActive ? 'Баннер скрыт' : 'Баннер показан');
+    showToast(isActive ? t('banner_hidden') : t('banner_shown'));
     loadBanners();
   } catch (e) { showToast(e.message, 'error'); }
 }
@@ -1692,7 +1692,7 @@ async function deleteBanner(id) {
   try {
     const { error } = await sb.from('banners').delete().eq('id', id);
     if (error) throw error;
-    showToast('Баннер удалён'); logAction(t('log_banner_deleted'), 'banner', id);
+    showToast(t('banner_deleted')); logAction(t('log_banner_deleted'), 'banner', id);
     loadBanners();
   } catch (e) { showToast(e.message, 'error'); }
 }

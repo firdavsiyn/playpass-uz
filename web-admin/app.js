@@ -349,7 +349,7 @@ async function loadQr() {
 
 async function regenerateQr() {
   if (!confirm(t('qr_regen_confirm'))) return;
-  try { await sb.functions.invoke('qr-validate', { body: { club_id: currentClub.id, regenerate: true } }); } catch (e) { console.error('QR regeneration failed:', e); showToast('Ошибка генерации QR', 'error'); }
+  try { await sb.functions.invoke('qr-validate', { body: { club_id: currentClub.id, regenerate: true } }); } catch (e) { console.error('QR regeneration failed:', e); showToast(t('qr_error'), 'error'); }
   await loadQr();
 }
 
@@ -472,7 +472,7 @@ function showEditPcModal(id) {
     $('modal-title').textContent = t('pcs_modal_edit');
     $('modal-body').innerHTML = pcFormHtml(pc);
     openModal();
-  }).catch(e => { console.error(e); showToast('Ошибка загрузки', 'error'); });
+  }).catch(e => { console.error(e); showToast(t('load_error'), 'error'); });
 }
 
 function pcFormHtml(pc = null) {
@@ -555,7 +555,8 @@ async function deletePc(id) {
 async function loadSessions() {
   if (!currentClub) return;
   if (sessionTimer) clearInterval(sessionTimer);
-  const { data } = await sb.from('club_pcs').select('*, users:current_user_id(name, subscriptions(hours_balance))').eq('club_id', currentClub.id).eq('status', 'busy').order('session_start');
+  const { data, error } = await sb.from('club_pcs').select('*, users:current_user_id(name, subscriptions(hours_balance))').eq('club_id', currentClub.id).eq('status', 'busy').order('session_start');
+  if (error) { console.error('Sessions load error:', error); renderSessionsTable([]); return; }
   renderSessionsTable(data || []);
   sessionTimer = setInterval(() => updateSessionTimers(), 60000);
 }
@@ -669,13 +670,13 @@ async function confirmBooking(id) {
 async function activateBooking(id) {
   const { error } = await sb.from('bookings').update({ status: 'active' }).eq('id', id);
   if (error) { showToast(t('error_prefix') + ': ' + error.message, 'error'); return; }
-  showToast('Клиент пришёл — сессия активна'); loadBookings();
+  showToast(t('client_arrived')); loadBookings();
 }
 
 async function completeBooking(id) {
   const { error } = await sb.from('bookings').update({ status: 'completed' }).eq('id', id);
   if (error) { showToast(t('error_prefix') + ': ' + error.message, 'error'); return; }
-  showToast('Бронь завершена'); loadBookings();
+  showToast(t('booking_completed')); loadBookings();
 }
 
 async function cancelBookingAdmin(id) {
@@ -720,7 +721,7 @@ function showEditStaffModal(id) {
     $('modal-title').textContent = t('staff_modal_edit');
     $('modal-body').innerHTML = staffFormHtml(s);
     openModal();
-  }).catch(e => { console.error(e); showToast('Ошибка загрузки', 'error'); });
+  }).catch(e => { console.error(e); showToast(t('load_error'), 'error'); });
 }
 
 function staffFormHtml(s = null) {

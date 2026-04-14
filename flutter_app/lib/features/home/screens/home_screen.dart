@@ -35,7 +35,7 @@ final activeSessionProvider = FutureProvider<Map<String, dynamic>?>((ref) async 
   return SupabaseService().getActiveSession();
 });
 
-final unreadNotifCountProvider = FutureProvider<int>((ref) async {
+final unreadNotifCountProvider = FutureProvider.autoDispose<int>((ref) async {
   return SupabaseService().getUnreadNotificationCount();
 });
 

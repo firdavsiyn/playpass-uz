@@ -4,9 +4,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../../services/supabase_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../core/widgets/neon_shimmer.dart';
 
-final notificationsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+final notificationsProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
   return SupabaseService().getNotifications();
 });
 
@@ -19,14 +20,14 @@ class NotificationsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Уведомления'),
+        title: Text(ref.lang('notif.title')),
         actions: [
           TextButton(
             onPressed: () async {
               await SupabaseService().markAllNotificationsRead();
               ref.invalidate(notificationsProvider);
             },
-            child: Text('Прочитать все', style: TextStyle(color: AppTheme.neonCyan, fontSize: 13)),
+            child: Text(ref.lang('notif.mark_all_read'), style: TextStyle(color: AppTheme.neonCyan, fontSize: 13)),
           ),
         ],
       ),
@@ -47,7 +48,7 @@ class NotificationsScreen extends ConsumerWidget {
                       children: [
                         Icon(Icons.notifications_off_rounded, size: 64, color: context.text3.withValues(alpha: 0.3)),
                         const SizedBox(height: 16),
-                        Text('Нет уведомлений', style: TextStyle(color: context.text3, fontSize: 16)),
+                        Text(ref.lang('notif.empty'), style: TextStyle(color: context.text3, fontSize: 16)),
                       ],
                     ),
                   ),
@@ -78,7 +79,7 @@ class NotificationsScreen extends ConsumerWidget {
               )),
             ),
           ),
-          error: (e, _) => Center(child: Text('Ошибка: $e')),
+          error: (e, _) => Center(child: Text('${ref.lang('common.error_prefix')}: $e')),
         ),
       ),
     );
