@@ -122,7 +122,22 @@ class _ClubsMapScreenState extends ConsumerState<ClubsMapScreen> {
                     // My location button
                     _OverlayButton(
                       icon: Icons.my_location_rounded,
-                      onTap: () => YandexMapService.locateUser(),
+                      onTap: () async {
+                        YandexMapService.locateUser();
+                        // Check after a delay for error (geolocation is async)
+                        await Future.delayed(const Duration(seconds: 2));
+                        if (!context.mounted) return;
+                        final err = YandexMapService.getLastLocateError();
+                        if (err != null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Не удалось определить местоположение: $err'),
+                              backgroundColor: AppTheme.error,
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
+                      },
                     ),
                   ],
                 ),

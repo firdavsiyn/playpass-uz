@@ -37,7 +37,13 @@ class YandexMapService {
   /// Add club markers to the map
   static void setMarkers(List<Club> clubs, {Map<String, int>? occupancy}) {
     final markersData = clubs
-        .where((c) => c.lat != null && c.lon != null)
+        .where((c) {
+          if (c.lat == null || c.lon == null) return false;
+          final lat = c.lat!;
+          final lon = c.lon!;
+          // Uzbekistan approximate bbox
+          return lat >= 37.0 && lat <= 46.0 && lon >= 55.0 && lon <= 74.0;
+        })
         .map((c) {
           final hasPc = c.pcCount > 0;
           final hasPs = c.hasPlaystation;
@@ -68,9 +74,16 @@ class YandexMapService {
     _eval('panToClub($lat, $lon)');
   }
 
-  /// Locate user via browser geolocation and show blue dot
-  static void locateUser() {
+  /// Locate user. Returns null on success or an error message.
+  static String? locateUser() {
     _eval('locateUser()');
+    return null;
+  }
+
+  /// Check if last locateUser call had an error (polls after a delay)
+  static String? getLastLocateError() {
+    final err = _evalReturn('window._ymapLocateError || null');
+    return err == null || err == 'null' ? null : err;
   }
 
   /// Start polling for marker click events from JS

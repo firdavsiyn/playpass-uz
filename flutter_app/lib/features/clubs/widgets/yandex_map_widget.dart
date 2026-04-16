@@ -31,28 +31,37 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     YandexMapService.ensureRegistered();
   }
 
+  @override
+  void dispose() {
+    YandexMapService.stopPolling();
+    super.dispose();
+  }
+
   Future<void> _initMap(int viewId) async {
     if (_initializing || _mapReady) return;
     _initializing = true;
 
     final containerId = 'yandex-map-$viewId';
 
+    // Safety timeout: if map doesn't load in 15s, unblock UI
+    Future.delayed(const Duration(seconds: 15), () {
+      if (mounted && !_mapReady) {
+        debugPrint('[YandexMap] init timeout — forcing _mapReady=true');
+        setState(() => _mapReady = true);
+      }
+    });
+
     try {
       await YandexMapService.initMap(containerId);
-
       if (!mounted) return;
-
-      // Set up marker click polling
       if (widget.onMarkerTapped != null) {
         YandexMapService.startMarkerClickPolling(widget.onMarkerTapped!);
       }
-
-      // Add initial markers
       YandexMapService.setMarkers(widget.clubs, occupancy: widget.occupancy);
-
       if (mounted) setState(() => _mapReady = true);
     } catch (e) {
       debugPrint('[YandexMap] init error: $e');
+      if (mounted) setState(() => _mapReady = true); // unblock anyway
     }
   }
 

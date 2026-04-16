@@ -309,7 +309,12 @@
 
     // Locate user via browser geolocation, pan map and show blue dot
     window._ymapUserMark = null;
+    window._ymapLocateError = null;
+    window.clearYmapIconCache = function() {
+      window._ymapIconCache = {};
+    };
     window.locateUser = function() {
+      window._ymapLocateError = null;
       if (!window._ymapInstance) return;
       if (!navigator.geolocation) { console.warn('[YMap] geolocation not supported'); return; }
       navigator.geolocation.getCurrentPosition(function(pos) {
@@ -340,6 +345,7 @@
         window._ymapUserLon = lon;
       }, function(err) {
         console.warn('[YMap] geolocation error:', err.message);
+        window._ymapLocateError = err.message || 'Geolocation failed';
       }, { enableHighAccuracy: false, timeout: 10000 });
     };
   </script>
