@@ -22,7 +22,9 @@ class QrScannerScreen extends ConsumerStatefulWidget {
 
 class _QrScannerScreenState extends ConsumerState<QrScannerScreen>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
-  MobileScannerController? _scanner;
+  // Scanner controller is created ONCE and kept alive across tab switches.
+  // We use start()/stop() to pause/resume, avoiding the ~1–3s re-init delay.
+  late final MobileScannerController _scanner;
   ScanState _state = ScanState.scanning;
   String? _message;
   Map<String, dynamic>? _result;
@@ -43,35 +45,47 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen>
     _pulseAnimation = Tween(begin: 0.95, end: 1.05).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
-    _startCamera();
-  }
 
-  void _startCamera() {
-    _scanner = MobileScannerController();
+    // Pre-create controller with QR-only format (faster detection, less CPU).
+    // autoStart: true starts camera feed immediately without waiting for build.
+    _scanner = MobileScannerController(
+      formats: const [BarcodeFormat.qrCode],
+      detectionSpeed: DetectionSpeed.normal,
+      facing: CameraFacing.back,
+      torchEnabled: false,
+      autoStart: true,
+    );
     _cameraActive = true;
   }
 
-  void _stopCamera() {
-    if (_cameraActive) {
-      _cameraActive = false;
-      try {
-        _scanner?.stop();
-        _scanner?.dispose();
-      } catch (_) {}
-      _scanner = null;
+  Future<void> _startCamera() async {
+    if (_cameraActive) return;
+    try {
+      await _scanner.start();
+      _cameraActive = true;
+    } catch (_) {
+      // Camera might already be starting; ignore
     }
+  }
+
+  Future<void> _stopCamera() async {
+    if (!_cameraActive) return;
+    _cameraActive = false;
+    try {
+      await _scanner.stop();
+    } catch (_) {}
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Stop camera when app goes to background
+    // Pause camera when app goes to background
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
       _stopCamera();
     }
-    // Restart camera when app comes back (only if still on this screen)
+    // Resume camera when app comes back (only if still scanning)
     if (state == AppLifecycleState.resumed &&
-        _scanner == null &&
+        !_cameraActive &&
         _state == ScanState.scanning) {
       _startCamera();
       if (mounted) setState(() {});
@@ -80,7 +94,8 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen>
 
   @override
   void deactivate() {
-    // Called when widget is removed from tree (e.g. tab switch)
+    // Called when widget is removed from tree (e.g. tab switch).
+    // Just pause — keep controller alive for fast resume.
     _stopCamera();
     super.deactivate();
   }
@@ -88,7 +103,10 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _stopCamera();
+    // Full cleanup only on screen dispose
+    try {
+      _scanner.dispose();
+    } catch (_) {}
     _pulseController.dispose();
     super.dispose();
   }
@@ -121,7 +139,7 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen>
 
     _processed = true;
     setState(() => _state = ScanState.processing);
-    _scanner?.stop();
+    _stopCamera();
 
     final raw = rawValue;
 
@@ -181,17 +199,16 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen>
       _state = ScanState.error;
       _message = msg;
     });
-    Future.delayed(const Duration(seconds: 4), () {
-      if (mounted) {
-        // Restart camera for retry
-        if (_scanner == null) _startCamera();
-        setState(() {
-          _state = ScanState.scanning;
-          _message = null;
-          _processed = false;
-        });
-        _scanner?.start();
-      }
+    Future.delayed(const Duration(seconds: 4), () async {
+      if (!mounted) return;
+      // Restart camera for retry (if paused)
+      await _startCamera();
+      if (!mounted) return;
+      setState(() {
+        _state = ScanState.scanning;
+        _message = null;
+        _processed = false;
+      });
     });
   }
 
@@ -201,21 +218,18 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen>
     final activeTab = ref.watch(activeTabIndexProvider);
     final isScannerTab = activeTab == 2;
 
-    // Stop camera when user switches away from scanner tab
+    // Pause camera when user switches away from scanner tab
     if (!isScannerTab && _cameraActive) {
-      // Schedule stop after build to avoid setState during build
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && !isScannerTab) _stopCamera();
       });
     }
-    // Restart camera when user switches back to scanner tab
+    // Resume camera when user switches back (fast — no controller re-init)
     if (isScannerTab && !_cameraActive && _state == ScanState.scanning) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && _scanner == null) {
-          _startCamera();
-          setState(() {
-            _processed = false;
-          });
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (mounted) {
+          await _startCamera();
+          if (mounted) setState(() => _processed = false);
         }
       });
     }
@@ -224,10 +238,10 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen>
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // Scanner
-          if ((_state == ScanState.scanning || _state == ScanState.processing) && _scanner != null)
+          // Scanner — controller persists; feed just pauses/resumes
+          if (_state == ScanState.scanning || _state == ScanState.processing)
             MobileScanner(
-              controller: _scanner!,
+              controller: _scanner,
               onDetect: _onQrDetected,
             ),
 
@@ -261,7 +275,7 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen>
                   ),
                   IconButton(
                     icon: const Icon(Icons.flash_on, color: Colors.white),
-                    onPressed: () => _scanner?.toggleTorch(),
+                    onPressed: () => _scanner.toggleTorch(),
                   ),
                 ],
               ),
