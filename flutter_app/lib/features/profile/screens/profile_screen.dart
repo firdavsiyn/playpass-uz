@@ -15,14 +15,14 @@ import '../../../core/widgets/app_avatar.dart';
 import '../../../core/widgets/neon_shimmer.dart';
 import '../../../models/subscription.dart';
 
-final profileProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
+final profileProvider = FutureProvider.autoDispose<Map<String, dynamic>?>((ref) async {
   final userId = Supabase.instance.client.auth.currentUser?.id;
   if (userId == null) return null;
   return SupabaseService().getUserProfile(userId);
 });
 
 // Re-use activeSubscriptionProvider from home_screen to avoid duplicate queries
-final subscriptionProvider = FutureProvider<Subscription?>((ref) async {
+final subscriptionProvider = FutureProvider.autoDispose<Subscription?>((ref) async {
   return SupabaseService().getActiveSubscription();
 });
 

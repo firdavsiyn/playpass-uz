@@ -121,6 +121,9 @@ class AppAvatar extends StatelessWidget {
       width: size,
       height: size,
       fit: BoxFit.cover,
+      memCacheWidth: (size * 2).toInt(),  // 2x for retina
+      memCacheHeight: (size * 2).toInt(),
+      fadeInDuration: const Duration(milliseconds: 200),
       placeholder: (_, __) => _buildFallback(),
       errorWidget: (_, __, ___) => _buildFallback(),
     );

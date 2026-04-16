@@ -478,6 +478,17 @@ class SupabaseService {
   }
 
   // ── Realtime ──────────────────────────────────────────────
+  /// Subscribe to new visits for a given club via Supabase realtime.
+  ///
+  /// WARNING: Callers MUST unsubscribe when done, or the channel will leak
+  /// (holds a websocket subscription + keeps this service / closure alive).
+  /// Example:
+  ///   final ch = SupabaseService().subscribeToClubVisits(clubId, _onInsert);
+  ///   // later, in dispose():
+  ///   Supabase.instance.client.removeChannel(ch);
+  ///
+  /// Currently this method has no callers in the app — if you add one,
+  /// wire the unsubscribe into the owning widget/provider's dispose.
   RealtimeChannel subscribeToClubVisits(
     String clubId,
     void Function(Map<String, dynamic> payload) onInsert,
@@ -1195,12 +1206,23 @@ class SupabaseService {
   Future<int> getUnreadNotificationCount() async {
     final userId = Supabase.instance.client.auth.currentUser?.id;
     if (userId == null) return 0;
-    final data = await Supabase.instance.client
-        .from('notifications')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('is_read', false);
-    return (data as List).length;
+    try {
+      final res = await Supabase.instance.client
+          .from('notifications')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('is_read', false)
+          .count(CountOption.exact);
+      return res.count;
+    } catch (_) {
+      // Fallback to older API
+      final data = await Supabase.instance.client
+          .from('notifications')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('is_read', false);
+      return (data as List).length;
+    }
   }
 
   /// Mark a notification as read

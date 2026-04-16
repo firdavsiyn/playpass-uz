@@ -15,9 +15,6 @@ import 'services/notification_service.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Russian locale for DateFormat
-  await initializeDateFormatting('ru', null);
-
   bool supabaseOk = false;
   try {
     await Supabase.initialize(
@@ -37,16 +34,18 @@ Future<void> main() async {
     debugPrint('[PlayPass] Supabase init error: $e');
   }
 
-  if (supabaseOk && !kIsWeb) {
-    await NotificationService().init();
-  }
-
   if (!supabaseOk) {
     runApp(const _ErrorApp());
     return;
   }
 
   runApp(const ProviderScope(child: PlayPassApp()));
+
+  // Defer non-critical initialization - runs after first frame so UI is visible ASAP
+  initializeDateFormatting('ru', null);
+  if (!kIsWeb) {
+    NotificationService().init();
+  }
 }
 
 /// Показывается если Supabase недоступен

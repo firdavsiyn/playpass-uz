@@ -33,6 +33,13 @@ const fmt = (n) => Number(n || 0).toLocaleString('ru-RU');
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
 const fmtDateTime = (d) => d ? new Date(d).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
 
+function formatTime(t) {
+  if (!t || typeof t !== 'string') return '—';
+  // Handle "HH:MM", "HH:MM:SS", "HH:MM:SSZ", etc.
+  const match = t.match(/^(\d{2}:\d{2})/);
+  return match ? match[1] : t.slice(0, 5);
+}
+
 /* ── i18n ────────────────────────────────────── */
 function t(key) { return (LANG[currentLang] && LANG[currentLang][key]) || (LANG.ru[key]) || key; }
 
@@ -1760,7 +1767,7 @@ async function loadAllBookings() {
 
       return `<tr>
         <td>${b.date}</td>
-        <td>${b.start_time?.slice(0,5)} – ${b.end_time?.slice(0,5)}</td>
+        <td>${formatTime(b.start_time)} – ${formatTime(b.end_time)}</td>
         <td>${esc(clubName)}</td>
         <td>${esc(userName)}</td>
         <td><span style="color:${zoneColor};font-weight:600">${zoneLabel}</span></td>

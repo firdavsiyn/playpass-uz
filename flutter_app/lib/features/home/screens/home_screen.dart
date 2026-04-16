@@ -18,20 +18,20 @@ import '../widgets/banners_carousel.dart';
 import '../../stories/screens/stories_screen.dart';
 
 // Providers
-final activeSubscriptionProvider = FutureProvider<Subscription?>((ref) async {
+final activeSubscriptionProvider = FutureProvider.autoDispose<Subscription?>((ref) async {
   return SupabaseService().getActiveSubscription();
 });
 
-final nearbyClubsProvider = FutureProvider<List<Club>>((ref) async {
+final nearbyClubsProvider = FutureProvider.autoDispose<List<Club>>((ref) async {
   return SupabaseService().getActiveClubs();
 });
 
-final recentVisitsProvider = FutureProvider<List<Visit>>((ref) async {
+final recentVisitsProvider = FutureProvider.autoDispose<List<Visit>>((ref) async {
   final visits = await SupabaseService().getVisitHistory();
   return visits.take(3).toList();
 });
 
-final activeSessionProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
+final activeSessionProvider = FutureProvider.autoDispose<Map<String, dynamic>?>((ref) async {
   return SupabaseService().getActiveSession();
 });
 

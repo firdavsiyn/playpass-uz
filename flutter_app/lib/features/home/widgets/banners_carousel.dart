@@ -6,7 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../services/supabase_service.dart';
 
-final bannersProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+final bannersProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
   return SupabaseService().getActiveBanners();
 });
 

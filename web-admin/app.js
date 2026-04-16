@@ -69,7 +69,14 @@ function toggleNavGroup(header) { header.parentElement.classList.toggle('open');
 function formatMoney(n) { return n ? new Intl.NumberFormat('ru').format(n) : '0'; }
 function parseMoneyText(s) { return parseInt(s.replace(/\D/g, '')) || 0; }
 function formatDateTime(d) { return d.toLocaleString(currentLang === 'uz' ? 'uz-UZ' : 'ru', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }); }
-function formatTime(d) { return d.toLocaleTimeString(currentLang === 'uz' ? 'uz-UZ' : 'ru', { hour: '2-digit', minute: '2-digit' }); }
+function formatTime(t) {
+  if (t == null) return '—';
+  if (t instanceof Date) return t.toLocaleTimeString(currentLang === 'uz' ? 'uz-UZ' : 'ru', { hour: '2-digit', minute: '2-digit' });
+  if (typeof t !== 'string') return '—';
+  // Handle "HH:MM", "HH:MM:SS", "HH:MM:SSZ", etc.
+  const match = t.match(/^(\d{2}:\d{2})/);
+  return match ? match[1] : t.slice(0, 5);
+}
 function toDateInput(d) { return d.toISOString().split('T')[0]; }
 function escHtml(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function esc(s) { return String(s).replace(/['"<>&]/g, c => ({'\'':'&#39;','"':'&quot;','<':'&lt;','>':'&gt;','&':'&amp;'})[c]); }
@@ -466,13 +473,18 @@ function showAddPcModal() {
   openModal();
 }
 
-function showEditPcModal(id) {
-  sb.from('club_pcs').select('*').eq('id', id).single().then(({ data: pc }) => {
+async function showEditPcModal(id) {
+  try {
+    const { data: pc, error } = await sb.from('club_pcs').select('*').eq('id', id).single();
+    if (error) throw error;
     if (!pc) return;
     $('modal-title').textContent = t('pcs_modal_edit');
     $('modal-body').innerHTML = pcFormHtml(pc);
     openModal();
-  }).catch(e => { console.error(e); showToast(t('load_error'), 'error'); });
+  } catch (e) {
+    console.error(e);
+    showToast(t('load_error'), 'error');
+  }
 }
 
 function pcFormHtml(pc = null) {
@@ -650,7 +662,7 @@ function renderBookingsTable(bookings) {
     }
 
     return `<tr>
-      <td>${b.start_time?.slice(0,5)} – ${b.end_time?.slice(0,5)}</td>
+      <td>${formatTime(b.start_time)} – ${formatTime(b.end_time)}</td>
       <td><span style="color:${zoneColor};font-weight:600">${zoneLabel}</span></td>
       <td>${escHtml(b.users?.name || '—')}</td>
       <td>${b.duration_hours || '—'} ч</td>
@@ -715,13 +727,18 @@ function showAddStaffModal() {
   openModal();
 }
 
-function showEditStaffModal(id) {
-  sb.from('club_staff').select('*').eq('id', id).single().then(({ data: s }) => {
+async function showEditStaffModal(id) {
+  try {
+    const { data: s, error } = await sb.from('club_staff').select('*').eq('id', id).single();
+    if (error) throw error;
     if (!s) return;
     $('modal-title').textContent = t('staff_modal_edit');
     $('modal-body').innerHTML = staffFormHtml(s);
     openModal();
-  }).catch(e => { console.error(e); showToast(t('load_error'), 'error'); });
+  } catch (e) {
+    console.error(e);
+    showToast(t('load_error'), 'error');
+  }
 }
 
 function staffFormHtml(s = null) {
