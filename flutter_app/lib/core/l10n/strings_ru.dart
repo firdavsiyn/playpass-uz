@@ -524,6 +524,25 @@ const Map<String, String> stringsRu = {
   'home.you_saved': 'Вы сэкономили',
   'home.currency': 'сум',
 
+  // ── Savings screen ─────────────────────────────
+  'savings.title': 'Моя экономия',
+  'savings.all_time': 'Всего сэкономлено',
+  'savings.by_months': 'По месяцам',
+  'savings.hint': '{hours} ч × {rate} сум/час',
+  'savings.calc_info': 'Расчёт основан на тарифе {plan}: {rate} сум/час — средняя цена в клубах для вашего тарифа',
+  'month.jan': 'Янв',
+  'month.feb': 'Фев',
+  'month.mar': 'Мар',
+  'month.apr': 'Апр',
+  'month.may': 'Май',
+  'month.jun': 'Июн',
+  'month.jul': 'Июл',
+  'month.aug': 'Авг',
+  'month.sep': 'Сен',
+  'month.oct': 'Окт',
+  'month.nov': 'Ноя',
+  'month.dec': 'Дек',
+
   // ── Nearby clubs row ───────────────────────────
   'nearby.not_found': 'Клубы не найдены',
   'nearby.error': 'Ошибка загрузки',

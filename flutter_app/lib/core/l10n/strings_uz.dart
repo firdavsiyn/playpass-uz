@@ -524,6 +524,25 @@ const Map<String, String> stringsUz = {
   'home.you_saved': 'Siz tejadingiz',
   'home.currency': 'so\'m',
 
+  // ── Savings screen ─────────────────────────────
+  'savings.title': 'Mening tejashim',
+  'savings.all_time': 'Jami tejangan',
+  'savings.by_months': 'Oylar bo\'yicha',
+  'savings.hint': '{hours} soat × {rate} so\'m/soat',
+  'savings.calc_info': 'Hisoblash {plan} tarifi asosida: {rate} so\'m/soat — klublarda sizning tarifingiz uchun o\'rtacha narx',
+  'month.jan': 'Yan',
+  'month.feb': 'Fev',
+  'month.mar': 'Mar',
+  'month.apr': 'Apr',
+  'month.may': 'May',
+  'month.jun': 'Iyn',
+  'month.jul': 'Iyl',
+  'month.aug': 'Avg',
+  'month.sep': 'Sen',
+  'month.oct': 'Okt',
+  'month.nov': 'Noy',
+  'month.dec': 'Dek',
+
   // ── Nearby clubs row ───────────────────────────
   'nearby.not_found': 'Klublar topilmadi',
   'nearby.error': 'Yuklashda xatolik',

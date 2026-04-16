@@ -36,6 +36,7 @@ import '../../features/loyalty/screens/loyalty_screen.dart';
 import '../../features/clubs/screens/clubs_map_screen.dart';
 import '../../features/profile/screens/notification_settings_screen.dart';
 import '../../features/profile/screens/notifications_screen.dart';
+import '../../features/profile/screens/savings_screen.dart';
 import '../../features/gaming/screens/player_stats_screen.dart';
 import '../../features/gaming/screens/lfg_screen.dart';
 import '../../features/gaming/screens/leaderboard_screen.dart';
@@ -167,6 +168,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Notifications
       GoRoute(path: '/notifications', builder: (_, __) => const NotificationsScreen()),
+      GoRoute(path: '/savings', builder: (_, __) => const SavingsScreen()),
 
       // Notification Settings
       GoRoute(path: '/notifications-settings', builder: (_, __) => const NotificationSettingsScreen()),

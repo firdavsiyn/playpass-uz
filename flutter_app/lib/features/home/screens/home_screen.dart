@@ -9,6 +9,7 @@ import '../../../models/visit.dart';
 import '../../../services/supabase_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_locale.dart';
+import '../../../core/utils/savings_calculator.dart';
 import '../../../core/widgets/neon_shimmer.dart';
 import '../widgets/subscription_widget.dart';
 import '../widgets/nearby_clubs_row.dart';
@@ -243,10 +244,11 @@ class HomeScreen extends ConsumerWidget {
                         data: (sub) {
                           if (sub == null || !sub.isActive) return const SizedBox.shrink();
                           final hoursUsed = (sub.hoursTotal ?? 0) - (sub.hoursBalance ?? 0);
-                          // Average hourly rate at clubs is ~25,000 UZS
-                          final regularCost = hoursUsed * 25000;
-                          final subCost = sub.priceUzs;
-                          final saved = regularCost - subCost;
+                          final saved = SavingsCalculator.calculate(
+                            hoursUsed: hoursUsed,
+                            plan: sub.plan,
+                            subscriptionCost: sub.priceUzs,
+                          );
                           if (saved <= 0) return const SizedBox.shrink();
                           return _SavingsWidget(saved: saved);
                         },
@@ -621,41 +623,47 @@ class _SavingsWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final formattedSaved = '${(saved ~/ 1000)} 000';
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppTheme.success.withValues(alpha: 0.08),
-            AppTheme.neonCyan.withValues(alpha: 0.04),
+    final formattedSaved = SavingsCalculator.formatAmount(saved);
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        context.push('/savings');
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              AppTheme.success.withValues(alpha: 0.08),
+              AppTheme.neonCyan.withValues(alpha: 0.04),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppTheme.success.withValues(alpha: 0.15)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppTheme.success.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.savings_rounded, color: AppTheme.success, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(ref.lang('home.you_saved'), style: TextStyle(color: context.text2, fontSize: 12)),
+                  Text('$formattedSaved ${ref.lang('home.currency')}', style: const TextStyle(color: AppTheme.success, fontSize: 16, fontWeight: FontWeight.w700)),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, color: AppTheme.success.withValues(alpha: 0.6), size: 24),
           ],
         ),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppTheme.success.withValues(alpha: 0.15)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppTheme.success.withValues(alpha: 0.15),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.savings_rounded, color: AppTheme.success, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(ref.lang('home.you_saved'), style: TextStyle(color: context.text2, fontSize: 12)),
-                Text('$formattedSaved ${ref.lang('home.currency')}', style: const TextStyle(color: AppTheme.success, fontSize: 16, fontWeight: FontWeight.w700)),
-              ],
-            ),
-          ),
-          Icon(Icons.trending_up_rounded, color: AppTheme.success.withValues(alpha: 0.6), size: 24),
-        ],
       ),
     );
   }
