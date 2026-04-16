@@ -141,7 +141,6 @@
           clusterize: true,
           gridSize: 64,             // cluster cell in pixels
           clusterDisableClickZoom: false, // click cluster = zoom in
-          geoObjectOpenBalloonOnClick: false, // we handle click in JS
           // Preset cluster icon color
           clusterIconLayout: 'default#pieChart',
           clusterIconPieChartRadius: 20,
@@ -152,6 +151,13 @@
         window._ymapInstance = map;
         window._ymapObjectManager = om;
         map.geoObjects.add(om);
+
+        // Disable default balloons on both markers and clusters.
+        // We handle taps by pushing to _ymapClickQueue for Flutter bottom sheet.
+        om.objects.options.set('openBalloonOnClick', false);
+        om.objects.options.set('openEmptyBalloon', false);
+        om.clusters.options.set('openBalloonOnClick', false);
+        om.clusters.options.set('openEmptyBalloon', false);
 
         // Delegated click on any object in the manager
         om.objects.events.add('click', function(e) {
@@ -276,7 +282,6 @@
           properties: {
             clubId: m.id,
             hintContent: m.name,
-            balloonContent: '<strong>' + m.name + '</strong>',
           },
           options: {
             iconLayout: 'default#image',
@@ -284,6 +289,9 @@
             iconImageSize: [icon.width, icon.height],
             iconImageOffset: [-icon.width / 2, -icon.height / 2],
             opacity: m.isOpen ? 1.0 : 0.5,
+            // Redundant safety: disable balloon per-feature too
+            openBalloonOnClick: false,
+            openEmptyBalloon: false,
           }
         });
       }
