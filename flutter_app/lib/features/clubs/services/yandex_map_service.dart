@@ -39,18 +39,17 @@ class YandexMapService {
     final markersData = clubs
         .where((c) => c.lat != null && c.lon != null)
         .map((c) {
-          final occ = occupancy?[c.id] ?? 0;
-          final pct = c.pcCount > 0 ? (occ / c.pcCount * 100).round() : 0;
+          final hasPc = c.pcCount > 0;
+          final hasPs = c.hasPlaystation;
           return {
             'id': c.id,
             'name': c.name,
             'lat': c.lat,
             'lon': c.lon,
-            'tier': c.tier ?? 'standard',
+            'tier': c.tier,
             'isOpen': c.isOpen,
-            'occupancy': occ,
-            'capacity': c.pcCount,
-            'occupancyPct': pct,
+            'hasPc': hasPc,
+            'hasPs': hasPs,
           };
         })
         .toList();

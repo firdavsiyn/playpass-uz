@@ -168,29 +168,82 @@
       });
     };
 
-    // Build an SVG icon with caching based on state (no % label — just gamepad icon)
-    window._buildMarkerIcon = function(pct, hasCapacity, isVip, isOpen) {
-      var key = 'v2_' + isVip + '_' + isOpen;
+    // Build an SVG icon based on club type (PC / PS / both)
+    window._buildMarkerIcon = function(hasPc, hasPs, isVip, isOpen) {
+      // If club has neither, treat it as PC by default (most are)
+      if (!hasPc && !hasPs) hasPc = true;
+      var mode = (hasPc && hasPs) ? 'both' : (hasPs ? 'ps' : 'pc');
+      var key = 'v3_' + mode + '_' + isVip + '_' + isOpen;
       if (window._ymapIconCache[key]) return window._ymapIconCache[key];
 
-      // Unified brand color for all markers (purple)
-      var fillColor = '#7C3AED';
+      var fillColor = '#7C3AED'; // brand purple
       var borderColor = isVip ? '#FBBF24' : 'white';
       var borderWidth = isVip ? 3 : 2;
-      var svgSize = 40, r = 16, cx = 20, cy = 20;
 
-      // Gamepad glyph (white) centered in the circle
-      var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + svgSize + '" height="' + svgSize + '">' +
-        '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + fillColor + '" stroke="' + borderColor + '" stroke-width="' + borderWidth + '"/>' +
-        // Material "sports_esports" simplified gamepad
-        '<path d="M13.5 19.5 h-2 v-2 h-1 v2 h-2 v1 h2 v2 h1 v-2 h2 z M20 20 a1 1 0 1 1 -2 0 a1 1 0 0 1 2 0 z M22.5 18 a1 1 0 1 1 -2 0 a1 1 0 0 1 2 0 z M20.5 22 a1 1 0 1 1 -2 0 a1 1 0 0 1 2 0 z M24 16.5 a1 1 0 1 1 -2 0 a1 1 0 0 1 2 0 z" fill="white"/>';
+      // Wider marker when showing both icons
+      var isWide = (mode === 'both');
+      var width = isWide ? 56 : 40;
+      var height = 40;
+
+      // Capsule-shaped background when wide, circle otherwise
+      var bgShape;
+      if (isWide) {
+        bgShape = '<rect x="2" y="2" width="' + (width - 4) + '" height="' + (height - 4) +
+          '" rx="18" ry="18" fill="' + fillColor + '" stroke="' + borderColor + '" stroke-width="' + borderWidth + '"/>';
+      } else {
+        bgShape = '<circle cx="20" cy="20" r="16" fill="' + fillColor +
+          '" stroke="' + borderColor + '" stroke-width="' + borderWidth + '"/>';
+      }
+
+      // Desktop/monitor glyph (for PC) — scaled to ~20×20 in viewBox 24×24
+      // Translated to position inside the marker
+      function pcGlyph(tx) {
+        return '<g transform="translate(' + tx + ', 10) scale(0.83)">' +
+          // Monitor body
+          '<rect x="2" y="3" width="20" height="14" rx="2" fill="none" stroke="white" stroke-width="2"/>' +
+          // Monitor stand
+          '<line x1="8" y1="21" x2="16" y2="21" stroke="white" stroke-width="2" stroke-linecap="round"/>' +
+          '<line x1="12" y1="17" x2="12" y2="21" stroke="white" stroke-width="2"/>' +
+          '</g>';
+      }
+
+      // Gamepad glyph (for PS) — simplified DualShock-ish
+      function psGlyph(tx) {
+        return '<g transform="translate(' + tx + ', 11) scale(0.83)">' +
+          // Main body (rounded rectangle with two lobes)
+          '<path d="M 4 8 Q 4 3 9 3 L 15 3 Q 20 3 20 8 L 20 12 Q 20 17 15 17 L 14 14 L 10 14 L 9 17 Q 4 17 4 12 Z" ' +
+          'fill="none" stroke="white" stroke-width="2" stroke-linejoin="round"/>' +
+          // D-pad cross (left)
+          '<rect x="7" y="9" width="3" height="1.2" fill="white"/>' +
+          '<rect x="8" y="8" width="1.2" height="3" fill="white"/>' +
+          // Buttons (right)
+          '<circle cx="15" cy="8.5" r="0.9" fill="white"/>' +
+          '<circle cx="16.5" cy="10" r="0.9" fill="white"/>' +
+          '<circle cx="15" cy="11.5" r="0.9" fill="white"/>' +
+          '<circle cx="13.5" cy="10" r="0.9" fill="white"/>' +
+          '</g>';
+      }
+
+      var content;
+      if (mode === 'both') {
+        // PC on the left, PS on the right, separated
+        content = pcGlyph(6) + psGlyph(30);
+      } else if (mode === 'ps') {
+        content = psGlyph(10);
+      } else {
+        content = pcGlyph(10);
+      }
+
+      var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + width + '" height="' + height + '">' +
+        bgShape + content;
       if (isOpen) {
-        svg += '<circle cx="' + (svgSize - 6) + '" cy="6" r="4" fill="#22C55E" stroke="white" stroke-width="1.5"/>';
+        svg += '<circle cx="' + (width - 6) + '" cy="6" r="4" fill="#22C55E" stroke="white" stroke-width="1.5"/>';
       }
       svg += '</svg>';
+
       var uri = 'data:image/svg+xml,' + encodeURIComponent(svg);
-      window._ymapIconCache[key] = uri;
-      return uri;
+      window._ymapIconCache[key] = { uri: uri, width: width, height: height };
+      return window._ymapIconCache[key];
     };
 
     window.addClubMarkers = function(markersJson) {
@@ -213,10 +266,8 @@
       var features = [];
       for (var i = 0; i < markers.length; i++) {
         var m = markers[i];
-        var pct = m.occupancyPct || 0;
-        var hasCapacity = m.capacity > 0;
         var isVip = m.tier === 'vip';
-        var iconUri = window._buildMarkerIcon(pct, hasCapacity, isVip, m.isOpen);
+        var icon = window._buildMarkerIcon(m.hasPc, m.hasPs, isVip, m.isOpen);
 
         features.push({
           type: 'Feature',
@@ -229,9 +280,9 @@
           },
           options: {
             iconLayout: 'default#image',
-            iconImageHref: iconUri,
-            iconImageSize: [40, 40],
-            iconImageOffset: [-20, -20],
+            iconImageHref: icon.uri,
+            iconImageSize: [icon.width, icon.height],
+            iconImageOffset: [-icon.width / 2, -icon.height / 2],
             opacity: m.isOpen ? 1.0 : 0.5,
           }
         });
