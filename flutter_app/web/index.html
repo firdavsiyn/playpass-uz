@@ -99,13 +99,15 @@
     });
   </script>
 
-  <!-- Yandex Maps interop for Flutter -->
+  <!-- Yandex Maps interop for Flutter (with ObjectManager clustering for performance) -->
   <script>
     window._ymapInstance = null;
-    window._ymapMarkers = [];
+    window._ymapObjectManager = null;
     window._ymapMarkerClickCb = null;
     window._ymapClickQueue = [];
     window._ymapReady = false;
+    // SVG icon cache: same occupancy%+tier+isOpen → same SVG data URI
+    window._ymapIconCache = {};
 
     window.initYandexMap = function(containerId) {
       console.log('[YMap] initYandexMap called for:', containerId);
@@ -122,119 +124,135 @@
           return;
         }
 
-        // Ensure container has dimensions
         container.style.width = '100%';
         container.style.height = '100%';
 
         var map = new ymaps.Map(containerId, {
-          center: [41.2995, 69.2401], // Tashkent [lat, lon]
+          center: [41.2995, 69.2401],
           zoom: 12,
           controls: ['zoomControl']
+        }, {
+          // Disable search/route controls to reduce weight
+          suppressMapOpenBlock: true,
+        });
+
+        // Create ObjectManager with clustering — handles 100s of markers efficiently
+        var om = new ymaps.ObjectManager({
+          clusterize: true,
+          gridSize: 64,             // cluster cell in pixels
+          clusterDisableClickZoom: false, // click cluster = zoom in
+          geoObjectOpenBalloonOnClick: false, // we handle click in JS
+          // Preset cluster icon color
+          clusterIconLayout: 'default#pieChart',
+          clusterIconPieChartRadius: 20,
+          clusterIconPieChartCoreRadius: 12,
+          clusterIconPieChartStrokeWidth: 2,
         });
 
         window._ymapInstance = map;
+        window._ymapObjectManager = om;
+        map.geoObjects.add(om);
+
+        // Delegated click on any object in the manager
+        om.objects.events.add('click', function(e) {
+          var objId = e.get('objectId');
+          var obj = om.objects.getById(objId);
+          if (obj && obj.properties && obj.properties.clubId) {
+            window._ymapClickQueue.push(obj.properties.clubId);
+            if (window._ymapMarkerClickCb) window._ymapMarkerClickCb(obj.properties.clubId);
+          }
+        });
+
         window._ymapReady = true;
-        console.log('[YMap] map initialized successfully');
+        console.log('[YMap] map initialized with ObjectManager clustering');
       });
     };
 
+    // Build an SVG icon with caching based on state
+    window._buildMarkerIcon = function(pct, hasCapacity, isVip, isOpen) {
+      var key = pct + '_' + hasCapacity + '_' + isVip + '_' + isOpen;
+      if (window._ymapIconCache[key]) return window._ymapIconCache[key];
+
+      var occColor;
+      var occLabel;
+      if (!hasCapacity) {
+        occColor = '#6366F1'; occLabel = '';
+      } else if (pct < 50) {
+        occColor = '#22C55E'; occLabel = pct + '%';
+      } else if (pct < 80) {
+        occColor = '#F59E0B'; occLabel = pct + '%';
+      } else {
+        occColor = '#EF4444'; occLabel = pct + '%';
+      }
+
+      var borderColor = isVip ? '#FBBF24' : 'white';
+      var borderWidth = isVip ? 3 : 2;
+      var svgSize = 44, r = 18, cx = 22, cy = 20;
+      var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + svgSize + '" height="' + svgSize + '">' +
+        '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + occColor + '" stroke="' + borderColor + '" stroke-width="' + borderWidth + '"/>' +
+        '<text x="' + cx + '" y="' + (cy + 1) + '" text-anchor="middle" fill="white" font-size="11" font-weight="bold" font-family="sans-serif" dominant-baseline="middle">' +
+        (occLabel || '🎮') + '</text>';
+      if (isOpen) {
+        svg += '<circle cx="' + (svgSize - 6) + '" cy="6" r="4" fill="#22C55E" stroke="white" stroke-width="1.5"/>';
+      }
+      svg += '</svg>';
+      var uri = 'data:image/svg+xml,' + encodeURIComponent(svg);
+      window._ymapIconCache[key] = uri;
+      return uri;
+    };
+
     window.addClubMarkers = function(markersJson) {
-      if (!window._ymapInstance || !window._ymapReady) {
+      if (!window._ymapObjectManager || !window._ymapReady) {
         console.warn('[YMap] map not ready, retrying in 500ms');
         setTimeout(function() { window.addClubMarkers(markersJson); }, 500);
         return;
       }
 
-      window.clearClubMarkers();
-
       var markers;
-      try {
-        markers = JSON.parse(markersJson);
-      } catch(e) {
-        console.error('[YMap] JSON parse error:', e);
-        return;
-      }
+      try { markers = JSON.parse(markersJson); }
+      catch(e) { console.error('[YMap] JSON parse error:', e); return; }
 
-      console.log('[YMap] adding', markers.length, 'markers');
+      console.log('[YMap] adding', markers.length, 'markers via ObjectManager');
 
-      markers.forEach(function(m) {
-        // Color by occupancy: green = free, yellow = moderate, red = busy, gray = no data
+      // Clear previous features
+      window._ymapObjectManager.removeAll();
+
+      // Build GeoJSON feature collection — faster than per-marker add
+      var features = [];
+      for (var i = 0; i < markers.length; i++) {
+        var m = markers[i];
         var pct = m.occupancyPct || 0;
-        var occColor;
-        var occLabel;
-        if (m.capacity === 0 || (m.occupancy === 0 && m.capacity === 0)) {
-          occColor = '#6366F1'; // default indigo — no data
-          occLabel = '';
-        } else if (pct < 50) {
-          occColor = '#22C55E'; // green — free
-          occLabel = pct + '%';
-        } else if (pct < 80) {
-          occColor = '#F59E0B'; // yellow — moderate
-          occLabel = pct + '%';
-        } else {
-          occColor = '#EF4444'; // red — busy
-          occLabel = pct + '%';
-        }
+        var hasCapacity = m.capacity > 0;
+        var isVip = m.tier === 'vip';
+        var iconUri = window._buildMarkerIcon(pct, hasCapacity, isVip, m.isOpen);
 
-        // Border: gold for VIP
-        var borderColor = m.tier === 'vip' ? '#FBBF24' : 'white';
-        var borderWidth = m.tier === 'vip' ? 3 : 2;
-
-        // SVG marker with occupancy % label
-        var svgSize = 44;
-        var r = 18;
-        var cx = svgSize / 2;
-        var cy = 20;
-        var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + svgSize + '" height="' + svgSize + '">' +
-          '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + occColor + '" stroke="' + borderColor + '" stroke-width="' + borderWidth + '"/>' +
-          '<text x="' + cx + '" y="' + (cy + 1) + '" text-anchor="middle" fill="white" font-size="11" font-weight="bold" font-family="sans-serif" dominant-baseline="middle">' +
-          (occLabel || '🎮') + '</text>';
-        // Small status dot (open/closed)
-        if (m.isOpen) {
-          svg += '<circle cx="' + (svgSize - 6) + '" cy="6" r="4" fill="#22C55E" stroke="white" stroke-width="1.5"/>';
-        }
-        svg += '</svg>';
-
-        var placemark = new ymaps.Placemark(
-          [m.lat, m.lon],
-          {
-            hintContent: m.name + (occLabel ? ' — ' + occLabel + ' загрузка' : ''),
-            balloonContent: '<strong>' + m.name + '</strong>' + (occLabel ? '<br>' + m.occupancy + '/' + m.capacity + ' мест' : ''),
-            clubId: m.id
+        features.push({
+          type: 'Feature',
+          id: i,
+          geometry: { type: 'Point', coordinates: [m.lat, m.lon] },
+          properties: {
+            clubId: m.id,
+            hintContent: m.name + (hasCapacity ? ' — ' + pct + '% загрузка' : ''),
+            balloonContent: '<strong>' + m.name + '</strong>' + (hasCapacity ? '<br>' + m.occupancy + '/' + m.capacity + ' мест' : ''),
           },
-          {
-            preset: 'islands#dotIcon',
-            iconColor: occColor,
+          options: {
             iconLayout: 'default#image',
-            iconImageHref: 'data:image/svg+xml,' + encodeURIComponent(svg),
-            iconImageSize: [svgSize, svgSize],
-            iconImageOffset: [-(svgSize/2), -(svgSize/2)]
-          }
-        );
-
-        if (!m.isOpen) {
-          placemark.options.set('opacity', 0.5);
-        }
-
-        placemark.events.add('click', function() {
-          console.log('[YMap] marker clicked:', m.id);
-          window._ymapClickQueue.push(m.id);
-          if (window._ymapMarkerClickCb) {
-            window._ymapMarkerClickCb(m.id);
+            iconImageHref: iconUri,
+            iconImageSize: [44, 44],
+            iconImageOffset: [-22, -22],
+            opacity: m.isOpen ? 1.0 : 0.5,
           }
         });
+      }
 
-        window._ymapInstance.geoObjects.add(placemark);
-        window._ymapMarkers.push(placemark);
+      window._ymapObjectManager.add({
+        type: 'FeatureCollection',
+        features: features
       });
     };
 
     window.clearClubMarkers = function() {
-      if (!window._ymapInstance) return;
-      window._ymapMarkers.forEach(function(m) {
-        try { window._ymapInstance.geoObjects.remove(m); } catch(e) {}
-      });
-      window._ymapMarkers = [];
+      if (window._ymapObjectManager) window._ymapObjectManager.removeAll();
     };
 
     window.setMarkerClickCallback = function(cb) {
