@@ -1,0 +1,13 @@
+# Rename this file to `key.properties` (same directory) and fill in real values.
+# DO NOT commit key.properties — it's in .gitignore.
+#
+# To generate a keystore:
+#   keytool -genkey -v -keystore playpass-release.jks -keyalg RSA -keysize 2048 \
+#           -validity 10000 -alias playpass
+#
+# Store the .jks file OUTSIDE the repo and update storeFile path accordingly.
+
+storePassword=YOUR_KEYSTORE_PASSWORD
+keyPassword=YOUR_KEY_PASSWORD
+keyAlias=playpass
+storeFile=/absolute/path/to/playpass-release.jks

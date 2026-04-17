@@ -15,10 +15,13 @@
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
     <application
-        android:label="GamePass UZ"
+        android:label="PlayPass"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:usesCleartextTraffic="false">
+        android:usesCleartextTraffic="false"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:dataExtractionRules="@xml/data_extraction_rules">
 
         <activity
             android:name=".MainActivity"
@@ -40,8 +43,15 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
 
-            <!-- Deep link: gamepassuz://checkin?c=CLUB_ID&t=QR_TOKEN -->
+            <!-- Deep link: playpassuz://checkin?z=ZONE_ID&h=QR_HMAC -->
             <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="playpassuz" android:host="checkin"/>
+            </intent-filter>
+            <!-- Legacy scheme for backward compatibility -->
+            <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
@@ -53,7 +63,7 @@
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="https" android:host="gamepassuz.uz"/>
+                <data android:scheme="https" android:host="app.playpass.uz"/>
             </intent-filter>
         </activity>
 

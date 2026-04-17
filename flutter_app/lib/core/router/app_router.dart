@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../monitoring/sentry_setup.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -50,7 +51,14 @@ final activeTabIndexProvider = StateProvider<int>((ref) => 0);
 /// Notifier that triggers GoRouter to re-evaluate redirects when auth changes.
 class _AuthChangeNotifier extends ChangeNotifier {
   _AuthChangeNotifier() {
-    Supabase.instance.client.auth.onAuthStateChange.listen((_) {
+    Supabase.instance.client.auth.onAuthStateChange.listen((authState) {
+      final user = authState.session?.user;
+      if (user != null) {
+        AppMonitoring.setUser(id: user.id, email: user.email);
+        AppMonitoring.addBreadcrumb('Auth: ${authState.event.name}', category: 'auth');
+      } else {
+        AppMonitoring.clearUser();
+      }
       notifyListeners();
     });
   }

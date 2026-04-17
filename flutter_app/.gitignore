@@ -43,3 +43,18 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Android signing — NEVER commit these
+/android/key.properties
+/android/app/*.jks
+/android/app/*.keystore
+**/*.jks
+**/*.keystore
+
+# Sentry — don't commit auth tokens
+sentry.properties
+
+# Environment files
+.env
+.env.local
+.env.production

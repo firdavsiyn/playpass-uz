@@ -17,6 +17,16 @@ class AppConstants {
     defaultValue: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJpenlxempzemFrbnpqYm9vb293Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NjgzMzMsImV4cCI6MjA4OTQ0NDMzM30.cfptzTL4AkpN1xjGbIC4-yEjXVe8LPjdTNOzrYsykcs',
   );
 
+  /// Sentry DSN for error tracking. Empty = Sentry disabled.
+  /// Set via --dart-define=SENTRY_DSN=https://...@sentry.io/... at build time.
+  static const String sentryDsn = String.fromEnvironment('SENTRY_DSN', defaultValue: '');
+
+  /// App version for release tracking in Sentry
+  static const String appVersion = String.fromEnvironment('APP_VERSION', defaultValue: '1.0.0');
+
+  /// Environment: 'production', 'staging', or 'development'
+  static const String environment = String.fromEnvironment('ENVIRONMENT', defaultValue: 'production');
+
   // API endpoints
   static const String checkinEndpoint = '/functions/v1/checkin';
   static const String qrValidateEndpoint = '/functions/v1/qr-validate';

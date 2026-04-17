@@ -7,12 +7,18 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'core/constants/app_constants.dart';
+import 'core/monitoring/sentry_setup.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_provider.dart';
 import 'core/router/app_router.dart';
 import 'services/notification_service.dart';
 
 Future<void> main() async {
+  // Sentry wraps the entire app so any unhandled error is captured
+  await AppMonitoring.init(_runApp);
+}
+
+Future<void> _runApp() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   bool supabaseOk = false;
@@ -30,8 +36,9 @@ Future<void> main() async {
       onTimeout: () => throw TimeoutException('Supabase init timed out'),
     );
     supabaseOk = true;
-  } catch (e) {
+  } catch (e, st) {
     debugPrint('[PlayPass] Supabase init error: $e');
+    AppMonitoring.captureException(e, stackTrace: st, extra: {'phase': 'supabase_init'});
   }
 
   if (!supabaseOk) {
