@@ -205,7 +205,9 @@ class SupabaseService {
   }
 
   // ── Clubs ─────────────────────────────────────────────────
-  Future<List<Club>> getActiveClubs({String? tier}) async {
+  /// Get active clubs. Pass [limit] to bound the result (e.g. on home screen
+  /// only top 15 are shown). Default returns all (used by full clubs list).
+  Future<List<Club>> getActiveClubs({String? tier, int? limit}) async {
     var query = _client
         .from('clubs')
         .select('id, name, address, lat, lon, photos, working_hours, pc_count, rating, status, tier, has_playstation, price_per_hour, review_count')
@@ -215,7 +217,8 @@ class SupabaseService {
       query = query.eq('tier', tier);
     }
 
-    final res = await query.order('rating', ascending: false);
+    final ordered = query.order('rating', ascending: false);
+    final res = limit != null ? await ordered.limit(limit) : await ordered;
     return (res as List).map((e) => Club.fromJson(e as Map<String, dynamic>)).toList();
   }
 

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,18 +19,29 @@ import '../widgets/active_session_widget.dart';
 import '../widgets/banners_carousel.dart';
 import '../../stories/screens/stories_screen.dart';
 
-// Providers
+// Providers — keep alive for 5 min after the last listener detaches.
+// This avoids re-fetching when user rapidly navigates home → other tab → home.
+const _kHomeCacheDuration = Duration(minutes: 5);
+
+void _keepAliveFor(Ref ref, Duration duration) {
+  final link = ref.keepAlive();
+  Timer(duration, link.close);
+}
+
 final activeSubscriptionProvider = FutureProvider.autoDispose<Subscription?>((ref) async {
+  _keepAliveFor(ref, _kHomeCacheDuration);
   return SupabaseService().getActiveSubscription();
 });
 
+// Home screen only shows 4 nearby club cards — no need to fetch all 276.
 final nearbyClubsProvider = FutureProvider.autoDispose<List<Club>>((ref) async {
-  return SupabaseService().getActiveClubs();
+  _keepAliveFor(ref, _kHomeCacheDuration);
+  return SupabaseService().getActiveClubs(limit: 15);
 });
 
 final recentVisitsProvider = FutureProvider.autoDispose<List<Visit>>((ref) async {
-  final visits = await SupabaseService().getVisitHistory();
-  return visits.take(3).toList();
+  _keepAliveFor(ref, _kHomeCacheDuration);
+  return SupabaseService().getVisitHistory(limit: 3);
 });
 
 final activeSessionProvider = FutureProvider.autoDispose<Map<String, dynamic>?>((ref) async {
