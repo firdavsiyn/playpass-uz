@@ -2,7 +2,7 @@
 
 **Tahriri sanasi:** 2026-yil 17-aprel
 **Mualliflik huquqi egasi:** YaTT «NAZARALIYEV FIRDAVSIY MUXTORJON O'G'LI» (**PlayPass** brendi), O'zbekiston Respublikasi, Toshkent shahri, JShShIR: 51203036600035
-**Aloqa:** support@playpass.uz, +998 94 603 12 __
+**Aloqa:** support@playpass.uz, +998 94 603 12 03
 
 Ushbu Maxfiylik siyosati (keyingi o'rinlarda — **«Siyosat»**) quyidagi qonunlarga muvofiq ishlab chiqilgan:
 
@@ -126,7 +126,7 @@ Biz o'zgarishlar haqida push-bildirishnoma va/yoki email orqali kuchga kirishida
 - Email: support@playpass.uz
 - Telegram: @playpass_support
 - Manzil: Toshkent sh., Mirzo-Ulug'bek tumani, TTZ-1, 14-uy, 17-xonadon
-- Telefon: +998 94 603 12 __
+- Telefon: +998 94 603 12 03
 - YaTT: NAZARALIYEV FIRDAVSIY MUXTORJON O'G'LI
 - JShShIR: 51203036600035
 
