@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../services/supabase_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/constants/feature_flags.dart';
 import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/widgets/app_avatar.dart';
@@ -349,52 +350,59 @@ class _ProfileContent extends ConsumerWidget {
           title: ref.lang('profile.favorites'),
           onTap: () => context.push('/profile/favorites'),
         ),
-        _MenuItem(
-          icon: Icons.emoji_events_rounded,
-          title: ref.lang('profile.achievements'),
-          onTap: () => context.push('/profile/achievements'),
-        ),
+        if (FeatureFlags.achievements)
+          _MenuItem(
+            icon: Icons.emoji_events_rounded,
+            title: ref.lang('profile.achievements'),
+            onTap: () => context.push('/profile/achievements'),
+          ),
         _MenuItem(
           icon: Icons.history_rounded,
           title: ref.lang('profile.visit_history'),
           onTap: () => context.push('/profile/history'),
         ),
-        _MenuItem(
-          icon: Icons.computer_rounded,
-          title: ref.lang('profile.booking'),
-          subtitle: ref.lang('profile.booking_sub'),
-          onTap: () => context.push('/booking'),
-        ),
-        _MenuItem(
-          icon: Icons.emoji_events_rounded,
-          title: ref.lang('profile.tournaments'),
-          subtitle: ref.lang('profile.tournaments_sub'),
-          onTap: () => context.push('/tournaments'),
-        ),
-        _MenuItem(
-          icon: Icons.star_rounded,
-          title: ref.lang('profile.loyalty'),
-          subtitle: ref.lang('profile.loyalty_sub'),
-          onTap: () => context.push('/loyalty'),
-        ),
-        _MenuItem(
-          icon: Icons.sports_esports_rounded,
-          title: ref.lang('profile.player_stats'),
-          subtitle: ref.lang('profile.player_stats_sub'),
-          onTap: () => context.push('/player-stats'),
-        ),
-        _MenuItem(
-          icon: Icons.people_rounded,
-          title: ref.lang('profile.lfg'),
-          subtitle: ref.lang('profile.lfg_sub'),
-          onTap: () => context.push('/lfg'),
-        ),
-        _MenuItem(
-          icon: Icons.leaderboard_rounded,
-          title: ref.lang('profile.leaderboard'),
-          subtitle: ref.lang('profile.leaderboard_sub'),
-          onTap: () => context.push('/leaderboard'),
-        ),
+        if (FeatureFlags.booking)
+          _MenuItem(
+            icon: Icons.computer_rounded,
+            title: ref.lang('profile.booking'),
+            subtitle: ref.lang('profile.booking_sub'),
+            onTap: () => context.push('/booking'),
+          ),
+        if (FeatureFlags.tournaments)
+          _MenuItem(
+            icon: Icons.emoji_events_rounded,
+            title: ref.lang('profile.tournaments'),
+            subtitle: ref.lang('profile.tournaments_sub'),
+            onTap: () => context.push('/tournaments'),
+          ),
+        if (FeatureFlags.loyalty)
+          _MenuItem(
+            icon: Icons.star_rounded,
+            title: ref.lang('profile.loyalty'),
+            subtitle: ref.lang('profile.loyalty_sub'),
+            onTap: () => context.push('/loyalty'),
+          ),
+        if (FeatureFlags.playerStats)
+          _MenuItem(
+            icon: Icons.sports_esports_rounded,
+            title: ref.lang('profile.player_stats'),
+            subtitle: ref.lang('profile.player_stats_sub'),
+            onTap: () => context.push('/player-stats'),
+          ),
+        if (FeatureFlags.lfg)
+          _MenuItem(
+            icon: Icons.people_rounded,
+            title: ref.lang('profile.lfg'),
+            subtitle: ref.lang('profile.lfg_sub'),
+            onTap: () => context.push('/lfg'),
+          ),
+        if (FeatureFlags.leaderboard)
+          _MenuItem(
+            icon: Icons.leaderboard_rounded,
+            title: ref.lang('profile.leaderboard'),
+            subtitle: ref.lang('profile.leaderboard_sub'),
+            onTap: () => context.push('/leaderboard'),
+          ),
         _MenuItem(
           icon: Icons.notifications_rounded,
           title: ref.lang('profile.notifications'),

@@ -5,6 +5,7 @@ import '../monitoring/sentry_setup.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../constants/feature_flags.dart';
 import '../theme/app_theme.dart';
 import '../l10n/app_locale.dart';
 
@@ -158,34 +159,55 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/gift/purchase', builder: (_, __) => const GiftPurchaseScreen()),
       GoRoute(path: '/gift/redeem', builder: (_, __) => const GiftRedeemScreen()),
 
-      // Booking
-      GoRoute(path: '/booking', builder: (_, __) => const BookingScreen()),
+      // Feature-flagged routes — redirect to /home when disabled, so deep
+      // links / stale push notifications don't dump users onto a half-built
+      // screen. Flip the flag in feature_flags.dart to enable.
 
-      // Tournaments
-      GoRoute(path: '/tournaments', builder: (_, __) => const TournamentsScreen()),
-      GoRoute(path: '/tournaments/:id', builder: (_, state) => TournamentDetailScreen(tournamentId: state.pathParameters['id']!)),
+      GoRoute(path: '/booking',
+        redirect: (_, __) => FeatureFlags.booking ? null : '/home',
+        builder: (_, __) => const BookingScreen()),
 
-      // Stories / News
-      GoRoute(path: '/stories', builder: (_, __) => const StoriesScreen()),
+      GoRoute(path: '/tournaments',
+        redirect: (_, __) => FeatureFlags.tournaments ? null : '/home',
+        builder: (_, __) => const TournamentsScreen()),
+      GoRoute(path: '/tournaments/:id',
+        redirect: (_, __) => FeatureFlags.tournaments ? null : '/home',
+        builder: (_, state) => TournamentDetailScreen(tournamentId: state.pathParameters['id']!)),
 
-      // Loyalty
-      GoRoute(path: '/loyalty', builder: (_, __) => const LoyaltyScreen()),
+      GoRoute(path: '/stories',
+        redirect: (_, __) => FeatureFlags.stories ? null : '/home',
+        builder: (_, __) => const StoriesScreen()),
 
-      // Club Map
-      GoRoute(path: '/clubs-map', builder: (_, __) => const ClubsMapScreen()),
+      GoRoute(path: '/loyalty',
+        redirect: (_, __) => FeatureFlags.loyalty ? null : '/home',
+        builder: (_, __) => const LoyaltyScreen()),
 
-      // Notifications
+      // Clubs map: still accessible via the inline view in clubs tab,
+      // but we still keep the route guarded by the same flag.
+      GoRoute(path: '/clubs-map',
+        redirect: (_, __) => FeatureFlags.fullscreenMapShortcut ? null : '/home',
+        builder: (_, __) => const ClubsMapScreen()),
+
+      // Notifications (always enabled)
       GoRoute(path: '/notifications', builder: (_, __) => const NotificationsScreen()),
-      GoRoute(path: '/savings', builder: (_, __) => const SavingsScreen()),
-
-      // Notification Settings
+      GoRoute(path: '/savings',
+        redirect: (_, __) => FeatureFlags.savings ? null : '/home',
+        builder: (_, __) => const SavingsScreen()),
       GoRoute(path: '/notifications-settings', builder: (_, __) => const NotificationSettingsScreen()),
 
       // Gaming
-      GoRoute(path: '/player-stats', builder: (_, __) => const PlayerStatsScreen()),
-      GoRoute(path: '/lfg', builder: (_, __) => const LfgScreen()),
-      GoRoute(path: '/leaderboard', builder: (_, __) => const LeaderboardScreen()),
-      GoRoute(path: '/happy-hours', builder: (_, __) => const HappyHoursScreen()),
+      GoRoute(path: '/player-stats',
+        redirect: (_, __) => FeatureFlags.playerStats ? null : '/home',
+        builder: (_, __) => const PlayerStatsScreen()),
+      GoRoute(path: '/lfg',
+        redirect: (_, __) => FeatureFlags.lfg ? null : '/home',
+        builder: (_, __) => const LfgScreen()),
+      GoRoute(path: '/leaderboard',
+        redirect: (_, __) => FeatureFlags.leaderboard ? null : '/home',
+        builder: (_, __) => const LeaderboardScreen()),
+      GoRoute(path: '/happy-hours',
+        redirect: (_, __) => FeatureFlags.happyHours ? null : '/home',
+        builder: (_, __) => const HappyHoursScreen()),
     ],
   );
 });

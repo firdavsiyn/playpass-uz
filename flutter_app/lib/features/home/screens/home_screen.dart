@@ -8,6 +8,7 @@ import '../../../models/subscription.dart';
 import '../../../models/club.dart';
 import '../../../models/visit.dart';
 import '../../../services/supabase_service.dart';
+import '../../../core/constants/feature_flags.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_locale.dart';
 import '../../../core/utils/savings_calculator.dart';
@@ -282,12 +283,14 @@ class HomeScreen extends ConsumerWidget {
                       const SizedBox(height: 20),
 
                       // ── Stories bubbles ────────────────────────
-                      const StoryBubbles(),
-                      const SizedBox(height: 20),
+                      if (FeatureFlags.stories) ...[
+                        const StoryBubbles(),
+                        const SizedBox(height: 20),
+                      ],
 
-                      // ── Quick Actions ──────────────────────────
+                      // ── Quick Actions (hidden until features enabled) ──
                       const _QuickActions(),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 4),
 
                       // ── Banners ────────────────────────────────
                       const BannersCarousel(),
@@ -534,45 +537,65 @@ class _QuickActions extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = tr(ref.watch(localeProvider));
+
+    // Build the visible quick actions list based on FeatureFlags.
+    // When a feature isn't ready for prod, its tile is just omitted.
+    final all = <_QuickAction>[
+      if (FeatureFlags.tournaments)
+        _QuickAction(icon: Icons.emoji_events_rounded, label: t['home_tournaments'] ?? 'home_tournaments',
+            color: AppTheme.warning, onTap: () => context.push('/tournaments')),
+      if (FeatureFlags.lfg)
+        _QuickAction(icon: Icons.people_rounded, label: t['home_lfg'] ?? 'home_lfg',
+            color: AppTheme.neonBlue, onTap: () => context.push('/lfg')),
+      if (FeatureFlags.leaderboard)
+        _QuickAction(icon: Icons.leaderboard_rounded, label: t['home_leaderboard'] ?? 'home_leaderboard',
+            color: AppTheme.neonPurple, onTap: () => context.push('/leaderboard')),
+      if (FeatureFlags.stories)
+        _QuickAction(icon: Icons.newspaper_rounded, label: t['home_news'] ?? 'home_news',
+            color: AppTheme.success, onTap: () => context.push('/stories')),
+      if (FeatureFlags.fullscreenMapShortcut)
+        _QuickAction(icon: Icons.map_rounded, label: t['home_map'] ?? 'home_map',
+            color: AppTheme.neonCyan, onTap: () => context.push('/clubs-map')),
+      if (FeatureFlags.loyalty)
+        _QuickAction(icon: Icons.star_rounded, label: t['home_loyalty'] ?? 'home_loyalty',
+            color: AppTheme.tierVip, onTap: () => context.push('/loyalty')),
+      if (FeatureFlags.playerStats)
+        _QuickAction(icon: Icons.sports_esports_rounded, label: t['home_stats'] ?? 'home_stats',
+            color: AppTheme.neonPink, onTap: () => context.push('/player-stats')),
+      if (FeatureFlags.happyHours)
+        _QuickAction(icon: Icons.local_offer_rounded, label: t['home_happy'] ?? 'home_happy',
+            color: AppTheme.neonPurple, onTap: () => context.push('/happy-hours')),
+    ];
+
+    if (all.isEmpty) return const SizedBox.shrink();
+
+    // Lay out in 2 rows of up to 4. If only one row, show one.
+    final rows = <List<_QuickAction>>[];
+    for (var i = 0; i < all.length; i += 4) {
+      rows.add(all.sublist(i, i + 4 > all.length ? all.length : i + 4));
+    }
+
+    Widget rowFor(List<_QuickAction> items) {
+      // Pad with empty slots so cards stay same size as a full row of 4
+      final children = <Widget>[];
+      for (var i = 0; i < items.length; i++) {
+        if (i > 0) children.add(const SizedBox(width: 8));
+        children.add(items[i]);
+      }
+      // Spacer slots for partial rows
+      for (var i = items.length; i < 4; i++) {
+        children.add(const SizedBox(width: 8));
+        children.add(const Expanded(child: SizedBox.shrink()));
+      }
+      return SizedBox(height: 80, child: Row(children: children));
+    }
+
     return Column(
       children: [
-        SizedBox(
-          height: 80,
-          child: Row(
-            children: [
-              _QuickAction(icon: Icons.emoji_events_rounded, label: t['home_tournaments'] ?? 'home_tournaments',
-                  color: AppTheme.warning, onTap: () => context.push('/tournaments')),
-              const SizedBox(width: 8),
-              _QuickAction(icon: Icons.people_rounded, label: t['home_lfg'] ?? 'home_lfg',
-                  color: AppTheme.neonBlue, onTap: () => context.push('/lfg')),
-              const SizedBox(width: 8),
-              _QuickAction(icon: Icons.leaderboard_rounded, label: t['home_leaderboard'] ?? 'home_leaderboard',
-                  color: AppTheme.neonPurple, onTap: () => context.push('/leaderboard')),
-              const SizedBox(width: 8),
-              _QuickAction(icon: Icons.newspaper_rounded, label: t['home_news'] ?? 'home_news',
-                  color: AppTheme.success, onTap: () => context.push('/stories')),
-            ],
-          ),
-        ),
-        const SizedBox(height: 8),
-        SizedBox(
-          height: 80,
-          child: Row(
-            children: [
-              _QuickAction(icon: Icons.map_rounded, label: t['home_map'] ?? 'home_map',
-                  color: AppTheme.neonCyan, onTap: () => context.push('/clubs-map')),
-              const SizedBox(width: 8),
-              _QuickAction(icon: Icons.star_rounded, label: t['home_loyalty'] ?? 'home_loyalty',
-                  color: AppTheme.tierVip, onTap: () => context.push('/loyalty')),
-              const SizedBox(width: 8),
-              _QuickAction(icon: Icons.sports_esports_rounded, label: t['home_stats'] ?? 'home_stats',
-                  color: AppTheme.neonPink, onTap: () => context.push('/player-stats')),
-              const SizedBox(width: 8),
-              _QuickAction(icon: Icons.local_offer_rounded, label: t['home_happy'] ?? 'home_happy',
-                  color: AppTheme.neonPurple, onTap: () => context.push('/happy-hours')),
-            ],
-          ),
-        ),
+        for (var i = 0; i < rows.length; i++) ...[
+          rowFor(rows[i]),
+          if (i < rows.length - 1) const SizedBox(height: 8),
+        ],
       ],
     );
   }
