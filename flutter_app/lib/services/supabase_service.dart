@@ -48,6 +48,85 @@ class SupabaseService {
     return res;
   }
 
+  /// Grant the one-time welcome bonus (1 free hour, 24h validity).
+  /// Returns null if successful, or a reason string if already claimed.
+  Future<String?> grantWelcomeBonus() async {
+    try {
+      final res = await _client.rpc('grant_welcome_bonus');
+      if (res is Map && res['success'] == false) return res['reason'] as String?;
+      return null;
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
+  // ── Friend system ─────────────────────────────────────────
+
+  /// Send a friend request using the friend's referral code as identifier.
+  /// Returns null on success or a reason string ('user_not_found',
+  /// 'cannot_self', 'already_exists').
+  Future<String?> sendFriendRequest(String friendCode) async {
+    try {
+      final res = await _client.rpc('send_friend_request',
+          params: {'p_friend_code': friendCode});
+      if (res is Map && res['success'] == false) return res['reason'] as String?;
+      return null;
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
+  /// Accept a pending friend request
+  Future<String?> acceptFriendRequest(String friendshipId) async {
+    try {
+      final res = await _client.rpc('accept_friend_request',
+          params: {'p_friendship_id': friendshipId});
+      if (res is Map && res['success'] == false) return res['reason'] as String?;
+      return null;
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
+  /// Decline / remove a friendship
+  Future<void> removeFriendship(String friendshipId) async {
+    await _client.from('friendships').delete().eq('id', friendshipId);
+  }
+
+  /// Get all friends + their current online status (in active session)
+  Future<List<Map<String, dynamic>>> getFriendsWithStatus() async {
+    try {
+      final res = await _client.rpc('get_friends_with_status');
+      if (res is List) return res.cast<Map<String, dynamic>>();
+      return [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  /// Get personalized home recommendation cards. Returns 0-4 cards.
+  Future<List<Map<String, dynamic>>> getHomeRecommendations() async {
+    try {
+      final res = await _client.rpc('get_home_recommendations');
+      if (res is List) {
+        return res.cast<Map<String, dynamic>>();
+      }
+      return [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  /// Check if the user has already claimed the welcome bonus
+  Future<bool> hasClaimedWelcomeBonus() async {
+    final userId = _userId;
+    final res = await _client.from('users')
+        .select('welcome_bonus_at')
+        .eq('id', userId)
+        .maybeSingle();
+    return res != null && res['welcome_bonus_at'] != null;
+  }
+
   // ── Subscriptions ─────────────────────────────────────────
   Future<Subscription?> getActiveSubscription() async {
     final userId = currentUser?.id;

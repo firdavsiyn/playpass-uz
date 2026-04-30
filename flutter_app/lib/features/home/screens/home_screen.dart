@@ -19,6 +19,8 @@ import '../widgets/recent_visits_widget.dart';
 import '../widgets/active_session_widget.dart';
 import '../widgets/banners_carousel.dart';
 import '../widgets/streak_widget.dart';
+import '../widgets/smart_hint_card.dart';
+import '../widgets/friends_online_widget.dart';
 import '../../stories/screens/stories_screen.dart';
 
 // Providers — keep alive for 5 min after the last listener detaches.
@@ -52,6 +54,12 @@ final activeSessionProvider = FutureProvider.autoDispose<Map<String, dynamic>?>(
 
 final unreadNotifCountProvider = FutureProvider.autoDispose<int>((ref) async {
   return SupabaseService().getUnreadNotificationCount();
+});
+
+/// Personalized home feed cards (favorite club, comeback, time-suggest, expiring)
+final homeRecommendationsProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
+  _keepAliveFor(ref, _kHomeCacheDuration);
+  return SupabaseService().getHomeRecommendations();
 });
 
 /// Streak data: { streak_days: int, last_visit_date: DateTime? }
@@ -288,6 +296,33 @@ class HomeScreen extends ConsumerWidget {
                           );
                         },
                       ),
+
+                      // ── Smart Home Feed (personalized hints) ──
+                      if (FeatureFlags.smartHomeFeed)
+                        Consumer(
+                          builder: (context, ref, _) {
+                            final hintsAsync = ref.watch(homeRecommendationsProvider);
+                            return hintsAsync.when(
+                              data: (hints) {
+                                if (hints.isEmpty) return const SizedBox.shrink();
+                                return Column(
+                                  children: hints.take(2).map((h) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 10),
+                                    child: SmartHintCard(hint: h),
+                                  )).toList(),
+                                );
+                              },
+                              loading: () => const SizedBox.shrink(),
+                              error: (_, __) => const SizedBox.shrink(),
+                            );
+                          },
+                        ),
+
+                      // ── Friends online widget ────────────────
+                      if (FeatureFlags.friends) ...[
+                        const FriendsOnlineWidget(),
+                        const SizedBox(height: 12),
+                      ],
 
                       // ── Savings indicator ──────────────────────
                       subscriptionAsync.when(

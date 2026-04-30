@@ -140,6 +140,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
         await SupabaseService().updateUserProfile(name: name);
       } catch (_) {}
 
+      // Grant the 1-hour welcome bonus (one-time, 24h validity).
+      // Failure here doesn't block registration — bonus can be claimed later.
+      try {
+        await SupabaseService().grantWelcomeBonus();
+      } catch (_) {}
+
       if (mounted) {
         context.go('/auth/onboarding');
       }

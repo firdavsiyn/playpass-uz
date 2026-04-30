@@ -31,4 +31,6 @@ class FeatureFlags {
   static const bool referral = true;        // Реферальная программа — оставляем
   static const bool freeze = true;          // Заморозка подписки — оставляем
   static const bool savings = true;         // Виджет «Сколько сэкономили» — оставляем
+  static const bool friends = true;         // Sprint 3: Friend system
+  static const bool smartHomeFeed = true;   // Sprint 3: Personalized hints
 }

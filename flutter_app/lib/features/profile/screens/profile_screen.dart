@@ -426,6 +426,13 @@ class _ProfileContent extends ConsumerWidget {
           subtitle: ref.lang('profile.referral_sub'),
           onTap: () => context.push('/profile/referral'),
         ),
+        if (FeatureFlags.friends)
+          _MenuItem(
+            icon: Icons.group_rounded,
+            title: 'Друзья',
+            subtitle: 'Добавляй и следи за активностью',
+            onTap: () => context.push('/friends'),
+          ),
         if (subscription != null && subscription!.canFreeze)
           _MenuItem(
             icon: Icons.ac_unit_rounded,
