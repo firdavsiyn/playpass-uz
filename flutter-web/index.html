@@ -174,17 +174,27 @@
       });
     };
 
-    // Build an SVG icon based on club type (PC / PS / both)
-    window._buildMarkerIcon = function(hasPc, hasPs, isVip, isOpen) {
-      // If club has neither, treat it as PC by default (most are)
+    // Build an SVG icon based on club type + live occupancy
+    // occupancyPct: -1 = no data, 0-49 free (green), 50-79 busy (yellow), 80+ full (red)
+    window._buildMarkerIcon = function(hasPc, hasPs, isVip, isOpen, occupancyPct) {
       if (!hasPc && !hasPs) hasPc = true;
       var mode = (hasPc && hasPs) ? 'both' : (hasPs ? 'ps' : 'pc');
-      var key = 'v3_' + mode + '_' + isVip + '_' + isOpen;
+
+      // Occupancy ring color
+      var occColor = null;
+      if (occupancyPct >= 0 && isOpen) {
+        if (occupancyPct < 50) occColor = '#22C55E';      // green
+        else if (occupancyPct < 80) occColor = '#F59E0B'; // yellow
+        else occColor = '#EF4444';                         // red
+      }
+
+      var key = 'v4_' + mode + '_' + isVip + '_' + isOpen + '_' + (occColor || 'na');
       if (window._ymapIconCache[key]) return window._ymapIconCache[key];
 
       var fillColor = '#7C3AED'; // brand purple
-      var borderColor = isVip ? '#FBBF24' : 'white';
-      var borderWidth = isVip ? 3 : 2;
+      // Occupancy color overrides white border (VIP gold takes precedence)
+      var borderColor = isVip ? '#FBBF24' : (occColor || 'white');
+      var borderWidth = (isVip || occColor) ? 3 : 2;
 
       // Wider marker when showing both icons
       var isWide = (mode === 'both');
@@ -273,7 +283,14 @@
       for (var i = 0; i < markers.length; i++) {
         var m = markers[i];
         var isVip = m.tier === 'vip';
-        var icon = window._buildMarkerIcon(m.hasPc, m.hasPs, isVip, m.isOpen);
+        var occPct = (typeof m.occupancyPct === 'number') ? m.occupancyPct : -1;
+        var icon = window._buildMarkerIcon(m.hasPc, m.hasPs, isVip, m.isOpen, occPct);
+
+        // Hint shows occupancy ratio when known
+        var hint = m.name;
+        if (occPct >= 0 && m.pcCount > 0) {
+          hint += ' • ' + (m.occupied || 0) + '/' + m.pcCount;
+        }
 
         features.push({
           type: 'Feature',
@@ -281,7 +298,7 @@
           geometry: { type: 'Point', coordinates: [m.lat, m.lon] },
           properties: {
             clubId: m.id,
-            hintContent: m.name,
+            hintContent: hint,
           },
           options: {
             iconLayout: 'default#image',

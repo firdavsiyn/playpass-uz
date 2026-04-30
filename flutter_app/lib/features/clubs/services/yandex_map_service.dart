@@ -34,19 +34,27 @@ class YandexMapService {
     await Future.delayed(const Duration(milliseconds: 3000));
   }
 
-  /// Add club markers to the map
+  /// Add club markers to the map.
+  /// [occupancy] is a map of clubId → number of currently active sessions.
+  /// Used to color-code marker borders: green (free) / yellow (busy) /
+  /// red (full) for at-a-glance availability.
   static void setMarkers(List<Club> clubs, {Map<String, int>? occupancy}) {
     final markersData = clubs
         .where((c) {
           if (c.lat == null || c.lon == null) return false;
           final lat = c.lat!;
           final lon = c.lon!;
-          // Uzbekistan approximate bbox
           return lat >= 37.0 && lat <= 46.0 && lon >= 55.0 && lon <= 74.0;
         })
         .map((c) {
           final hasPc = c.pcCount > 0;
           final hasPs = c.hasPlaystation;
+          final occ = occupancy?[c.id] ?? 0;
+          // Occupancy %: 0–100. -1 means no data (capacity unknown).
+          int occupancyPct = -1;
+          if (c.pcCount > 0) {
+            occupancyPct = ((occ / c.pcCount) * 100).clamp(0, 100).round();
+          }
           return {
             'id': c.id,
             'name': c.name,
@@ -56,6 +64,9 @@ class YandexMapService {
             'isOpen': c.isOpen,
             'hasPc': hasPc,
             'hasPs': hasPs,
+            'occupancyPct': occupancyPct,
+            'pcCount': c.pcCount,
+            'occupied': occ,
           };
         })
         .toList();

@@ -70,18 +70,26 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     super.didUpdateWidget(oldWidget);
     if (!_mapReady) return;
 
-    // Only rebuild markers if club list actually changed (by length or identity).
-    // Occupancy changes alone don't re-add markers — they update via a cheaper path.
     final clubsChanged = widget.clubs.length != oldWidget.clubs.length ||
         !identical(widget.clubs, oldWidget.clubs);
 
-    if (clubsChanged) {
+    final occupancyChanged = widget.occupancy != oldWidget.occupancy &&
+        !_occupancyEquals(widget.occupancy, oldWidget.occupancy);
+
+    if (clubsChanged || occupancyChanged) {
+      // Re-render markers with fresh occupancy. Cached SVG icons keep this fast.
       YandexMapService.setMarkers(widget.clubs, occupancy: widget.occupancy);
-    } else if (widget.occupancy != oldWidget.occupancy) {
-      // Skip full re-add: occupancy is a transient state; the map already has
-      // markers. Re-setting them causes flicker and jank during pan/zoom.
-      // Users will see updated % on next data refresh.
     }
+  }
+
+  bool _occupancyEquals(Map<String, int>? a, Map<String, int>? b) {
+    if (a == null && b == null) return true;
+    if (a == null || b == null) return false;
+    if (a.length != b.length) return false;
+    for (final e in a.entries) {
+      if (b[e.key] != e.value) return false;
+    }
+    return true;
   }
 
   @override

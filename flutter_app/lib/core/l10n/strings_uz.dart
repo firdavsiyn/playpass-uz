@@ -69,6 +69,11 @@ const Map<String, String> stringsUz = {
   // ── Subscription ──────────────────────────
   'sub.my': 'Mening obunalarim',
   'sub.buy': 'Obuna sotib olish',
+  'sub.daypass_title': 'Day Pass',
+  'sub.daypass_subtitle': '1 kunga sinab ko\'r · 4 soat',
+  'sub.annual_toggle_monthly': 'Oyiga',
+  'sub.annual_toggle_annual': 'Yiliga -30%',
+  'sub.annual_savings': 'Yilga {n} so\'m tejash',
   'sub.promo': 'Promokodni faollashtirish',
   'sub.gift_buy': 'Sovg\'a sifatida obuna',
   'sub.gift_redeem': 'Sertifikatni faollashtirish',

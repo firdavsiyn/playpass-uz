@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -72,6 +73,20 @@ class MySubscriptionScreen extends ConsumerWidget {
                   fontSize: 14,
                 ),
               ),
+            ),
+          ),
+
+          // Day-Pass CTA — show only if user has no active subscription
+          SliverToBoxAdapter(
+            child: subAsync.maybeWhen(
+              data: (sub) {
+                if (sub != null && sub.isActive) return const SizedBox.shrink();
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                  child: _DayPassCard(),
+                );
+              },
+              orElse: () => const SizedBox.shrink(),
             ),
           ),
 
@@ -761,6 +776,114 @@ class _MiniPlanCard extends ConsumerWidget {
                   color: _color,
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Day-Pass call-to-action card — visible only when the user has NO
+/// active subscription. Cuts the barrier from "199k for a month" to
+/// "25k for a day" and is the highest-impact conversion lever.
+class _DayPassCard extends ConsumerWidget {
+  const _DayPassCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        context.push('/payment', extra: 'daily');
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              AppTheme.neonCyan.withValues(alpha: 0.18),
+              AppTheme.primary.withValues(alpha: 0.10),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppTheme.neonCyan.withValues(alpha: 0.4)),
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.neonCyan.withValues(alpha: 0.20),
+              blurRadius: 18,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppTheme.neonCyan, AppTheme.primary],
+                ),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.flash_on_rounded, color: Colors.white, size: 22),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        ref.lang('sub.daypass_title'),
+                        style: TextStyle(
+                          color: context.text1,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppTheme.success.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text('NEW',
+                            style: TextStyle(
+                              color: AppTheme.success,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.5,
+                            )),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    ref.lang('sub.daypass_subtitle'),
+                    style: TextStyle(color: context.text2, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppTheme.neonCyan,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                '25k',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
             ),

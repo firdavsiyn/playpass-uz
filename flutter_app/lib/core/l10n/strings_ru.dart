@@ -69,6 +69,11 @@ const Map<String, String> stringsRu = {
   // ── Subscription ──────────────────────────
   'sub.my': 'Мой абонемент',
   'sub.buy': 'Купить абонемент',
+  'sub.daypass_title': 'Day Pass',
+  'sub.daypass_subtitle': 'Попробуй на 1 день · 4 часа',
+  'sub.annual_toggle_monthly': 'Месячно',
+  'sub.annual_toggle_annual': 'На год -30%',
+  'sub.annual_savings': 'Экономия {n} сум за год',
   'sub.promo': 'Активировать промокод',
   'sub.gift_buy': 'Купить абонемент в подарок',
   'sub.gift_redeem': 'Активировать сертификат',

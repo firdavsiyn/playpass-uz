@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -6,13 +7,17 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_locale.dart';
 
-/// Экран выбора тарифа v2.0 — 4 плана (Базовый / Стандарт / Про / VIP)
+/// Plan billing period: monthly or annual (-30% discount).
+final _annualToggleProvider = StateProvider<bool>((ref) => false);
+
+/// Экран выбора тарифа v2.1 — 4 плана + переключатель Месяц/Год -30%
 class PlansScreen extends ConsumerWidget {
   const PlansScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final plans = AppConstants.plans.values.toList();
+    final isAnnual = ref.watch(_annualToggleProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -39,11 +44,18 @@ class PlansScreen extends ConsumerWidget {
             ),
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.only(bottom: 24),
+                padding: const EdgeInsets.only(bottom: 16),
                 child: Text(
                   ref.lang('plans.desc'),
                   style: TextStyle(color: context.text2, fontSize: 14),
                 ),
+              ),
+            ),
+            // Monthly / Annual toggle
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 20),
+                child: _BillingToggle(isAnnual: isAnnual),
               ),
             ),
             SliverList(
@@ -52,6 +64,19 @@ class PlansScreen extends ConsumerWidget {
                   final plan = plans[index];
                   final isPopular = plan.id == 'standard';
 
+                  // For annual mode, only show standard and vip (no basic/pro yet)
+                  if (isAnnual && plan.id != 'standard' && plan.id != 'vip') {
+                    return const SizedBox.shrink();
+                  }
+
+                  // For annual mode: replace plan id with _annual variant on tap
+                  final planCode = isAnnual ? '${plan.id}_annual' : plan.id;
+                  // Annual price = monthly × 12 × 0.7
+                  final displayPrice = isAnnual
+                      ? (plan.priceUzs * 12 * 0.7).round()
+                      : plan.priceUzs;
+                  final monthlyEquivalent = isAnnual ? (displayPrice / 12).round() : null;
+
                   return Padding(
                     padding: EdgeInsets.only(
                       bottom: index < plans.length - 1 ? 16 : 24,
@@ -59,7 +84,10 @@ class PlansScreen extends ConsumerWidget {
                     child: _PlanCard(
                       plan: plan,
                       isPopular: isPopular,
-                      onSelect: () => context.push('/payment', extra: plan.id),
+                      isAnnual: isAnnual,
+                      displayPrice: displayPrice,
+                      monthlyEquivalent: monthlyEquivalent,
+                      onSelect: () => context.push('/payment', extra: planCode),
                     ),
                   );
                 },
@@ -73,16 +101,123 @@ class PlansScreen extends ConsumerWidget {
   }
 }
 
+/// Toggle between Monthly and Annual (-30%) pricing
+class _BillingToggle extends ConsumerWidget {
+  final bool isAnnual;
+  const _BillingToggle({required this.isAnnual});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: context.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: context.border.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _toggleOption(
+              context: context,
+              label: ref.lang('sub.annual_toggle_monthly'),
+              active: !isAnnual,
+              onTap: () {
+                HapticFeedback.lightImpact();
+                ref.read(_annualToggleProvider.notifier).state = false;
+              },
+            ),
+          ),
+          Expanded(
+            child: _toggleOption(
+              context: context,
+              label: ref.lang('sub.annual_toggle_annual'),
+              active: isAnnual,
+              showBadge: true,
+              onTap: () {
+                HapticFeedback.lightImpact();
+                ref.read(_annualToggleProvider.notifier).state = true;
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _toggleOption({
+    required BuildContext context,
+    required String label,
+    required bool active,
+    required VoidCallback onTap,
+    bool showBadge = false,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          gradient: active
+              ? const LinearGradient(colors: [AppTheme.primary, AppTheme.neonCyan])
+              : null,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: active
+              ? [BoxShadow(color: AppTheme.primary.withValues(alpha: 0.3), blurRadius: 12)]
+              : null,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                color: active ? Colors.white : context.text2,
+                fontSize: 13,
+                fontWeight: active ? FontWeight.w800 : FontWeight.w600,
+              ),
+            ),
+            if (showBadge && !active) ...[
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                decoration: BoxDecoration(
+                  color: AppTheme.success.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Text('-30%',
+                    style: TextStyle(
+                      color: AppTheme.success,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                    )),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _PlanCard extends ConsumerWidget {
   final PlanConfig plan;
   final bool isPopular;
   final VoidCallback onSelect;
+  final bool isAnnual;
+  final int displayPrice;
+  final int? monthlyEquivalent;
 
   const _PlanCard({
     required this.plan,
     required this.isPopular,
     required this.onSelect,
-  });
+    this.isAnnual = false,
+    int? displayPrice,
+    this.monthlyEquivalent,
+  }) : displayPrice = displayPrice ?? -1;
+
+  int get _effectivePrice => displayPrice == -1 ? plan.priceUzs : displayPrice;
 
   String _formatPrice(int priceUzs) {
     final str = priceUzs.toString();
@@ -143,10 +278,14 @@ class _PlanCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final priceFormatted = _formatPrice(plan.priceUzs);
-    final usdEquiv = (plan.priceUzs / 12450).toStringAsFixed(0);
+    final priceFormatted = _formatPrice(_effectivePrice);
+    final usdEquiv = (_effectivePrice / 12450).toStringAsFixed(0);
     final features = _buildFeatures(plan, ref);
     final color = _planColor;
+    final monthlyHint = monthlyEquivalent != null
+        ? '${_formatPrice(monthlyEquivalent!)} / мес'
+        : null;
+    final savings = isAnnual ? plan.priceUzs * 12 - _effectivePrice : 0;
 
     return Container(
       decoration: BoxDecoration(
@@ -213,12 +352,39 @@ class _PlanCard extends ConsumerWidget {
                   ),
                 ),
                 Text(
-                  '${ref.lang('plans.per_month')} (~\$$usdEquiv)',
+                  isAnnual
+                      ? '${ref.lang('plans.per_year') == 'plans.per_year' ? 'в год' : ref.lang('plans.per_year')} (~\$$usdEquiv)'
+                      : '${ref.lang('plans.per_month')} (~\$$usdEquiv)',
                   style: TextStyle(
                     color: context.text3,
                     fontSize: 13,
                   ),
                 ),
+                if (isAnnual && monthlyHint != null) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    '≈ $monthlyHint',
+                    style: TextStyle(color: context.text3, fontSize: 12),
+                  ),
+                ],
+                if (savings > 0) ...[
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppTheme.success.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '🎉 ${ref.lang('sub.annual_savings').replaceAll('{n}', _formatPrice(savings).replaceAll(' UZS', ''))}',
+                      style: const TextStyle(
+                        color: AppTheme.success,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 16),
 
                 // Features list
