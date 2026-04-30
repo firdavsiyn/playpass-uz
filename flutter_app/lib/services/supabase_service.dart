@@ -448,15 +448,11 @@ class SupabaseService {
   }
 
   // ── Referrals ─────────────────────────────────────────────
+  /// Applies a referral code. The DB function `apply_referral_code`
+  /// validates the code, prevents self-referral and double-use, and grants
+  /// 10-hour boost to BOTH inviter and invitee atomically.
   Future<void> applyReferralCode(String code) async {
-    final userId = _userId;
-    await _client.functions.invoke(
-      'apply-referral',
-      body: {
-        'referral_code': code,
-        'invitee_id': userId,
-      },
-    );
+    await _client.rpc('apply_referral_code', params: {'p_code': code});
   }
 
   Future<Map<String, dynamic>> getReferralStats() async {

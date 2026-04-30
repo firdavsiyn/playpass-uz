@@ -36,7 +36,9 @@ class AppConstants {
   static const int maxDailyCheckins = 8;
   static const int checkinRadiusMeters = 500;
   static const int freezeMaxDaysPerMonth = 5;
-  static const int referralBonusHours = 3;
+  /// Сколько часов получает приглашающий за каждого друга по реф. ссылке.
+  /// Boost-режим (10ч) активен на soft-launch, потом снизим до 5ч.
+  static const int referralBonusHours = 10;
 
   // ── 3 тайм-слота ───────────────────────────────────────────
   static const String slotDay = 'day';         // 08:00–20:00

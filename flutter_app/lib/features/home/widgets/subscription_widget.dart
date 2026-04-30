@@ -391,6 +391,24 @@ class _ActiveSubscription extends ConsumerWidget {
                             ),
                           ),
                         ],
+                        // ── Rollover bonus ─────────────────
+                        if (subscription.hoursRolledOver > 0) ...[
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              const Text('🎁', style: TextStyle(fontSize: 12)),
+                              const SizedBox(width: 4),
+                              Text(
+                                '+${subscription.hoursRolledOver} ${ref.lang('sub_widget.rolled_over')}',
+                                style: const TextStyle(
+                                  color: AppTheme.success,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ],
                     ),
                   ),

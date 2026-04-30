@@ -423,6 +423,7 @@ const Map<String, String> stringsRu = {
   'ref.code_copied': 'Код скопирован',
   'ref.copy': 'Копировать',
   'ref.share': 'Поделиться',
+  'ref.share_story': 'Поделиться в Stories ✨',
   'ref.share_text': 'Привет! Попробуй PlayPass - подписку на компьютерные клубы. Используй мой код: {code} и получи +3 часа бонусом!',
   'ref.share_copied': 'Текст для отправки скопирован',
 
@@ -470,6 +471,17 @@ const Map<String, String> stringsRu = {
   'sub_widget.hours_short': 'ч',
   'sub_widget.unlimited': 'Безлимит',
   'sub_widget.visit_per_day': '1 визит в день',
+  'sub_widget.rolled_over': 'ч перенесено с прошлого месяца',
+
+  // ── Streak ──────────────────────────────────────
+  'streak.title': 'Серия посещений',
+  'streak.days': 'дней подряд',
+  'streak.next_reward': 'До бонуса {n} дней',
+  'streak.reward_unlocked': '🔥 Бонус разблокирован!',
+  'streak.bonus_3h': '+3 часа',
+  'streak.day_singular': 'день',
+  'streak.day_few': 'дня',
+  'streak.day_many': 'дней',
 
   // ── Clubs list screen ──────────────────────────
   'clubs.on_map': 'На карте',

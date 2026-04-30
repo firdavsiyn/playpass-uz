@@ -3,9 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/constants/app_constants.dart';
 import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../services/supabase_service.dart';
+import '../services/story_generator.dart';
 
 final _referralStatsProvider =
     FutureProvider<Map<String, dynamic>>((ref) async {
@@ -94,15 +96,21 @@ class ReferralScreen extends ConsumerWidget {
 
           // Referral code
           codeAsync.when(
-            data: (code) => _ReferralCodeCard(
-              code: code,
-              codeNotAssigned: ref.lang('ref.code_not_assigned'),
-              yourCode: ref.lang('ref.your_code'),
-              copyLabel: ref.lang('ref.copy'),
-              codeCopied: ref.lang('ref.code_copied'),
-              shareLabel: ref.lang('ref.share'),
-              shareText: ref.lang('ref.share_text'),
-              shareCopied: ref.lang('ref.share_copied'),
+            data: (code) => Column(
+              children: [
+                _ReferralCodeCard(
+                  code: code,
+                  codeNotAssigned: ref.lang('ref.code_not_assigned'),
+                  yourCode: ref.lang('ref.your_code'),
+                  copyLabel: ref.lang('ref.copy'),
+                  codeCopied: ref.lang('ref.code_copied'),
+                  shareLabel: ref.lang('ref.share'),
+                  shareText: ref.lang('ref.share_text'),
+                  shareCopied: ref.lang('ref.share_copied'),
+                ),
+                const SizedBox(height: 12),
+                _ShareStoryButton(referralCode: code),
+              ],
             ),
             loading: () => const Center(
               child: Padding(
@@ -395,6 +403,101 @@ class _StatCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// "Поделиться в Stories" button — generates a 1080×1920 PNG with user's stats
+/// and referral code, then opens the system share sheet.
+class _ShareStoryButton extends ConsumerStatefulWidget {
+  final String referralCode;
+  const _ShareStoryButton({required this.referralCode});
+
+  @override
+  ConsumerState<_ShareStoryButton> createState() => _ShareStoryButtonState();
+}
+
+class _ShareStoryButtonState extends ConsumerState<_ShareStoryButton> {
+  bool _generating = false;
+
+  Future<void> _share() async {
+    if (_generating) return;
+    setState(() => _generating = true);
+    HapticFeedback.lightImpact();
+
+    try {
+      final userId = SupabaseService().currentUser?.id;
+      if (userId == null) return;
+      final profile = await SupabaseService().getUserProfile(userId);
+      if (profile == null) return;
+      final loyalty = await SupabaseService().getLoyaltyInfo();
+
+      await StoryGenerator.shareStory(
+        name: profile['name'] as String? ?? 'Player',
+        level: AppConstants.localizedLevelLabel(
+          loyalty['level'] as String? ?? 'bronze',
+          ref,
+        ),
+        visits: profile['total_visits'] as int? ?? 0,
+        hours: profile['total_hours'] as int? ?? 0,
+        referralCode: widget.referralCode,
+        referralUrl: 'https://app.playpass.uz/r/${widget.referralCode}',
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${ref.lang('common.error_prefix')}: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _generating = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _share,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [AppTheme.primary, Color(0xFF6366F1), AppTheme.neonCyan],
+          ),
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.primary.withValues(alpha: 0.35),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (_generating)
+              const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+              )
+            else
+              const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 20),
+            const SizedBox(width: 10),
+            Text(
+              ref.lang('ref.share_story'),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.3,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

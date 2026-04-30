@@ -16,6 +16,10 @@ class Subscription {
   final int priceUzs;
   final DateTime? frozenSince;
   final int frozenDaysUsed;
+  /// Часы, перенесённые с прошлой подписки (rollover-бонус).
+  /// Включены в hoursTotal и hoursBalance, но отображаются отдельно
+  /// для коммуникации «вы получили бонус».
+  final int hoursRolledOver;
 
   const Subscription({
     required this.id,
@@ -30,6 +34,7 @@ class Subscription {
     required this.priceUzs,
     this.frozenSince,
     this.frozenDaysUsed = 0,
+    this.hoursRolledOver = 0,
   });
 
   PlanConfig? get planConfig => AppConstants.plans[plan];
@@ -102,5 +107,6 @@ class Subscription {
         ? DateTime.parse(json['frozen_since'] as String)
         : null,
     frozenDaysUsed: json['frozen_days_used'] as int? ?? 0,
+    hoursRolledOver: json['hours_rolled_over'] as int? ?? 0,
   );
 }

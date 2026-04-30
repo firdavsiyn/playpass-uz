@@ -423,6 +423,7 @@ const Map<String, String> stringsUz = {
   'ref.code_copied': 'Kod nusxalandi',
   'ref.copy': 'Nusxalash',
   'ref.share': 'Ulashish',
+  'ref.share_story': 'Stories\'da ulashish ✨',
   'ref.share_text': 'Salom! PlayPass ni sinab ko\'r — kompyuter klublarga obuna. Mening kodimni ishlat: {code} va +3 soat bonus ol!',
   'ref.share_copied': 'Yuborish uchun matn nusxalandi',
 
@@ -470,6 +471,17 @@ const Map<String, String> stringsUz = {
   'sub_widget.hours_short': 's',
   'sub_widget.unlimited': 'Cheksiz',
   'sub_widget.visit_per_day': 'Kuniga 1 tashrif',
+  'sub_widget.rolled_over': 'soat o\'tgan oydan ko\'chirildi',
+
+  // ── Streak ──────────────────────────────────────
+  'streak.title': 'Tashriflar seriyasi',
+  'streak.days': 'kun ketma-ket',
+  'streak.next_reward': 'Bonusgacha {n} kun',
+  'streak.reward_unlocked': '🔥 Bonus ochildi!',
+  'streak.bonus_3h': '+3 soat',
+  'streak.day_singular': 'kun',
+  'streak.day_few': 'kun',
+  'streak.day_many': 'kun',
 
   // ── Clubs list screen ──────────────────────────
   'clubs.on_map': 'Xaritada',

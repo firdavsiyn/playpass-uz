@@ -18,6 +18,7 @@ import '../widgets/nearby_clubs_row.dart';
 import '../widgets/recent_visits_widget.dart';
 import '../widgets/active_session_widget.dart';
 import '../widgets/banners_carousel.dart';
+import '../widgets/streak_widget.dart';
 import '../../stories/screens/stories_screen.dart';
 
 // Providers — keep alive for 5 min after the last listener detaches.
@@ -51,6 +52,20 @@ final activeSessionProvider = FutureProvider.autoDispose<Map<String, dynamic>?>(
 
 final unreadNotifCountProvider = FutureProvider.autoDispose<int>((ref) async {
   return SupabaseService().getUnreadNotificationCount();
+});
+
+/// Streak data: { streak_days: int, last_visit_date: DateTime? }
+final streakProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
+  _keepAliveFor(ref, _kHomeCacheDuration);
+  final userId = SupabaseService().currentUser?.id;
+  if (userId == null) return {'streak_days': 0, 'last_visit_date': null};
+  final profile = await SupabaseService().getUserProfile(userId);
+  if (profile == null) return {'streak_days': 0, 'last_visit_date': null};
+  final lastVisit = profile['last_visit_date'] as String?;
+  return {
+    'streak_days': profile['streak_days'] as int? ?? 0,
+    'last_visit_date': lastVisit != null ? DateTime.tryParse(lastVisit) : null,
+  };
 });
 
 class HomeScreen extends ConsumerWidget {
@@ -251,6 +266,28 @@ class HomeScreen extends ConsumerWidget {
                       ),
 
                       const SizedBox(height: 12),
+
+                      // ── Streak widget ──────────────────────────
+                      Consumer(
+                        builder: (context, ref, _) {
+                          final streakAsync = ref.watch(streakProvider);
+                          return streakAsync.when(
+                            data: (data) {
+                              final days = data['streak_days'] as int? ?? 0;
+                              if (days < 1) return const SizedBox.shrink();
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: StreakWidget(
+                                  streakDays: days,
+                                  lastVisitDate: data['last_visit_date'] as DateTime?,
+                                ),
+                              );
+                            },
+                            loading: () => const SizedBox.shrink(),
+                            error: (_, __) => const SizedBox.shrink(),
+                          );
+                        },
+                      ),
 
                       // ── Savings indicator ──────────────────────
                       subscriptionAsync.when(
