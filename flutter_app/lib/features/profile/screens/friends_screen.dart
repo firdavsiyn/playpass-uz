@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/neon_shimmer.dart';
 import '../../../services/supabase_service.dart';
 
@@ -103,35 +104,17 @@ class FriendsScreen extends ConsumerWidget {
 
   Widget _emptyState(BuildContext context, WidgetRef ref) {
     return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
       children: [
-        SizedBox(height: MediaQuery.of(context).size.height * 0.25),
-        Center(
-          child: Column(
-            children: [
-              Icon(Icons.people_outline_rounded,
-                  size: 64, color: context.text3.withValues(alpha: 0.3)),
-              const SizedBox(height: 16),
-              Text('Список друзей пуст',
-                  style: TextStyle(color: context.text2, fontSize: 16)),
-              const SizedBox(height: 8),
-              Text('Добавь друзей по их коду из профиля',
-                  style: TextStyle(color: context.text3, fontSize: 13)),
-              const SizedBox(height: 24),
-              ElevatedButton.icon(
-                onPressed: () => _showAddFriendDialog(context, ref),
-                icon: const Icon(Icons.person_add_alt_1_rounded, size: 18),
-                label: const Text('Добавить друга'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primary,
-                  foregroundColor: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
-                ),
-              ),
-            ],
-          ),
+        SizedBox(height: MediaQuery.of(context).size.height * 0.15),
+        EmptyState(
+          icon: Icons.group_add_rounded,
+          title: 'Список друзей пуст',
+          subtitle:
+              'Добавь друзей по их реферальному коду — оба получите по 10 часов бонусом',
+          actionLabel: 'Добавить друга',
+          actionIcon: Icons.person_add_alt_1_rounded,
+          onAction: () => _showAddFriendDialog(context, ref),
         ),
       ],
     );

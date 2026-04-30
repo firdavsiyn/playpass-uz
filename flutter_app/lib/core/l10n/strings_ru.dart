@@ -351,8 +351,9 @@ const Map<String, String> stringsRu = {
   // ── QR scanner extra ──────────────────────
   'scan.invalid_qr': 'Неверный QR-код. Отсканируйте постер PlayPass.',
   'scan.invalid_code': 'Недействительный QR-код.',
-  'scan.welcome': 'Добро пожаловать!',
+  'scan.welcome': 'Добро пожаловать в',
   'scan.hours_left': 'Осталось',
+  'scan.left': 'осталось',
   'scan.hint': 'Наведите на QR-постер клуба',
 
   // ── Plans screen ──────────────────────────

@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:math' as math;
+import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -389,7 +391,7 @@ class _OverlayPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-class _ResultOverlay extends ConsumerWidget {
+class _ResultOverlay extends ConsumerStatefulWidget {
   final ScanState state;
   final String message;
   final Map<String, dynamic>? result;
@@ -401,41 +403,206 @@ class _ResultOverlay extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isSuccess = state == ScanState.success;
+  ConsumerState<_ResultOverlay> createState() => _ResultOverlayState();
+}
+
+class _ResultOverlayState extends ConsumerState<_ResultOverlay>
+    with TickerProviderStateMixin {
+  late ConfettiController _confetti;
+  late AnimationController _scaleAnim;
+  late AnimationController _counterAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _confetti = ConfettiController(duration: const Duration(seconds: 2));
+    _scaleAnim = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _counterAnim = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+
+    if (widget.state == ScanState.success) {
+      _confetti.play();
+      _scaleAnim.forward();
+      _counterAnim.forward();
+    } else {
+      _scaleAnim.value = 1.0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _confetti.dispose();
+    _scaleAnim.dispose();
+    _counterAnim.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isSuccess = widget.state == ScanState.success;
     final color = isSuccess ? AppTheme.success : AppTheme.error;
     final icon = isSuccess ? Icons.check_circle_rounded : Icons.error_rounded;
 
+    final hoursLeft = (widget.result?['hours_left'] as num?)?.toInt();
+    final clubName = (widget.result?['club_name'] as String?) ??
+        (widget.result?['clubs']?['name'] as String?);
+
     return Container(
       color: Colors.black87,
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, color: color, size: 80),
-              const SizedBox(height: 20),
-              Text(
-                message,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                ),
+      child: Stack(
+        children: [
+          // Confetti — top-center, blast 360°
+          if (isSuccess)
+            Align(
+              alignment: Alignment.topCenter,
+              child: ConfettiWidget(
+                confettiController: _confetti,
+                blastDirectionality: BlastDirectionality.explosive,
+                emissionFrequency: 0.05,
+                numberOfParticles: 30,
+                gravity: 0.25,
+                shouldLoop: false,
+                colors: const [
+                  AppTheme.primary,
+                  AppTheme.neonCyan,
+                  AppTheme.success,
+                  AppTheme.neonPink,
+                  Color(0xFFFFFFFF),
+                ],
               ),
-              if (isSuccess && result != null) ...[
-                const SizedBox(height: 16),
-                if (result!['hours_left'] != null)
-                  Text(
-                    '${ref.lang('scan.hours_left')}: ${result!['hours_left']} ${ref.lang('booking.hours_short')}',
-                    style: TextStyle(color: context.text2, fontSize: 16),
+            ),
+
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Bouncy icon
+                  ScaleTransition(
+                    scale: CurvedAnimation(
+                      parent: _scaleAnim,
+                      curve: Curves.elasticOut,
+                    ),
+                    child: Container(
+                      width: 110,
+                      height: 110,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          colors: [
+                            color.withValues(alpha: 0.30),
+                            color.withValues(alpha: 0.0),
+                          ],
+                        ),
+                      ),
+                      child: Center(
+                        child: Icon(icon, color: color, size: 84),
+                      ),
+                    ),
                   ),
-              ],
-            ],
+                  const SizedBox(height: 20),
+
+                  // Personalized welcome on success
+                  if (isSuccess && clubName != null) ...[
+                    Text(
+                      ref.lang('scan.welcome'),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 14,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      clubName,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                  ] else
+                    Text(
+                      widget.message,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+
+                  // Animated counter for remaining hours
+                  if (isSuccess && hoursLeft != null) ...[
+                    const SizedBox(height: 24),
+                    AnimatedBuilder(
+                      animation: _counterAnim,
+                      builder: (context, _) {
+                        final value =
+                            (_counterAnim.value * hoursLeft).floor();
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 18, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: AppTheme.success.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                                color: AppTheme.success.withValues(alpha: 0.4)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.access_time_rounded,
+                                  color: AppTheme.success, size: 22),
+                              const SizedBox(width: 10),
+                              Text(
+                                '$value ${ref.lang('booking.hours_short')}',
+                                style: const TextStyle(
+                                  color: AppTheme.success,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                ref.lang('scan.left'),
+                                style: TextStyle(
+                                  color:
+                                      AppTheme.success.withValues(alpha: 0.7),
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+
+                  if (!isSuccess) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      widget.message,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.7),
+                          fontSize: 14),
+                    ),
+                  ],
+                ],
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

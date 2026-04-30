@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <!-- Brand gradient: purple → indigo → cyan -->
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7C3AED"/>
+      <stop offset="50%" stop-color="#6366F1"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+    <linearGradient id="glyph" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E0E7FF"/>
+    </linearGradient>
+    <!-- Subtle inner glow -->
+    <radialGradient id="inner-glow" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Rounded square background (Android adaptive icon safe area) -->
+  <rect width="512" height="512" rx="112" ry="112" fill="url(#bg)"/>
+
+  <!-- Inner glow accent -->
+  <rect width="512" height="512" rx="112" ry="112" fill="url(#inner-glow)"/>
+
+  <!-- Gamepad glyph centered, ~280px wide -->
+  <g transform="translate(116, 160) scale(11.6)">
+    <!-- Main controller body (rounded rect with two grip lobes) -->
+    <path d="
+      M 4 8
+      Q 4 3 9 3
+      L 15 3
+      Q 20 3 20 8
+      L 20 14
+      Q 20 19 15 19
+      L 14 16
+      L 10 16
+      L 9 19
+      Q 4 19 4 14
+      Z"
+      fill="none"
+      stroke="url(#glyph)"
+      stroke-width="1.6"
+      stroke-linejoin="round"
+      stroke-linecap="round"/>
+
+    <!-- D-pad cross (left) -->
+    <rect x="6.7" y="9.3" width="3.6" height="1.4" rx="0.3" fill="url(#glyph)"/>
+    <rect x="7.8" y="8.2" width="1.4" height="3.6" rx="0.3" fill="url(#glyph)"/>
+
+    <!-- Action buttons (right) -->
+    <circle cx="15.5" cy="8.6" r="0.95" fill="url(#glyph)"/>
+    <circle cx="17.1" cy="10.0" r="0.95" fill="url(#glyph)"/>
+    <circle cx="15.5" cy="11.4" r="0.95" fill="url(#glyph)"/>
+    <circle cx="13.9" cy="10.0" r="0.95" fill="url(#glyph)"/>
+  </g>
+
+  <!-- "PP" wordmark stripe at the bottom (subtle) -->
+  <g transform="translate(0, 440)" opacity="0.85">
+    <text x="256" y="24" text-anchor="middle"
+          font-family="Inter, sans-serif"
+          font-weight="900"
+          font-size="32"
+          letter-spacing="6"
+          fill="#FFFFFF"
+          opacity="0.6">
+      PLAYPASS
+    </text>
+  </g>
+</svg>

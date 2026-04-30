@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_locale.dart';
+import '../../../core/widgets/empty_state.dart';
 import '../../../models/club.dart';
 import '../../../services/supabase_service.dart';
 import '../../clubs/providers/favorites_provider.dart';
@@ -25,23 +26,14 @@ class FavoritesScreen extends ConsumerWidget {
       body: clubsAsync.when(
         data: (clubs) {
           if (clubs.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.favorite_border_rounded,
-                        size: 64, color: context.text3.withValues(alpha: 0.3)),
-                    const SizedBox(height: 16),
-                    Text(ref.lang('fav.empty_title'),
-                        style: TextStyle(color: context.text3, fontSize: 16)),
-                    const SizedBox(height: 8),
-                    Text(ref.lang('fav.empty_sub'),
-                        style: TextStyle(color: context.text3, fontSize: 13)),
-                  ],
-                ),
-              ),
+            return EmptyState(
+              icon: Icons.favorite_border_rounded,
+              title: ref.lang('fav.empty_title'),
+              subtitle: ref.lang('fav.empty_sub'),
+              accentColor: const Color(0xFFEC4899),
+              actionLabel: 'Найти клубы',
+              actionIcon: Icons.search_rounded,
+              onAction: () => context.go('/clubs'),
             );
           }
           return ListView.builder(

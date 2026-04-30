@@ -352,8 +352,9 @@ const Map<String, String> stringsUz = {
   // ── QR scanner extra ──────────────────────
   'scan.invalid_qr': 'Noto\'g\'ri QR-kod. PlayPass posterini skanerlang.',
   'scan.invalid_code': 'Yaroqsiz QR-kod.',
-  'scan.welcome': 'Xush kelibsiz!',
+  'scan.welcome': 'Xush kelibsiz',
   'scan.hours_left': 'Qoldi',
+  'scan.left': 'qoldi',
   'scan.hint': 'Klubning QR-posteriga qarating',
 
   // ── Plans screen ──────────────────────────

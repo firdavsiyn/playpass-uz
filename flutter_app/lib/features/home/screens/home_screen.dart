@@ -490,8 +490,9 @@ class _ScanButton extends ConsumerStatefulWidget {
 }
 
 class _ScanButtonState extends ConsumerState<_ScanButton>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late AnimationController _pulseController;
+  late AnimationController _pressController;
 
   @override
   void initState() {
@@ -499,6 +500,12 @@ class _ScanButtonState extends ConsumerState<_ScanButton>
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2000),
+    );
+    // Press animation: scale to 0.96 in 100ms, back to 1.0 with spring
+    _pressController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 120),
+      reverseDuration: const Duration(milliseconds: 220),
     );
     if (widget.hasActiveSubscription && !widget.isFrozen) {
       _pulseController.repeat(reverse: true);
@@ -518,7 +525,21 @@ class _ScanButtonState extends ConsumerState<_ScanButton>
   @override
   void dispose() {
     _pulseController.dispose();
+    _pressController.dispose();
     super.dispose();
+  }
+
+  void _handleTap() {
+    HapticFeedback.mediumImpact();
+    if (widget.isFrozen) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(ref.lang('home.frozen'))),
+      );
+    } else if (widget.hasActiveSubscription) {
+      context.go('/scanner');
+    } else {
+      context.push('/plans');
+    }
   }
 
   @override
@@ -526,123 +547,124 @@ class _ScanButtonState extends ConsumerState<_ScanButton>
     final canScan = widget.hasActiveSubscription && !widget.isFrozen;
 
     return GestureDetector(
-      onTap: () {
-        HapticFeedback.mediumImpact();
-        if (widget.isFrozen) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(ref.lang('home.frozen'))),
-          );
-        } else if (widget.hasActiveSubscription) {
-          context.go('/scanner');
-        } else {
-          context.push('/plans');
-        }
-      },
+      onTapDown: (_) => _pressController.forward(),
+      onTapUp: (_) => _pressController.reverse(),
+      onTapCancel: () => _pressController.reverse(),
+      onTap: _handleTap,
       child: AnimatedBuilder(
-        animation: _pulseController,
+        animation: Listenable.merge([_pulseController, _pressController]),
         builder: (_, __) {
           final pulse = canScan ? _pulseController.value : 0.0;
-          return Container(
-            height: 64,
-            decoration: BoxDecoration(
-              gradient: canScan
-                  ? const LinearGradient(
+          // Spring-out scale: 1.0 → 0.96 on press, back with elastic
+          final scale = 1.0 - (_pressController.value * 0.04);
+          return Transform.scale(
+            scale: scale,
+            child: _buildButton(canScan, pulse),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildButton(bool canScan, double pulse) {
+    return Container(
+      height: 64,
+      decoration: BoxDecoration(
+        gradient: canScan
+            ? const LinearGradient(
+                colors: [
+                  Color(0xFF7C3AED),
+                  Color(0xFF6366F1),
+                  Color(0xFF06B6D4)
+                ],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              )
+            : null,
+        color: canScan ? null : context.card,
+        borderRadius: BorderRadius.circular(16),
+        border: canScan
+            ? null
+            : Border.all(color: AppTheme.primary.withValues(alpha: 0.15)),
+        boxShadow: canScan
+            ? [
+                BoxShadow(
+                  color:
+                      AppTheme.primary.withValues(alpha: 0.35 + pulse * 0.25),
+                  blurRadius: 20 + pulse * 16,
+                  offset: const Offset(0, 6),
+                ),
+                BoxShadow(
+                  color:
+                      AppTheme.neonCyan.withValues(alpha: 0.15 + pulse * 0.15),
+                  blurRadius: 30 + pulse * 20,
+                  offset: const Offset(0, 8),
+                ),
+              ]
+            : AppTheme.cardGlow(),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Stack(
+          children: [
+            // Inner shine highlight when active
+            if (canScan)
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 28,
+                child: Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
                       colors: [
-                        Color(0xFF7C3AED),
-                        Color(0xFF6366F1),
-                        Color(0xFF06B6D4)
-                      ],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                    )
-                  : null,
-              color: canScan ? null : context.card,
-              borderRadius: BorderRadius.circular(16),
-              border: canScan
-                  ? null
-                  : Border.all(color: AppTheme.primary.withValues(alpha: 0.15)),
-              boxShadow: canScan
-                  ? [
-                      BoxShadow(
-                        color: AppTheme.primary
-                            .withValues(alpha: 0.35 + pulse * 0.25),
-                        blurRadius: 20 + pulse * 16,
-                        offset: const Offset(0, 6),
-                      ),
-                      BoxShadow(
-                        color: AppTheme.neonCyan
-                            .withValues(alpha: 0.15 + pulse * 0.15),
-                        blurRadius: 30 + pulse * 20,
-                        offset: const Offset(0, 8),
-                      ),
-                    ]
-                  : AppTheme.cardGlow(),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Stack(
-                children: [
-                  // Inner shine highlight when active
-                  if (canScan)
-                    Positioned(
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: 28,
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Color(0x1AFFFFFF),
-                              Color(0x00FFFFFF),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  // Button content
-                  Center(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          widget.isFrozen
-                              ? Icons.ac_unit_rounded
-                              : widget.hasActiveSubscription
-                                  ? Icons.qr_code_scanner_rounded
-                                  : Icons.shopping_cart_outlined,
-                          color: canScan ? Colors.white : context.text3,
-                          size: 26,
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          widget.isFrozen
-                              ? ref.lang('home.frozen')
-                              : widget.hasActiveSubscription
-                                  ? ref.lang('home.scan_qr')
-                                  : ref.lang('home.buy_sub'),
-                          style: TextStyle(
-                            color: canScan ? Colors.white : context.text3,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.3,
-                          ),
-                        ),
-                        if (canScan) ...[
-                          const SizedBox(width: 8),
-                          const Icon(Icons.arrow_forward_rounded,
-                              color: Colors.white, size: 20),
-                        ],
+                        Color(0x1AFFFFFF),
+                        Color(0x00FFFFFF),
                       ],
                     ),
                   ),
+                ),
+              ),
+            // Button content
+            Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    widget.isFrozen
+                        ? Icons.ac_unit_rounded
+                        : widget.hasActiveSubscription
+                            ? Icons.qr_code_scanner_rounded
+                            : Icons.shopping_cart_outlined,
+                    color: canScan ? Colors.white : context.text3,
+                    size: 26,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    widget.isFrozen
+                        ? ref.lang('home.frozen')
+                        : widget.hasActiveSubscription
+                            ? ref.lang('home.scan_qr')
+                            : ref.lang('home.buy_sub'),
+                    style: TextStyle(
+                      color: canScan ? Colors.white : context.text3,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                  if (canScan) ...[
+                    const SizedBox(width: 8),
+                    const Icon(Icons.arrow_forward_rounded,
+                        color: Colors.white, size: 20),
+                  ],
                 ],
               ),
             ),
-          );
-        },
+          ],
+        ),
       ),
     );
   }

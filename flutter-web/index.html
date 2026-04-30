@@ -36,25 +36,112 @@
   <script src="https://api-maps.yandex.ru/2.1/?apikey=&lang=ru_RU" type="text/javascript"></script>
 
   <style>
-    body { margin: 0; background: #0F0F1A; }
+    body {
+      margin: 0;
+      background: #050510;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* Branded splash screen with floating gradient orbs */
     #loading {
-      position: fixed; inset: 0; display: flex; flex-direction: column;
-      align-items: center; justify-content: center; background: #0F0F1A;
-      color: #6366F1; font-family: sans-serif; gap: 16px; z-index: 9999;
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: radial-gradient(circle at 80% 20%, rgba(124, 58, 237, 0.18), transparent 50%),
+                  radial-gradient(circle at 20% 80%, rgba(6, 182, 212, 0.12), transparent 50%),
+                  #050510;
+      gap: 28px; z-index: 9999;
+      overflow: hidden;
     }
-    #loading .spinner {
-      width: 40px; height: 40px; border: 3px solid #6366F120;
-      border-top-color: #6366F1; border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+
+    /* Floating decorative orbs */
+    #loading::before, #loading::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(40px);
+      animation: float 12s ease-in-out infinite;
+      pointer-events: none;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    #loading p { color: #9CA3AF; font-size: 14px; margin: 0; }
+    #loading::before {
+      width: 280px; height: 280px;
+      background: rgba(124, 58, 237, 0.25);
+      top: 10%; right: -80px;
+    }
+    #loading::after {
+      width: 240px; height: 240px;
+      background: rgba(6, 182, 212, 0.20);
+      bottom: 12%; left: -60px;
+      animation-delay: -6s;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0) translateX(0); }
+      50% { transform: translateY(-30px) translateX(20px); }
+    }
+
+    /* Logo block with pulsing gradient */
+    #loading .logo-wrap {
+      width: 96px; height: 96px;
+      border-radius: 24px;
+      background: linear-gradient(135deg, #7C3AED 0%, #6366F1 50%, #06B6D4 100%);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 12px 40px rgba(124, 58, 237, 0.4),
+                  0 0 0 0 rgba(124, 58, 237, 0.6);
+      animation: glow 2s ease-in-out infinite;
+      position: relative; z-index: 1;
+    }
+    #loading .logo-wrap img {
+      width: 64px; height: 64px;
+    }
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 12px 40px rgba(124, 58, 237, 0.4), 0 0 0 0 rgba(124, 58, 237, 0.6); }
+      50% { box-shadow: 0 12px 60px rgba(124, 58, 237, 0.6), 0 0 0 16px rgba(124, 58, 237, 0); }
+    }
+
+    /* Wordmark */
+    #loading .wordmark {
+      font-size: 32px; font-weight: 900; letter-spacing: 6px;
+      background: linear-gradient(90deg, #9F67FF 0%, #06B6D4 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      position: relative; z-index: 1;
+    }
+
+    /* Loading bar */
+    #loading .progress {
+      width: 160px; height: 3px;
+      background: rgba(124, 58, 237, 0.15);
+      border-radius: 3px;
+      overflow: hidden;
+      position: relative; z-index: 1;
+    }
+    #loading .progress-bar {
+      width: 40%; height: 100%;
+      background: linear-gradient(90deg, #7C3AED, #06B6D4);
+      border-radius: 3px;
+      animation: slide 1.4s ease-in-out infinite;
+    }
+    @keyframes slide {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(400%); }
+    }
+
+    #loading p {
+      color: #6B5F8A; font-size: 13px; margin: 0;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      position: relative; z-index: 1;
+    }
   </style>
 </head>
 <body>
   <div id="loading">
-    <div class="spinner"></div>
-    <p>Загрузка PlayPass...</p>
+    <div class="logo-wrap">
+      <img src="icons/app-icon.svg" alt="PlayPass" />
+    </div>
+    <div class="wordmark">PLAYPASS</div>
+    <div class="progress"><div class="progress-bar"></div></div>
+    <p>Загрузка</p>
   </div>
   <script>
     // Force unregister ALL old service workers to prevent stale cache
@@ -191,48 +278,51 @@
       var key = 'v4_' + mode + '_' + isVip + '_' + isOpen + '_' + (occColor || 'na');
       if (window._ymapIconCache[key]) return window._ymapIconCache[key];
 
-      var fillColor = '#7C3AED'; // brand purple
-      // Occupancy color overrides white border (VIP gold takes precedence)
-      var borderColor = isVip ? '#FBBF24' : (occColor || 'white');
-      var borderWidth = (isVip || occColor) ? 3 : 2;
+      // Brand gradient inside the pin
+      var gradId = 'g_' + key.replace(/[^a-z0-9]/gi, '');
+      var gradStops = '<linearGradient id="' + gradId + '" x1="0%" y1="0%" x2="100%" y2="100%">' +
+        '<stop offset="0%" stop-color="#7C3AED"/>' +
+        '<stop offset="100%" stop-color="#06B6D4"/></linearGradient>';
+      var fillFill = 'url(#' + gradId + ')';
 
-      // Wider marker when showing both icons
+      // Occupancy color overrides default white border; VIP gold has priority
+      var borderColor = isVip ? '#FBBF24' : (occColor || '#FFFFFF');
+      var borderWidth = (isVip || occColor) ? 2.5 : 2;
+
+      // Pin geometry — Google Maps-style teardrop
+      // Single icon: 44×56 (point at bottom). Dual: 64×56 capsule with bottom point
       var isWide = (mode === 'both');
-      var width = isWide ? 56 : 40;
-      var height = 40;
+      var width = isWide ? 64 : 44;
+      var height = 56;
 
-      // Capsule-shaped background when wide, circle otherwise
-      var bgShape;
+      // Pin path: rounded top + pointed bottom (anchor at center-bottom of viewport)
+      var pinPath;
       if (isWide) {
-        bgShape = '<rect x="2" y="2" width="' + (width - 4) + '" height="' + (height - 4) +
-          '" rx="18" ry="18" fill="' + fillColor + '" stroke="' + borderColor + '" stroke-width="' + borderWidth + '"/>';
+        // Wider capsule pin for 'both' mode
+        pinPath = 'M 8 4 Q 4 4 4 14 L 4 32 Q 4 42 14 42 L ' + (width - 14) +
+          ' 42 Q ' + (width - 4) + ' 42 ' + (width - 4) + ' 32 L ' + (width - 4) +
+          ' 14 Q ' + (width - 4) + ' 4 ' + (width - 8) + ' 4 Z ' +
+          // Bottom point
+          'M ' + (width / 2 - 6) + ' 42 L ' + (width / 2) + ' 54 L ' + (width / 2 + 6) + ' 42 Z';
       } else {
-        bgShape = '<circle cx="20" cy="20" r="16" fill="' + fillColor +
-          '" stroke="' + borderColor + '" stroke-width="' + borderWidth + '"/>';
+        // Standard teardrop pin
+        pinPath = 'M 22 4 C 12 4 4 12 4 22 C 4 32 12 38 22 54 C 32 38 40 32 40 22 C 40 12 32 4 22 4 Z';
       }
 
-      // Desktop/monitor glyph (for PC) — scaled to ~20×20 in viewBox 24×24
-      // Translated to position inside the marker
-      function pcGlyph(tx) {
-        return '<g transform="translate(' + tx + ', 10) scale(0.83)">' +
-          // Monitor body
+      // Glyphs translate slightly UP so they're centered in the round head, not the tail
+      function pcGlyph(tx, ty) {
+        return '<g transform="translate(' + tx + ', ' + ty + ') scale(0.78)">' +
           '<rect x="2" y="3" width="20" height="14" rx="2" fill="none" stroke="white" stroke-width="2"/>' +
-          // Monitor stand
           '<line x1="8" y1="21" x2="16" y2="21" stroke="white" stroke-width="2" stroke-linecap="round"/>' +
           '<line x1="12" y1="17" x2="12" y2="21" stroke="white" stroke-width="2"/>' +
           '</g>';
       }
-
-      // Gamepad glyph (for PS) — simplified DualShock-ish
-      function psGlyph(tx) {
-        return '<g transform="translate(' + tx + ', 11) scale(0.83)">' +
-          // Main body (rounded rectangle with two lobes)
+      function psGlyph(tx, ty) {
+        return '<g transform="translate(' + tx + ', ' + ty + ') scale(0.78)">' +
           '<path d="M 4 8 Q 4 3 9 3 L 15 3 Q 20 3 20 8 L 20 12 Q 20 17 15 17 L 14 14 L 10 14 L 9 17 Q 4 17 4 12 Z" ' +
           'fill="none" stroke="white" stroke-width="2" stroke-linejoin="round"/>' +
-          // D-pad cross (left)
           '<rect x="7" y="9" width="3" height="1.2" fill="white"/>' +
           '<rect x="8" y="8" width="1.2" height="3" fill="white"/>' +
-          // Buttons (right)
           '<circle cx="15" cy="8.5" r="0.9" fill="white"/>' +
           '<circle cx="16.5" cy="10" r="0.9" fill="white"/>' +
           '<circle cx="15" cy="11.5" r="0.9" fill="white"/>' +
@@ -242,18 +332,28 @@
 
       var content;
       if (mode === 'both') {
-        // PC on the left, PS on the right, separated
-        content = pcGlyph(6) + psGlyph(30);
+        // PC on the left, PS on the right, both in the head zone (y=8)
+        content = pcGlyph(8, 8) + psGlyph(34, 8);
       } else if (mode === 'ps') {
-        content = psGlyph(10);
+        content = psGlyph(11, 7);
       } else {
-        content = pcGlyph(10);
+        content = pcGlyph(11, 7);
       }
 
+      // Drop shadow under the pin
+      var shadow = '<ellipse cx="' + (width / 2) + '" cy="' + (height - 1) +
+        '" rx="6" ry="2" fill="rgba(0,0,0,0.25)"/>';
+
       var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + width + '" height="' + height + '">' +
-        bgShape + content;
+        '<defs>' + gradStops + '</defs>' +
+        shadow +
+        '<path d="' + pinPath + '" fill="' + fillFill +
+        '" stroke="' + borderColor + '" stroke-width="' + borderWidth + '" stroke-linejoin="round"/>' +
+        content;
+
       if (isOpen) {
-        svg += '<circle cx="' + (width - 6) + '" cy="6" r="4" fill="#22C55E" stroke="white" stroke-width="1.5"/>';
+        // Green "open now" dot in top-right of the head
+        svg += '<circle cx="' + (width - 8) + '" cy="8" r="4" fill="#22C55E" stroke="white" stroke-width="1.5"/>';
       }
       svg += '</svg>';
 
@@ -304,7 +404,8 @@
             iconLayout: 'default#image',
             iconImageHref: icon.uri,
             iconImageSize: [icon.width, icon.height],
-            iconImageOffset: [-icon.width / 2, -icon.height / 2],
+            // Pin tip is at the bottom-center, so anchor there (not center)
+            iconImageOffset: [-icon.width / 2, -(icon.height - 2)],
             opacity: m.isOpen ? 1.0 : 0.5,
             // Redundant safety: disable balloon per-feature too
             openBalloonOnClick: false,

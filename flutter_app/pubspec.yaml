@@ -68,6 +68,9 @@ dependencies:
   # Error tracking & monitoring
   sentry_flutter: ^8.9.0
 
+  # Celebration animation for delight moments (scan success, achievements)
+  confetti: ^0.7.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

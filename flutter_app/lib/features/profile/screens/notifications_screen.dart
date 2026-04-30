@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../services/supabase_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_locale.dart';
+import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/neon_shimmer.dart';
 
 final notificationsProvider =
@@ -43,20 +44,13 @@ class NotificationsScreen extends ConsumerWidget {
           data: (notifs) {
             if (notifs.isEmpty) {
               return ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
                 children: [
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.3),
-                  Center(
-                    child: Column(
-                      children: [
-                        Icon(Icons.notifications_off_rounded,
-                            size: 64,
-                            color: context.text3.withValues(alpha: 0.3)),
-                        const SizedBox(height: 16),
-                        Text(ref.lang('notif.empty'),
-                            style:
-                                TextStyle(color: context.text3, fontSize: 16)),
-                      ],
-                    ),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.18),
+                  EmptyState(
+                    icon: Icons.notifications_active_rounded,
+                    title: ref.lang('notif.empty'),
+                    subtitle: 'Здесь появятся уведомления о подписке, акциях и достижениях',
                   ),
                 ],
               );
