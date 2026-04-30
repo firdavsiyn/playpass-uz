@@ -57,7 +57,8 @@ class _AuthChangeNotifier extends ChangeNotifier {
       final user = authState.session?.user;
       if (user != null) {
         AppMonitoring.setUser(id: user.id, email: user.email);
-        AppMonitoring.addBreadcrumb('Auth: ${authState.event.name}', category: 'auth');
+        AppMonitoring.addBreadcrumb('Auth: ${authState.event.name}',
+            category: 'auth');
       } else {
         AppMonitoring.clearUser();
       }
@@ -79,7 +80,8 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       if (!isAuth && !isAuthRoute) return '/auth/login';
       final isResetPassword = state.fullPath == '/auth/reset-password';
-      if (isAuth && !isResetPassword && (state.fullPath == '/' || isAuthRoute)) return '/home';
+      if (isAuth && !isResetPassword && (state.fullPath == '/' || isAuthRoute))
+        return '/home';
       return null;
     },
     routes: [
@@ -87,10 +89,18 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Auth flow — Email + Пароль
       GoRoute(path: '/auth/login', builder: (_, __) => const AuthScreen()),
-      GoRoute(path: '/auth/forgot-password', builder: (_, __) => const ForgotPasswordScreen()),
-      GoRoute(path: '/auth/reset-password', builder: (_, __) => const ResetPasswordScreen()),
-      GoRoute(path: '/auth/onboarding', builder: (_, __) => const OnboardingScreen()),
-      GoRoute(path: '/auth/profile-setup', builder: (_, __) => const ProfileSetupScreen()),
+      GoRoute(
+          path: '/auth/forgot-password',
+          builder: (_, __) => const ForgotPasswordScreen()),
+      GoRoute(
+          path: '/auth/reset-password',
+          builder: (_, __) => const ResetPasswordScreen()),
+      GoRoute(
+          path: '/auth/onboarding',
+          builder: (_, __) => const OnboardingScreen()),
+      GoRoute(
+          path: '/auth/profile-setup',
+          builder: (_, __) => const ProfileSetupScreen()),
 
       // Main shell with bottom nav
       StatefulShellRoute.indexedStack(
@@ -114,23 +124,35 @@ final routerProvider = Provider<GoRouter>((ref) {
             ),
           ]),
           StatefulShellBranch(routes: [
-            GoRoute(path: '/scanner', builder: (_, __) => const QrScannerScreen()),
+            GoRoute(
+                path: '/scanner', builder: (_, __) => const QrScannerScreen()),
           ]),
           StatefulShellBranch(routes: [
-            GoRoute(path: '/subscription', builder: (_, __) => const MySubscriptionScreen()),
+            GoRoute(
+                path: '/subscription',
+                builder: (_, __) => const MySubscriptionScreen()),
           ]),
           StatefulShellBranch(routes: [
             GoRoute(
               path: '/profile',
               builder: (_, __) => const ProfileScreen(),
               routes: [
-                GoRoute(path: 'history', builder: (_, __) => const VisitHistoryScreen()),
-                GoRoute(path: 'referral', builder: (_, __) => const ReferralScreen()),
-                GoRoute(path: 'favorites', builder: (_, __) => const FavoritesScreen()),
-                GoRoute(path: 'achievements', builder: (_, __) => const AchievementsScreen()),
+                GoRoute(
+                    path: 'history',
+                    builder: (_, __) => const VisitHistoryScreen()),
+                GoRoute(
+                    path: 'referral',
+                    builder: (_, __) => const ReferralScreen()),
+                GoRoute(
+                    path: 'favorites',
+                    builder: (_, __) => const FavoritesScreen()),
+                GoRoute(
+                    path: 'achievements',
+                    builder: (_, __) => const AchievementsScreen()),
                 GoRoute(
                   path: 'freeze',
-                  redirect: (_, state) => state.extra is Subscription ? null : '/profile',
+                  redirect: (_, state) =>
+                      state.extra is Subscription ? null : '/profile',
                   builder: (_, state) => FreezeScreen(
                     subscription: state.extra as Subscription,
                   ),
@@ -150,68 +172,90 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/upsell',
-        redirect: (_, state) => state.extra is Map<String, String> ? null : '/plans',
+        redirect: (_, state) =>
+            state.extra is Map<String, String> ? null : '/plans',
         builder: (_, state) => UpsellScreen(
           extra: state.extra as Map<String, String>,
         ),
       ),
 
       // Gift certificates
-      GoRoute(path: '/gift/purchase', builder: (_, __) => const GiftPurchaseScreen()),
-      GoRoute(path: '/gift/redeem', builder: (_, __) => const GiftRedeemScreen()),
+      GoRoute(
+          path: '/gift/purchase',
+          builder: (_, __) => const GiftPurchaseScreen()),
+      GoRoute(
+          path: '/gift/redeem', builder: (_, __) => const GiftRedeemScreen()),
 
       // Feature-flagged routes — redirect to /home when disabled, so deep
       // links / stale push notifications don't dump users onto a half-built
       // screen. Flip the flag in feature_flags.dart to enable.
 
-      GoRoute(path: '/booking',
-        redirect: (_, __) => FeatureFlags.booking ? null : '/home',
-        builder: (_, __) => const BookingScreen()),
+      GoRoute(
+          path: '/booking',
+          redirect: (_, __) => FeatureFlags.booking ? null : '/home',
+          builder: (_, __) => const BookingScreen()),
 
-      GoRoute(path: '/tournaments',
-        redirect: (_, __) => FeatureFlags.tournaments ? null : '/home',
-        builder: (_, __) => const TournamentsScreen()),
-      GoRoute(path: '/tournaments/:id',
-        redirect: (_, __) => FeatureFlags.tournaments ? null : '/home',
-        builder: (_, state) => TournamentDetailScreen(tournamentId: state.pathParameters['id']!)),
+      GoRoute(
+          path: '/tournaments',
+          redirect: (_, __) => FeatureFlags.tournaments ? null : '/home',
+          builder: (_, __) => const TournamentsScreen()),
+      GoRoute(
+          path: '/tournaments/:id',
+          redirect: (_, __) => FeatureFlags.tournaments ? null : '/home',
+          builder: (_, state) => TournamentDetailScreen(
+              tournamentId: state.pathParameters['id']!)),
 
-      GoRoute(path: '/stories',
-        redirect: (_, __) => FeatureFlags.stories ? null : '/home',
-        builder: (_, __) => const StoriesScreen()),
+      GoRoute(
+          path: '/stories',
+          redirect: (_, __) => FeatureFlags.stories ? null : '/home',
+          builder: (_, __) => const StoriesScreen()),
 
-      GoRoute(path: '/loyalty',
-        redirect: (_, __) => FeatureFlags.loyalty ? null : '/home',
-        builder: (_, __) => const LoyaltyScreen()),
+      GoRoute(
+          path: '/loyalty',
+          redirect: (_, __) => FeatureFlags.loyalty ? null : '/home',
+          builder: (_, __) => const LoyaltyScreen()),
 
       // Clubs map: still accessible via the inline view in clubs tab,
       // but we still keep the route guarded by the same flag.
-      GoRoute(path: '/clubs-map',
-        redirect: (_, __) => FeatureFlags.fullscreenMapShortcut ? null : '/home',
-        builder: (_, __) => const ClubsMapScreen()),
+      GoRoute(
+          path: '/clubs-map',
+          redirect: (_, __) =>
+              FeatureFlags.fullscreenMapShortcut ? null : '/home',
+          builder: (_, __) => const ClubsMapScreen()),
 
       // Notifications (always enabled)
-      GoRoute(path: '/notifications', builder: (_, __) => const NotificationsScreen()),
-      GoRoute(path: '/savings',
-        redirect: (_, __) => FeatureFlags.savings ? null : '/home',
-        builder: (_, __) => const SavingsScreen()),
-      GoRoute(path: '/friends',
-        redirect: (_, __) => FeatureFlags.friends ? null : '/home',
-        builder: (_, __) => const FriendsScreen()),
-      GoRoute(path: '/notifications-settings', builder: (_, __) => const NotificationSettingsScreen()),
+      GoRoute(
+          path: '/notifications',
+          builder: (_, __) => const NotificationsScreen()),
+      GoRoute(
+          path: '/savings',
+          redirect: (_, __) => FeatureFlags.savings ? null : '/home',
+          builder: (_, __) => const SavingsScreen()),
+      GoRoute(
+          path: '/friends',
+          redirect: (_, __) => FeatureFlags.friends ? null : '/home',
+          builder: (_, __) => const FriendsScreen()),
+      GoRoute(
+          path: '/notifications-settings',
+          builder: (_, __) => const NotificationSettingsScreen()),
 
       // Gaming
-      GoRoute(path: '/player-stats',
-        redirect: (_, __) => FeatureFlags.playerStats ? null : '/home',
-        builder: (_, __) => const PlayerStatsScreen()),
-      GoRoute(path: '/lfg',
-        redirect: (_, __) => FeatureFlags.lfg ? null : '/home',
-        builder: (_, __) => const LfgScreen()),
-      GoRoute(path: '/leaderboard',
-        redirect: (_, __) => FeatureFlags.leaderboard ? null : '/home',
-        builder: (_, __) => const LeaderboardScreen()),
-      GoRoute(path: '/happy-hours',
-        redirect: (_, __) => FeatureFlags.happyHours ? null : '/home',
-        builder: (_, __) => const HappyHoursScreen()),
+      GoRoute(
+          path: '/player-stats',
+          redirect: (_, __) => FeatureFlags.playerStats ? null : '/home',
+          builder: (_, __) => const PlayerStatsScreen()),
+      GoRoute(
+          path: '/lfg',
+          redirect: (_, __) => FeatureFlags.lfg ? null : '/home',
+          builder: (_, __) => const LfgScreen()),
+      GoRoute(
+          path: '/leaderboard',
+          redirect: (_, __) => FeatureFlags.leaderboard ? null : '/home',
+          builder: (_, __) => const LeaderboardScreen()),
+      GoRoute(
+          path: '/happy-hours',
+          redirect: (_, __) => FeatureFlags.happyHours ? null : '/home',
+          builder: (_, __) => const HappyHoursScreen()),
     ],
   );
 });
@@ -291,7 +335,8 @@ class MainShell extends ConsumerWidget {
                       label: '',
                     ),
                     BottomNavigationBarItem(
-                      icon: const Icon(Icons.card_membership_outlined, size: 24),
+                      icon:
+                          const Icon(Icons.card_membership_outlined, size: 24),
                       activeIcon:
                           const _NeonIcon(icon: Icons.card_membership_rounded),
                       label: s['nav.subscription']!,
@@ -381,7 +426,8 @@ class _ScannerButton extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF7C3AED).withValues(alpha: active ? 0.6 : 0.35),
+              color: const Color(0xFF7C3AED)
+                  .withValues(alpha: active ? 0.6 : 0.35),
               blurRadius: active ? 20 : 14,
               spreadRadius: active ? 2 : 0,
               offset: const Offset(0, 4),

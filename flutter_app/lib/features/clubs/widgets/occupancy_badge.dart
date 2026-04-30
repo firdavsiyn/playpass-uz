@@ -37,7 +37,8 @@ class OccupancyBadge extends StatelessWidget {
             const SizedBox(width: 3),
             Text(
               '$current/$capacity',
-              style: TextStyle(color: _color, fontSize: 10, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                  color: _color, fontSize: 10, fontWeight: FontWeight.w600),
             ),
           ],
         ),

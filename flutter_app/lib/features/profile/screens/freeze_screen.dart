@@ -43,7 +43,8 @@ class _FreezeScreenState extends ConsumerState<FreezeScreen> {
       );
       if (mounted) {
         setState(() {
-          _frozenDates = dates.map((d) => DateTime(d.year, d.month, d.day)).toSet();
+          _frozenDates =
+              dates.map((d) => DateTime(d.year, d.month, d.day)).toSet();
           _loading = false;
         });
       }
@@ -72,7 +73,8 @@ class _FreezeScreenState extends ConsumerState<FreezeScreen> {
         _frozenDates.length >= AppConstants.freezeMaxDaysPerMonth) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${ref.lang('freeze.limit_reached')} (${AppConstants.freezeMaxDaysPerMonth})'),
+          content: Text(
+              '${ref.lang('freeze.limit_reached')} (${AppConstants.freezeMaxDaysPerMonth})'),
         ),
       );
       return;
@@ -123,7 +125,8 @@ class _FreezeScreenState extends ConsumerState<FreezeScreen> {
         title: Text(ref.lang('freeze.title')),
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: AppTheme.primary))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppTheme.primary))
           : ListView(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
@@ -135,7 +138,8 @@ class _FreezeScreenState extends ConsumerState<FreezeScreen> {
                   decoration: BoxDecoration(
                     color: context.card,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppTheme.info.withValues(alpha: 0.1)),
+                    border:
+                        Border.all(color: AppTheme.info.withValues(alpha: 0.1)),
                     boxShadow: AppTheme.cardGlow(color: AppTheme.info),
                   ),
                   child: Column(
@@ -149,7 +153,8 @@ class _FreezeScreenState extends ConsumerState<FreezeScreen> {
                             AppTheme.neonCyan.withValues(alpha: 0.15),
                           ]),
                           shape: BoxShape.circle,
-                          boxShadow: AppTheme.neonGlow(color: AppTheme.info, radius: 14),
+                          boxShadow: AppTheme.neonGlow(
+                              color: AppTheme.info, radius: 14),
                         ),
                         child: const Icon(
                           Icons.calendar_month_rounded,
@@ -180,17 +185,22 @@ class _FreezeScreenState extends ConsumerState<FreezeScreen> {
 
                 // Remaining quota
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   decoration: BoxDecoration(
                     color: context.card,
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: AppTheme.primary.withValues(alpha: 0.06)),
+                    border: Border.all(
+                        color: AppTheme.primary.withValues(alpha: 0.06)),
                   ),
                   child: Row(
                     children: [
                       Icon(
-                        remaining > 0 ? Icons.check_circle_rounded : Icons.cancel_rounded,
-                        color: remaining > 0 ? AppTheme.success : AppTheme.error,
+                        remaining > 0
+                            ? Icons.check_circle_rounded
+                            : Icons.cancel_rounded,
+                        color:
+                            remaining > 0 ? AppTheme.success : AppTheme.error,
                         size: 22,
                       ),
                       const SizedBox(width: 12),
@@ -209,7 +219,8 @@ class _FreezeScreenState extends ConsumerState<FreezeScreen> {
                             const SizedBox(height: 4),
                             Text(
                               '${ref.lang('freeze.selected')}: ${_frozenDates.length} ${ref.lang('freeze.days')}',
-                              style: TextStyle(color: context.text3, fontSize: 12),
+                              style:
+                                  TextStyle(color: context.text3, fontSize: 12),
                             ),
                           ],
                         ),
@@ -224,7 +235,8 @@ class _FreezeScreenState extends ConsumerState<FreezeScreen> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
-                    value: _frozenDates.length / AppConstants.freezeMaxDaysPerMonth,
+                    value: _frozenDates.length /
+                        AppConstants.freezeMaxDaysPerMonth,
                     backgroundColor: context.surface,
                     valueColor: AlwaysStoppedAnimation<Color>(
                       remaining > 1 ? AppTheme.primary : AppTheme.warning,
@@ -246,9 +258,11 @@ class _FreezeScreenState extends ConsumerState<FreezeScreen> {
                   children: [
                     _legendDot(AppTheme.info, ref.lang('freeze.frozen_label')),
                     const SizedBox(width: 20),
-                    _legendDot(context.text3.withValues(alpha: 0.3), ref.lang('freeze.past_label')),
+                    _legendDot(context.text3.withValues(alpha: 0.3),
+                        ref.lang('freeze.past_label')),
                     const SizedBox(width: 20),
-                    _legendDot(AppTheme.primary, ref.lang('freeze.today_label')),
+                    _legendDot(
+                        AppTheme.primary, ref.lang('freeze.today_label')),
                   ],
                 ),
 
@@ -280,10 +294,12 @@ class _FreezeScreenState extends ConsumerState<FreezeScreen> {
                               .map((d) => Chip(
                                     label: Text(
                                       '${d.day.toString().padLeft(2, '0')}.${d.month.toString().padLeft(2, '0')}',
-                                      style: const TextStyle(fontSize: 12, color: Colors.white),
+                                      style: const TextStyle(
+                                          fontSize: 12, color: Colors.white),
                                     ),
                                     backgroundColor: AppTheme.info,
-                                    deleteIcon: const Icon(Icons.close, size: 14, color: Colors.white),
+                                    deleteIcon: const Icon(Icons.close,
+                                        size: 14, color: Colors.white),
                                     onDeleted: () => _toggleDate(d),
                                     visualDensity: VisualDensity.compact,
                                     padding: EdgeInsets.zero,
@@ -309,7 +325,8 @@ class _FreezeScreenState extends ConsumerState<FreezeScreen> {
     final startWeekday = (firstOfMonth.weekday - 1) % 7; // Mon=0
 
     final monthName = _monthName(_viewMonth.month);
-    final isCurrentMonth = _viewMonth.year == now.year && _viewMonth.month == now.month;
+    final isCurrentMonth =
+        _viewMonth.year == now.year && _viewMonth.month == now.month;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -326,7 +343,9 @@ class _FreezeScreenState extends ConsumerState<FreezeScreen> {
               IconButton(
                 onPressed: isCurrentMonth ? null : () => _changeMonth(-1),
                 icon: Icon(Icons.chevron_left_rounded,
-                    color: isCurrentMonth ? context.text3.withValues(alpha: 0.3) : context.text1),
+                    color: isCurrentMonth
+                        ? context.text3.withValues(alpha: 0.3)
+                        : context.text1),
               ),
               Text(
                 '$monthName ${_viewMonth.year}',
@@ -347,7 +366,15 @@ class _FreezeScreenState extends ConsumerState<FreezeScreen> {
 
           // Day headers
           Row(
-            children: [ref.lang('booking.day_mon'), ref.lang('booking.day_tue'), ref.lang('booking.day_wed'), ref.lang('booking.day_thu'), ref.lang('booking.day_fri'), ref.lang('booking.day_sat'), ref.lang('booking.day_sun')]
+            children: [
+              ref.lang('booking.day_mon'),
+              ref.lang('booking.day_tue'),
+              ref.lang('booking.day_wed'),
+              ref.lang('booking.day_thu'),
+              ref.lang('booking.day_fri'),
+              ref.lang('booking.day_sat'),
+              ref.lang('booking.day_sun')
+            ]
                 .map((d) => Expanded(
                       child: Center(
                         child: Text(d,
@@ -372,7 +399,8 @@ class _FreezeScreenState extends ConsumerState<FreezeScreen> {
                   return const Expanded(child: SizedBox(height: 42));
                 }
 
-                final date = DateTime(_viewMonth.year, _viewMonth.month, dayNum);
+                final date =
+                    DateTime(_viewMonth.year, _viewMonth.month, dayNum);
                 final isPast = date.isBefore(todayNorm);
                 final isToday = date == todayNorm;
                 final isFrozen = _frozenDates.contains(date);
@@ -408,7 +436,8 @@ class _FreezeScreenState extends ConsumerState<FreezeScreen> {
                                     : isToday
                                         ? AppTheme.primary
                                         : isWeekend
-                                            ? AppTheme.error.withValues(alpha: 0.7)
+                                            ? AppTheme.error
+                                                .withValues(alpha: 0.7)
                                             : context.text1,
                             fontSize: 14,
                             fontWeight: isFrozen || isToday

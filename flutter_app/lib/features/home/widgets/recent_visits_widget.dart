@@ -30,7 +30,9 @@ class RecentVisitsWidget extends StatelessWidget {
           );
         }
         return Column(
-          children: visits.map((v) => _VisitTile(key: ValueKey(v.id), visit: v)).toList(),
+          children: visits
+              .map((v) => _VisitTile(key: ValueKey(v.id), visit: v))
+              .toList(),
         );
       },
       loading: () => Column(
@@ -72,7 +74,8 @@ class _VisitTile extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.sports_esports, color: AppTheme.primaryLight, size: 22),
+            child: const Icon(Icons.sports_esports,
+                color: AppTheme.primaryLight, size: 22),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -101,7 +104,8 @@ class _VisitTile extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppTheme.success.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppTheme.success.withValues(alpha: 0.2)),
+              border:
+                  Border.all(color: AppTheme.success.withValues(alpha: 0.2)),
             ),
             child: Text(
               '${visit.hoursSpent}ч',

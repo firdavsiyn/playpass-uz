@@ -275,9 +275,18 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                 final date = DateTime.now().add(Duration(days: i));
                 final selected = _selectedDate.day == date.day &&
                     _selectedDate.month == date.month;
-                final dayNames = [ref.lang('booking.day_mon'), ref.lang('booking.day_tue'), ref.lang('booking.day_wed'), ref.lang('booking.day_thu'), ref.lang('booking.day_fri'), ref.lang('booking.day_sat'), ref.lang('booking.day_sun')];
-                final dayName =
-                    i == 0 ? ref.lang('booking.today') : dayNames[date.weekday - 1];
+                final dayNames = [
+                  ref.lang('booking.day_mon'),
+                  ref.lang('booking.day_tue'),
+                  ref.lang('booking.day_wed'),
+                  ref.lang('booking.day_thu'),
+                  ref.lang('booking.day_fri'),
+                  ref.lang('booking.day_sat'),
+                  ref.lang('booking.day_sun')
+                ];
+                final dayName = i == 0
+                    ? ref.lang('booking.today')
+                    : dayNames[date.weekday - 1];
 
                 return GestureDetector(
                   onTap: () => setState(() => _selectedDate = date),
@@ -296,17 +305,15 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                       children: [
                         Text(dayName,
                             style: TextStyle(
-                                color: selected
-                                    ? AppTheme.primary
-                                    : context.text3,
+                                color:
+                                    selected ? AppTheme.primary : context.text3,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w500)),
                         const SizedBox(height: 4),
                         Text('${date.day}',
                             style: TextStyle(
-                                color: selected
-                                    ? AppTheme.primary
-                                    : context.text1,
+                                color:
+                                    selected ? AppTheme.primary : context.text1,
                                 fontSize: 20,
                                 fontWeight: FontWeight.w700)),
                       ],
@@ -346,8 +353,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                           : context.card,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                          color:
-                              selected ? AppTheme.primary : context.border),
+                          color: selected ? AppTheme.primary : context.border),
                     ),
                     child: Text('$h ${ref.lang('booking.hours_short')}',
                         textAlign: TextAlign.center,
@@ -416,8 +422,8 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: Colors.white))
                   : Text(ref.lang('booking.submit'),
-                      style: const
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w700)),
             ),
           ),
           const SizedBox(height: 24),
@@ -440,7 +446,8 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                 children: [
                   _SectionTitle(title: ref.lang('booking.history')),
                   const SizedBox(height: 8),
-                  ...past.map((b) => _HistoryCard(key: ValueKey(b['id']), booking: b)),
+                  ...past.map(
+                      (b) => _HistoryCard(key: ValueKey(b['id']), booking: b)),
                 ],
               );
             },
@@ -588,8 +595,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
       );
 
       NotificationService().scheduleBookingReminder(
-        bookingId:
-            '${_selectedClub!.id}_${bookingTime.millisecondsSinceEpoch}',
+        bookingId: '${_selectedClub!.id}_${bookingTime.millisecondsSinceEpoch}',
         bookingTime: bookingTime,
         clubName: _selectedClub!.name,
       );
@@ -771,7 +777,11 @@ class _PriceEstimate extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final multiplier = zone == 'vip' ? 2.0 : zone == 'pro' ? 1.5 : 1.0;
+    final multiplier = zone == 'vip'
+        ? 2.0
+        : zone == 'pro'
+            ? 1.5
+            : 1.0;
     final estimated = (club.pricePerHour * multiplier * durationHours).round();
 
     return Container(
@@ -809,7 +819,8 @@ class _PriceEstimate extends ConsumerWidget {
 class _BookingCard extends ConsumerWidget {
   final Map<String, dynamic> booking;
   final VoidCallback onCancel;
-  const _BookingCard({super.key, required this.booking, required this.onCancel});
+  const _BookingCard(
+      {super.key, required this.booking, required this.onCancel});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -821,15 +832,18 @@ class _BookingCard extends ConsumerWidget {
     final duration = booking['duration_hours'] as int? ?? 2;
     final status = booking['status'] as String? ?? 'confirmed';
     final graceStr = booking['grace_expires_at'] as String?;
-    final graceExpires =
-        graceStr != null ? DateTime.tryParse(graceStr) : null;
+    final graceExpires = graceStr != null ? DateTime.tryParse(graceStr) : null;
 
     final zoneColor = zone == 'vip'
         ? const Color(0xFFFBBF24)
         : zone == 'pro'
             ? AppTheme.neonPurple
             : AppTheme.success;
-    final zoneLabel = zone == 'vip' ? ref.lang('booking.zone_vip') : zone == 'pro' ? ref.lang('booking.zone_pro') : ref.lang('booking.zone_basic');
+    final zoneLabel = zone == 'vip'
+        ? ref.lang('booking.zone_vip')
+        : zone == 'pro'
+            ? ref.lang('booking.zone_pro')
+            : ref.lang('booking.zone_basic');
 
     // Grace period countdown
     final now = DateTime.now();
@@ -838,9 +852,8 @@ class _BookingCard extends ConsumerWidget {
         time != null &&
         now.isAfter(time) &&
         now.isBefore(graceExpires);
-    final graceMinutesLeft = isGracePeriod
-        ? graceExpires!.difference(now).inMinutes + 1
-        : 0;
+    final graceMinutesLeft =
+        isGracePeriod ? graceExpires!.difference(now).inMinutes + 1 : 0;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -888,15 +901,13 @@ class _BookingCard extends ConsumerWidget {
                     if (time != null)
                       Text(
                         '${time.day}.${time.month.toString().padLeft(2, '0')} в ${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')} · $duration ч',
-                        style:
-                            TextStyle(color: context.text3, fontSize: 12),
+                        style: TextStyle(color: context.text3, fontSize: 12),
                       ),
                   ],
                 ),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: zoneColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
@@ -923,7 +934,9 @@ class _BookingCard extends ConsumerWidget {
                       color: AppTheme.error, size: 16),
                   const SizedBox(width: 6),
                   Text(
-                    ref.lang('booking.grace_left').replaceAll('{n}', '$graceMinutesLeft'),
+                    ref
+                        .lang('booking.grace_left')
+                        .replaceAll('{n}', '$graceMinutesLeft'),
                     style: const TextStyle(
                         color: AppTheme.error,
                         fontSize: 12,
@@ -942,7 +955,8 @@ class _BookingCard extends ConsumerWidget {
                   child: OutlinedButton.icon(
                     onPressed: onCancel,
                     icon: const Icon(Icons.close_rounded, size: 16),
-                    label: Text(ref.lang('booking.cancel'), style: const TextStyle(fontSize: 13)),
+                    label: Text(ref.lang('booking.cancel'),
+                        style: const TextStyle(fontSize: 13)),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppTheme.error,
                       side: BorderSide(
@@ -968,8 +982,7 @@ class _HistoryCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final clubName =
-        (booking['clubs'] as Map<String, dynamic>?)?['name'] ?? '';
+    final clubName = (booking['clubs'] as Map<String, dynamic>?)?['name'] ?? '';
     final status = booking['status'] as String? ?? '';
     final time = DateTime.tryParse(booking['booking_time'] as String? ?? '');
     final duration = booking['duration_hours'] as int? ?? 0;

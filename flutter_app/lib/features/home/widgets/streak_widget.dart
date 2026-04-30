@@ -105,7 +105,8 @@ class StreakWidget extends ConsumerWidget {
                     Text(
                       '$streakDays',
                       style: TextStyle(
-                        color: atRisk ? AppTheme.warning : const Color(0xFFFF6B35),
+                        color:
+                            atRisk ? AppTheme.warning : const Color(0xFFFF6B35),
                         fontSize: 22,
                         fontWeight: FontWeight.w900,
                         letterSpacing: -0.5,
@@ -139,8 +140,8 @@ class StreakWidget extends ConsumerWidget {
                 Text(
                   daysToNext > 0
                       ? ref
-                          .lang('streak.next_reward')
-                          .replaceAll('{n}', '$daysToNext') +
+                              .lang('streak.next_reward')
+                              .replaceAll('{n}', '$daysToNext') +
                           ' → ${ref.lang('streak.bonus_3h')}'
                       : ref.lang('streak.reward_unlocked'),
                   style: TextStyle(

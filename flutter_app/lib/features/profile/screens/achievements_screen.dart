@@ -5,7 +5,8 @@ import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../services/supabase_service.dart';
 
-final _allAchievementsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+final _allAchievementsProvider =
+    FutureProvider<List<Map<String, dynamic>>>((ref) async {
   return SupabaseService().getAllAchievements();
 });
 
@@ -27,7 +28,8 @@ class AchievementsScreen extends ConsumerWidget {
       body: allAsync.when(
         data: (achievements) {
           final unlocked = unlockedAsync.valueOrNull ?? {};
-          final unlockedCount = achievements.where((a) => unlocked.contains(a['id'])).length;
+          final unlockedCount =
+              achievements.where((a) => unlocked.contains(a['id'])).length;
 
           return ListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
@@ -38,7 +40,8 @@ class AchievementsScreen extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: context.card,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppTheme.primary.withValues(alpha: 0.15)),
+                  border: Border.all(
+                      color: AppTheme.primary.withValues(alpha: 0.15)),
                   boxShadow: AppTheme.neonGlow(radius: 16),
                 ),
                 child: Column(
@@ -58,9 +61,12 @@ class AchievementsScreen extends ConsumerWidget {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(4),
                       child: LinearProgressIndicator(
-                        value: achievements.isEmpty ? 0 : unlockedCount / achievements.length,
+                        value: achievements.isEmpty
+                            ? 0
+                            : unlockedCount / achievements.length,
                         backgroundColor: context.surface,
-                        valueColor: const AlwaysStoppedAnimation(AppTheme.primary),
+                        valueColor:
+                            const AlwaysStoppedAnimation(AppTheme.primary),
                         minHeight: 6,
                       ),
                     ),
@@ -72,13 +78,17 @@ class AchievementsScreen extends ConsumerWidget {
               // Achievement grid
               ...achievements.map((a) {
                 final isUnlocked = unlocked.contains(a['id']);
-                return _AchievementCard(achievement: a, isUnlocked: isUnlocked, locale: ref.watch(localeProvider));
+                return _AchievementCard(
+                    achievement: a,
+                    isUnlocked: isUnlocked,
+                    locale: ref.watch(localeProvider));
               }),
             ],
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('${ref.lang('common.error_prefix')}: $e')),
+        error: (e, _) =>
+            Center(child: Text('${ref.lang('common.error_prefix')}: $e')),
       ),
     );
   }
@@ -88,13 +98,20 @@ class _AchievementCard extends StatelessWidget {
   final Map<String, dynamic> achievement;
   final bool isUnlocked;
   final String locale;
-  const _AchievementCard({required this.achievement, required this.isUnlocked, required this.locale});
+  const _AchievementCard(
+      {required this.achievement,
+      required this.isUnlocked,
+      required this.locale});
 
   @override
   Widget build(BuildContext context) {
     final icon = achievement['icon'] as String? ?? '?';
-    final name = achievement['name_$locale'] as String? ?? achievement['name_ru'] as String? ?? '';
-    final desc = achievement['desc_$locale'] as String? ?? achievement['desc_ru'] as String? ?? '';
+    final name = achievement['name_$locale'] as String? ??
+        achievement['name_ru'] as String? ??
+        '';
+    final desc = achievement['desc_$locale'] as String? ??
+        achievement['desc_ru'] as String? ??
+        '';
     final category = achievement['category'] as String? ?? '';
 
     final categoryColor = switch (category) {
@@ -112,16 +129,22 @@ class _AchievementCard extends StatelessWidget {
         color: isUnlocked ? context.card : context.surface,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isUnlocked ? categoryColor.withValues(alpha: 0.25) : context.surface,
+          color: isUnlocked
+              ? categoryColor.withValues(alpha: 0.25)
+              : context.surface,
         ),
         boxShadow: isUnlocked
-            ? [BoxShadow(color: categoryColor.withValues(alpha: 0.1), blurRadius: 12)]
+            ? [
+                BoxShadow(
+                    color: categoryColor.withValues(alpha: 0.1), blurRadius: 12)
+              ]
             : [],
       ),
       child: Row(
         children: [
           Container(
-            width: 48, height: 48,
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
               color: isUnlocked
                   ? categoryColor.withValues(alpha: 0.15)
@@ -171,7 +194,8 @@ class _AchievementCard extends StatelessWidget {
               child: Icon(Icons.check_rounded, color: categoryColor, size: 16),
             )
           else
-            Icon(Icons.lock_outline_rounded, color: context.text3.withValues(alpha: 0.3), size: 20),
+            Icon(Icons.lock_outline_rounded,
+                color: context.text3.withValues(alpha: 0.3), size: 20),
         ],
       ),
     );

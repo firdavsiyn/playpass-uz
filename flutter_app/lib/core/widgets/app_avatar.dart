@@ -95,11 +95,13 @@ class AppAvatar extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: hasImage ? null : LinearGradient(
-          colors: _gradient,
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        gradient: hasImage
+            ? null
+            : LinearGradient(
+                colors: _gradient,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
         border: borderColor != null
             ? Border.all(color: borderColor!, width: borderWidth)
             : null,
@@ -121,7 +123,7 @@ class AppAvatar extends StatelessWidget {
       width: size,
       height: size,
       fit: BoxFit.cover,
-      memCacheWidth: (size * 2).toInt(),  // 2x for retina
+      memCacheWidth: (size * 2).toInt(), // 2x for retina
       memCacheHeight: (size * 2).toInt(),
       fadeInDuration: const Duration(milliseconds: 200),
       placeholder: (_, __) => _buildFallback(),
@@ -184,7 +186,8 @@ class AppAvatarGroup extends StatelessWidget {
         children: [
           for (var i = 0; i < visible.length; i++)
             Padding(
-              padding: EdgeInsets.only(left: i == 0 ? 0 : overlap * -1 + overlap),
+              padding:
+                  EdgeInsets.only(left: i == 0 ? 0 : overlap * -1 + overlap),
               child: AppAvatar(
                 imageUrl: visible[i].imageUrl,
                 name: visible[i].name,

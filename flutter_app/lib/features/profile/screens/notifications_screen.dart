@@ -7,7 +7,8 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_locale.dart';
 import '../../../core/widgets/neon_shimmer.dart';
 
-final notificationsProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
+final notificationsProvider =
+    FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
   return SupabaseService().getNotifications();
 });
 
@@ -27,7 +28,8 @@ class NotificationsScreen extends ConsumerWidget {
               await SupabaseService().markAllNotificationsRead();
               ref.invalidate(notificationsProvider);
             },
-            child: Text(ref.lang('notif.mark_all_read'), style: TextStyle(color: AppTheme.neonCyan, fontSize: 13)),
+            child: Text(ref.lang('notif.mark_all_read'),
+                style: TextStyle(color: AppTheme.neonCyan, fontSize: 13)),
           ),
         ],
       ),
@@ -46,9 +48,13 @@ class NotificationsScreen extends ConsumerWidget {
                   Center(
                     child: Column(
                       children: [
-                        Icon(Icons.notifications_off_rounded, size: 64, color: context.text3.withValues(alpha: 0.3)),
+                        Icon(Icons.notifications_off_rounded,
+                            size: 64,
+                            color: context.text3.withValues(alpha: 0.3)),
                         const SizedBox(height: 16),
-                        Text(ref.lang('notif.empty'), style: TextStyle(color: context.text3, fontSize: 16)),
+                        Text(ref.lang('notif.empty'),
+                            style:
+                                TextStyle(color: context.text3, fontSize: 16)),
                       ],
                     ),
                   ),
@@ -73,13 +79,16 @@ class NotificationsScreen extends ConsumerWidget {
           loading: () => Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
-              children: List.generate(5, (_) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: NeonSkeletonCard(height: 72, borderRadius: 14),
-              )),
+              children: List.generate(
+                  5,
+                  (_) => Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: NeonSkeletonCard(height: 72, borderRadius: 14),
+                      )),
             ),
           ),
-          error: (e, _) => Center(child: Text('${ref.lang('common.error_prefix')}: $e')),
+          error: (e, _) =>
+              Center(child: Text('${ref.lang('common.error_prefix')}: $e')),
         ),
       ),
     );
@@ -96,7 +105,8 @@ class _NotificationTile extends StatelessWidget {
     final title = notif['title'] as String? ?? '';
     final body = notif['body'] as String? ?? '';
     final isRead = notif['is_read'] as bool? ?? false;
-    final createdAt = DateTime.tryParse(notif['created_at'] as String? ?? '')?.toLocal();
+    final createdAt =
+        DateTime.tryParse(notif['created_at'] as String? ?? '')?.toLocal();
     final timeAgo = createdAt != null ? _formatTimeAgo(createdAt) : '';
     final event = notif['event'] as String? ?? '';
 
@@ -164,28 +174,38 @@ class _NotificationTile extends StatelessWidget {
                           style: TextStyle(
                             color: context.text1,
                             fontSize: 14,
-                            fontWeight: isRead ? FontWeight.w500 : FontWeight.w700,
+                            fontWeight:
+                                isRead ? FontWeight.w500 : FontWeight.w700,
                           ),
                         ),
                       ),
                       if (!isRead)
                         Container(
-                          width: 8, height: 8,
+                          width: 8,
+                          height: 8,
                           decoration: BoxDecoration(
                             color: AppTheme.primary,
                             shape: BoxShape.circle,
-                            boxShadow: [BoxShadow(color: AppTheme.primary.withValues(alpha: 0.4), blurRadius: 6)],
+                            boxShadow: [
+                              BoxShadow(
+                                  color:
+                                      AppTheme.primary.withValues(alpha: 0.4),
+                                  blurRadius: 6)
+                            ],
                           ),
                         ),
                     ],
                   ),
                   if (body.isNotEmpty) ...[
                     const SizedBox(height: 4),
-                    Text(body, maxLines: 2, overflow: TextOverflow.ellipsis,
+                    Text(body,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(color: context.text2, fontSize: 13)),
                   ],
                   const SizedBox(height: 4),
-                  Text(timeAgo, style: TextStyle(color: context.text3, fontSize: 11)),
+                  Text(timeAgo,
+                      style: TextStyle(color: context.text3, fontSize: 11)),
                 ],
               ),
             ),

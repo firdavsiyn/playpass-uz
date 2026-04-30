@@ -100,7 +100,8 @@ class AppMonitoring {
   }
 
   /// Leave a breadcrumb for context in future error reports
-  static void addBreadcrumb(String message, {String? category, Map<String, dynamic>? data}) {
+  static void addBreadcrumb(String message,
+      {String? category, Map<String, dynamic>? data}) {
     if (!_enabled) return;
     Sentry.addBreadcrumb(Breadcrumb(
       message: message,

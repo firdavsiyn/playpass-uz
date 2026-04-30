@@ -22,7 +22,8 @@ class LeaderboardScreen extends ConsumerWidget {
         data: (players) {
           if (players.isEmpty) {
             return Center(
-              child: Text('Пока нет данных', style: TextStyle(color: context.text3)),
+              child: Text('Пока нет данных',
+                  style: TextStyle(color: context.text3)),
             );
           }
 
@@ -32,7 +33,8 @@ class LeaderboardScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(16),
               children: [
                 // Top 3 podium
-                if (players.length >= 3) _Podium(players: players.take(3).toList()),
+                if (players.length >= 3)
+                  _Podium(players: players.take(3).toList()),
                 const SizedBox(height: 20),
 
                 // Rest of the list
@@ -69,14 +71,29 @@ class _Podium extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Expanded(child: _PodiumItem(player: players[1], rank: 2, height: 150,
-                color: const Color(0xFFC0C0C0), emoji: '🥈')),
+            Expanded(
+                child: _PodiumItem(
+                    player: players[1],
+                    rank: 2,
+                    height: 150,
+                    color: const Color(0xFFC0C0C0),
+                    emoji: '')),
             const SizedBox(width: 6),
-            Expanded(child: _PodiumItem(player: players[0], rank: 1, height: 190,
-                color: const Color(0xFFFFD700), emoji: '👑')),
+            Expanded(
+                child: _PodiumItem(
+                    player: players[0],
+                    rank: 1,
+                    height: 190,
+                    color: const Color(0xFFFFD700),
+                    emoji: '')),
             const SizedBox(width: 6),
-            Expanded(child: _PodiumItem(player: players[2], rank: 3, height: 120,
-                color: const Color(0xFFCD7F32), emoji: '🥉')),
+            Expanded(
+                child: _PodiumItem(
+                    player: players[2],
+                    rank: 3,
+                    height: 120,
+                    color: const Color(0xFFCD7F32),
+                    emoji: '')),
           ],
         ),
       ),
@@ -90,7 +107,12 @@ class _PodiumItem extends StatelessWidget {
   final double height;
   final Color color;
   final String emoji;
-  const _PodiumItem({required this.player, required this.rank, required this.height, required this.color, required this.emoji});
+  const _PodiumItem(
+      {required this.player,
+      required this.rank,
+      required this.height,
+      required this.color,
+      required this.emoji});
 
   @override
   Widget build(BuildContext context) {
@@ -103,34 +125,53 @@ class _PodiumItem extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             boxShadow: [
-              BoxShadow(color: color.withValues(alpha: 0.4), blurRadius: 16, spreadRadius: -4),
+              BoxShadow(
+                  color: color.withValues(alpha: 0.4),
+                  blurRadius: 16,
+                  spreadRadius: -4),
             ],
           ),
           child: CircleAvatar(
             radius: rank == 1 ? 30 : 24,
             backgroundColor: color.withValues(alpha: 0.2),
-            backgroundImage: player['avatar_url'] != null ? NetworkImage(player['avatar_url'] as String) : null,
+            backgroundImage: player['avatar_url'] != null
+                ? NetworkImage(player['avatar_url'] as String)
+                : null,
             child: player['avatar_url'] == null
                 ? Text((player['name'] as String? ?? '?')[0].toUpperCase(),
-                    style: TextStyle(color: color, fontWeight: FontWeight.w800, fontSize: rank == 1 ? 22 : 17))
+                    style: TextStyle(
+                        color: color,
+                        fontWeight: FontWeight.w800,
+                        fontSize: rank == 1 ? 22 : 17))
                 : null,
           ),
         ),
         const SizedBox(height: 6),
-        Text(player['name'] as String? ?? '', maxLines: 1, overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: context.text1)),
-        Text('${player['xp'] ?? 0} XP', style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w800)),
+        Text(player['name'] as String? ?? '',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: context.text1)),
+        Text('${player['xp'] ?? 0} XP',
+            style: TextStyle(
+                fontSize: 11, color: color, fontWeight: FontWeight.w800)),
         const SizedBox(height: 8),
         Container(
           height: height * 0.4,
           decoration: BoxDecoration(
-            gradient: LinearGradient(colors: [color.withValues(alpha: 0.25), color.withValues(alpha: 0.05)],
-                begin: Alignment.topCenter, end: Alignment.bottomCenter),
+            gradient: LinearGradient(colors: [
+              color.withValues(alpha: 0.25),
+              color.withValues(alpha: 0.05)
+            ], begin: Alignment.topCenter, end: Alignment.bottomCenter),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
             border: Border.all(color: color.withValues(alpha: 0.15)),
           ),
           child: Center(
-            child: Text('#$rank', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: color)),
+            child: Text('#$rank',
+                style: TextStyle(
+                    fontSize: 22, fontWeight: FontWeight.w900, color: color)),
           ),
         ),
       ],
@@ -154,7 +195,9 @@ class _LeaderboardRow extends StatelessWidget {
         color: isMe ? AppTheme.primary.withValues(alpha: 0.1) : context.card,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isMe ? AppTheme.primary.withValues(alpha: 0.3) : AppTheme.primary.withValues(alpha: 0.08),
+          color: isMe
+              ? AppTheme.primary.withValues(alpha: 0.3)
+              : AppTheme.primary.withValues(alpha: 0.08),
         ),
         boxShadow: isMe ? AppTheme.cardGlow() : [],
       ),
@@ -162,14 +205,18 @@ class _LeaderboardRow extends StatelessWidget {
         children: [
           SizedBox(
             width: 32,
-            child: Text('#$rank', style: TextStyle(
-              fontSize: 14, fontWeight: FontWeight.w700,
-              color: isMe ? AppTheme.primary : context.text3)),
+            child: Text('#$rank',
+                style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: isMe ? AppTheme.primary : context.text3)),
           ),
           CircleAvatar(
             radius: 18,
             backgroundColor: context.bg,
-            backgroundImage: player['avatar_url'] != null ? NetworkImage(player['avatar_url'] as String) : null,
+            backgroundImage: player['avatar_url'] != null
+                ? NetworkImage(player['avatar_url'] as String)
+                : null,
             child: player['avatar_url'] == null
                 ? Text((player['name'] as String? ?? '?')[0].toUpperCase(),
                     style: TextStyle(color: context.text3, fontSize: 14))
@@ -180,25 +227,30 @@ class _LeaderboardRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(player['name'] as String? ?? '', style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: isMe ? AppTheme.primary : context.text1)),
-                Text(_levelLabel(player['loyalty_level'] as String? ?? 'bronze'),
+                Text(player['name'] as String? ?? '',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: isMe ? AppTheme.primary : context.text1)),
+                Text(
+                    _levelLabel(player['loyalty_level'] as String? ?? 'bronze'),
                     style: TextStyle(fontSize: 11, color: context.text3)),
               ],
             ),
           ),
-          Text('${player['xp'] ?? 0} XP', style: TextStyle(
-            fontSize: 14, fontWeight: FontWeight.w700, color: context.text2)),
+          Text('${player['xp'] ?? 0} XP',
+              style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: context.text2)),
         ],
       ),
     );
   }
 
   String _levelLabel(String level) => switch (level) {
-    'diamond' => '💎 Diamond',
-    'gold' => '🥇 Gold',
-    'silver' => '🥈 Silver',
-    _ => '🥉 Bronze',
-  };
+        'diamond' => ' Diamond',
+        'gold' => ' Gold',
+        'silver' => ' Silver',
+        _ => ' Bronze',
+      };
 }

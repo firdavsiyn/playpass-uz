@@ -34,7 +34,8 @@ class StoryGenerator {
     const height = 1920.0;
 
     final recorder = ui.PictureRecorder();
-    final canvas = ui.Canvas(recorder, const ui.Rect.fromLTWH(0, 0, width, height));
+    final canvas =
+        ui.Canvas(recorder, const ui.Rect.fromLTWH(0, 0, width, height));
 
     // ── Background gradient ──────────────────────────────────
     final bgPaint = Paint()
@@ -145,7 +146,10 @@ class StoryGenerator {
     )..layout();
     final levelBgWidth = levelText.width + 80;
     final levelBgRect = RRect.fromRectAndRadius(
-      Rect.fromCenter(center: const Offset(width / 2, 740), width: levelBgWidth, height: 60),
+      Rect.fromCenter(
+          center: const Offset(width / 2, 740),
+          width: levelBgWidth,
+          height: 60),
       const Radius.circular(30),
     );
     canvas.drawRRect(
@@ -182,7 +186,8 @@ class StoryGenerator {
       ),
       textDirection: TextDirection.ltr,
     )..layout();
-    inviteLabelPainter.paint(canvas, Offset((width - inviteLabelPainter.width) / 2, 1080));
+    inviteLabelPainter.paint(
+        canvas, Offset((width - inviteLabelPainter.width) / 2, 1080));
 
     // Referral code (large)
     final codePainter = TextPainter(
@@ -214,7 +219,10 @@ class StoryGenerator {
           ),
           TextSpan(
             text: '10 БОНУСНЫХ ЧАСОВ',
-            style: TextStyle(fontSize: 38, color: Color(0xFF22C55E), fontWeight: FontWeight.w800),
+            style: TextStyle(
+                fontSize: 38,
+                color: Color(0xFF22C55E),
+                fontWeight: FontWeight.w800),
           ),
         ],
       ),
@@ -277,14 +285,18 @@ class StoryGenerator {
     );
 
     await Share.shareXFiles(
-      [XFile.fromData(bytes, name: 'playpass-share.png', mimeType: 'image/png')],
-      text: 'Я в PlayPass! Используй мой код $referralCode и получи 10 бонусных часов 🎮 $referralUrl',
+      [
+        XFile.fromData(bytes, name: 'playpass-share.png', mimeType: 'image/png')
+      ],
+      text:
+          'Я в PlayPass! Используй мой код $referralCode и получи 10 бонусных часов $referralUrl',
     );
   }
 
   // ─── Internal drawing helpers ──────────────────────────────
 
-  static void _drawOrb(ui.Canvas canvas, ui.Offset center, double radius, ui.Color color, double alpha) {
+  static void _drawOrb(ui.Canvas canvas, ui.Offset center, double radius,
+      ui.Color color, double alpha) {
     canvas.drawCircle(
       center,
       radius,
@@ -300,7 +312,8 @@ class StoryGenerator {
     );
   }
 
-  static void _drawStat(ui.Canvas canvas, double cx, double cy, String value, String label) {
+  static void _drawStat(
+      ui.Canvas canvas, double cx, double cy, String value, String label) {
     final valuePainter = TextPainter(
       text: TextSpan(
         text: value,

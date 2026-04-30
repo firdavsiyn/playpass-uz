@@ -66,14 +66,17 @@ class _AddReviewDialogState extends State<AddReviewDialog> {
       final List<String> photoUrls = [];
       for (final photo in _photos) {
         final bytes = await photo.readAsBytes();
-        final url = await SupabaseService().uploadReviewPhoto(bytes.toList(), photo.name);
+        final url = await SupabaseService()
+            .uploadReviewPhoto(bytes.toList(), photo.name);
         photoUrls.add(url);
       }
 
       await SupabaseService().addReview(
         clubId: widget.clubId,
         rating: _rating,
-        text: _textController.text.trim().isEmpty ? null : _textController.text.trim(),
+        text: _textController.text.trim().isEmpty
+            ? null
+            : _textController.text.trim(),
         photoUrls: photoUrls,
       );
       if (mounted) {
@@ -105,14 +108,17 @@ class _AddReviewDialogState extends State<AddReviewDialog> {
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
-        left: 24, right: 24, top: 24,
+        left: 24,
+        right: 24,
+        top: 24,
       ),
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 40, height: 4,
+              width: 40,
+              height: 4,
               margin: const EdgeInsets.only(bottom: 20),
               decoration: BoxDecoration(
                 color: context.text3.withValues(alpha: 0.3),
@@ -142,7 +148,9 @@ class _AddReviewDialogState extends State<AddReviewDialog> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
                     child: Icon(
-                      starIndex <= _rating ? Icons.star_rounded : Icons.star_outline_rounded,
+                      starIndex <= _rating
+                          ? Icons.star_rounded
+                          : Icons.star_outline_rounded,
                       size: 40,
                       color: starIndex <= _rating
                           ? const Color(0xFFFBBF24)
@@ -167,7 +175,8 @@ class _AddReviewDialogState extends State<AddReviewDialog> {
                 fillColor: context.surface,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: AppTheme.primary.withValues(alpha: 0.1)),
+                  borderSide: BorderSide(
+                      color: AppTheme.primary.withValues(alpha: 0.1)),
                 ),
               ),
             ),
@@ -189,15 +198,24 @@ class _AddReviewDialogState extends State<AddReviewDialog> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: _rating > 0
-                      ? [BoxShadow(color: AppTheme.primary.withValues(alpha: 0.3), blurRadius: 12)]
+                      ? [
+                          BoxShadow(
+                              color: AppTheme.primary.withValues(alpha: 0.3),
+                              blurRadius: 12)
+                        ]
                       : [],
                 ),
                 child: ElevatedButton(
                   onPressed: _loading ? null : _submit,
                   child: _loading
-                      ? const SizedBox(width: 20, height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : Text(_photos.isEmpty ? 'Отправить отзыв' : 'Отправить с фото (${_photos.length})'),
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white))
+                      : Text(_photos.isEmpty
+                          ? 'Отправить отзыв'
+                          : 'Отправить с фото (${_photos.length})'),
                 ),
               ),
             ),
@@ -243,54 +261,70 @@ class _PhotoPickerSection extends StatelessWidget {
             children: [
               // Existing photos
               ...photos.asMap().entries.map((entry) => Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: Stack(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: kIsWeb
-                          ? FutureBuilder<List<int>>(
-                              future: entry.value.readAsBytes().then((b) => b.toList()),
-                              builder: (_, snap) => snap.hasData
-                                  ? Image.memory(
-                                      snap.data! as dynamic,
-                                      width: 80, height: 80, fit: BoxFit.cover)
-                                  : const SizedBox(width: 80, height: 80),
-                            )
-                          : Image.network(
-                              entry.value.path,
-                              width: 80, height: 80, fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => Container(
-                                width: 80, height: 80,
-                                color: context.surface,
-                                child: Icon(Icons.image, color: context.text3),
-                              ),
-                            ),
-                    ),
-                    Positioned(
-                      top: 2, right: 2,
-                      child: GestureDetector(
-                        onTap: () => onRemove(entry.key),
-                        child: Container(
-                          width: 22, height: 22,
-                          decoration: BoxDecoration(
-                            color: AppTheme.error,
-                            shape: BoxShape.circle,
-                            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 4)],
-                          ),
-                          child: const Icon(Icons.close, size: 14, color: Colors.white),
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: kIsWeb
+                              ? FutureBuilder<List<int>>(
+                                  future: entry.value
+                                      .readAsBytes()
+                                      .then((b) => b.toList()),
+                                  builder: (_, snap) => snap.hasData
+                                      ? Image.memory(snap.data! as dynamic,
+                                          width: 80,
+                                          height: 80,
+                                          fit: BoxFit.cover)
+                                      : const SizedBox(width: 80, height: 80),
+                                )
+                              : Image.network(
+                                  entry.value.path,
+                                  width: 80,
+                                  height: 80,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => Container(
+                                    width: 80,
+                                    height: 80,
+                                    color: context.surface,
+                                    child:
+                                        Icon(Icons.image, color: context.text3),
+                                  ),
+                                ),
                         ),
-                      ),
+                        Positioned(
+                          top: 2,
+                          right: 2,
+                          child: GestureDetector(
+                            onTap: () => onRemove(entry.key),
+                            child: Container(
+                              width: 22,
+                              height: 22,
+                              decoration: BoxDecoration(
+                                color: AppTheme.error,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                      color:
+                                          Colors.black.withValues(alpha: 0.3),
+                                      blurRadius: 4)
+                                ],
+                              ),
+                              child: const Icon(Icons.close,
+                                  size: 14, color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              )),
+                  )),
               // Add button
               if (photos.length < maxPhotos)
                 GestureDetector(
                   onTap: onAdd,
                   child: Container(
-                    width: 80, height: 80,
+                    width: 80,
+                    height: 80,
                     decoration: BoxDecoration(
                       color: context.surface,
                       borderRadius: BorderRadius.circular(10),
@@ -303,10 +337,13 @@ class _PhotoPickerSection extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.add_photo_alternate_outlined,
-                            color: AppTheme.primary.withValues(alpha: 0.7), size: 28),
+                            color: AppTheme.primary.withValues(alpha: 0.7),
+                            size: 28),
                         const SizedBox(height: 2),
-                        Text('Фото', style: TextStyle(
-                            color: AppTheme.primary.withValues(alpha: 0.7), fontSize: 11)),
+                        Text('Фото',
+                            style: TextStyle(
+                                color: AppTheme.primary.withValues(alpha: 0.7),
+                                fontSize: 11)),
                       ],
                     ),
                   ),

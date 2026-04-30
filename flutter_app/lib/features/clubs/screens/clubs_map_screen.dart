@@ -51,7 +51,8 @@ class _ClubsMapScreenState extends ConsumerState<ClubsMapScreen> {
       body: clubsAsync.when(
         loading: () => Container(
           color: context.bg,
-          child: const Center(child: CircularProgressIndicator(color: AppTheme.primary)),
+          child: const Center(
+              child: CircularProgressIndicator(color: AppTheme.primary)),
         ),
         error: (e, _) => Scaffold(
           appBar: AppBar(
@@ -68,7 +69,8 @@ class _ClubsMapScreenState extends ConsumerState<ClubsMapScreen> {
                 title: Text(ref.lang('clubs_map_title')),
               ),
               body: Center(
-                child: Text('Нет клубов', style: TextStyle(color: context.text3)),
+                child:
+                    Text('Нет клубов', style: TextStyle(color: context.text3)),
               ),
             );
           }
@@ -97,7 +99,8 @@ class _ClubsMapScreenState extends ConsumerState<ClubsMapScreen> {
                     // Title
                     Expanded(
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 10),
                         decoration: BoxDecoration(
                           color: context.card.withValues(alpha: 0.92),
                           borderRadius: BorderRadius.circular(14),
@@ -131,7 +134,8 @@ class _ClubsMapScreenState extends ConsumerState<ClubsMapScreen> {
                         if (err != null) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('Не удалось определить местоположение: $err'),
+                              content: Text(
+                                  'Не удалось определить местоположение: $err'),
                               backgroundColor: AppTheme.error,
                               behavior: SnackBarBehavior.floating,
                             ),

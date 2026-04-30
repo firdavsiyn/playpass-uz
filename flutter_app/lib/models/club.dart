@@ -54,7 +54,8 @@ class Club {
     return false;
   }
 
-  bool _isOpenForDay(String dayKey, int currentMinutes, bool checkOverflowOnly) {
+  bool _isOpenForDay(
+      String dayKey, int currentMinutes, bool checkOverflowOnly) {
     final hours = workingHours[dayKey];
     if (hours == null) return false;
 
@@ -87,10 +88,10 @@ class Club {
   }
 
   String get tierLabel => switch (tier) {
-    'vip' => 'VIP',
-    'standard' => 'Стандарт',
-    _ => 'Базовый',
-  };
+        'vip' => 'VIP',
+        'standard' => 'Стандарт',
+        _ => 'Базовый',
+      };
 
   String? get thumbnail => photos.isNotEmpty ? photos.first : null;
 
@@ -101,22 +102,23 @@ class Club {
   }
 
   factory Club.fromJson(Map<String, dynamic> json) => Club(
-    id: json['id'] as String,
-    name: json['name'] as String,
-    address: json['address'] as String,
-    lat: (json['lat'] as num?)?.toDouble(),
-    lon: (json['lon'] as num?)?.toDouble(),
-    photos: List<String>.from(json['photos'] as List? ?? []),
-    workingHours: Map<String, String>.from(json['working_hours'] as Map? ?? {}),
-    pcCount: json['pc_count'] as int? ?? 0,
-    rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
-    status: json['status'] as String? ?? 'active',
-    tier: json['tier'] as String? ?? 'basic',
-    hasPlaystation: json['has_playstation'] as bool? ?? false,
-    description: json['description'] as String?,
-    pricePerHour: json['price_per_hour'] as int? ?? 12000,
-    reviewCount: json['review_count'] as int? ?? 0,
-    contactPhone: json['contact_phone'] as String?,
-    contactTelegram: json['contact_telegram'] as String?,
-  );
+        id: json['id'] as String,
+        name: json['name'] as String,
+        address: json['address'] as String,
+        lat: (json['lat'] as num?)?.toDouble(),
+        lon: (json['lon'] as num?)?.toDouble(),
+        photos: List<String>.from(json['photos'] as List? ?? []),
+        workingHours:
+            Map<String, String>.from(json['working_hours'] as Map? ?? {}),
+        pcCount: json['pc_count'] as int? ?? 0,
+        rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
+        status: json['status'] as String? ?? 'active',
+        tier: json['tier'] as String? ?? 'basic',
+        hasPlaystation: json['has_playstation'] as bool? ?? false,
+        description: json['description'] as String?,
+        pricePerHour: json['price_per_hour'] as int? ?? 12000,
+        reviewCount: json['review_count'] as int? ?? 0,
+        contactPhone: json['contact_phone'] as String?,
+        contactTelegram: json['contact_telegram'] as String?,
+      );
 }

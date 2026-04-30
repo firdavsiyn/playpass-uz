@@ -75,7 +75,8 @@ class PlansScreen extends ConsumerWidget {
                   final displayPrice = isAnnual
                       ? (plan.priceUzs * 12 * 0.7).round()
                       : plan.priceUzs;
-                  final monthlyEquivalent = isAnnual ? (displayPrice / 12).round() : null;
+                  final monthlyEquivalent =
+                      isAnnual ? (displayPrice / 12).round() : null;
 
                   return Padding(
                     padding: EdgeInsets.only(
@@ -159,11 +160,16 @@ class _BillingToggle extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
           gradient: active
-              ? const LinearGradient(colors: [AppTheme.primary, AppTheme.neonCyan])
+              ? const LinearGradient(
+                  colors: [AppTheme.primary, AppTheme.neonCyan])
               : null,
           borderRadius: BorderRadius.circular(10),
           boxShadow: active
-              ? [BoxShadow(color: AppTheme.primary.withValues(alpha: 0.3), blurRadius: 12)]
+              ? [
+                  BoxShadow(
+                      color: AppTheme.primary.withValues(alpha: 0.3),
+                      blurRadius: 12)
+                ]
               : null,
         ),
         child: Row(
@@ -241,7 +247,8 @@ class _PlanCard extends ConsumerWidget {
     if (p.isUnlimited) {
       items.add(_FeatureItem(ref.lang('plans.unlimited_desc'), true));
     } else {
-      items.add(_FeatureItem('${p.hours} ${ref.lang('plans.hours_monthly')}', true));
+      items.add(
+          _FeatureItem('${p.hours} ${ref.lang('plans.hours_monthly')}', true));
     }
 
     // Zones
@@ -270,11 +277,11 @@ class _PlanCard extends ConsumerWidget {
   }
 
   Color get _planColor => switch (plan.id) {
-    'vip' => const Color(0xFFFBBF24),
-    'pro' => const Color(0xFF8B5CF6),
-    'standard' => AppTheme.primary,
-    _ => const Color(0xFF6B7280),
-  };
+        'vip' => const Color(0xFFFBBF24),
+        'pro' => const Color(0xFF8B5CF6),
+        'standard' => AppTheme.primary,
+        _ => const Color(0xFF6B7280),
+      };
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -370,13 +377,14 @@ class _PlanCard extends ConsumerWidget {
                 if (savings > 0) ...[
                   const SizedBox(height: 6),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: AppTheme.success.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      '🎉 ${ref.lang('sub.annual_savings').replaceAll('{n}', _formatPrice(savings).replaceAll(' UZS', ''))}',
+                      ' ${ref.lang('sub.annual_savings').replaceAll('{n}', _formatPrice(savings).replaceAll(' UZS', ''))}',
                       style: const TextStyle(
                         color: AppTheme.success,
                         fontSize: 12,
@@ -406,8 +414,7 @@ class _PlanCard extends ConsumerWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor:
                           isPopular ? AppTheme.primary : context.surface,
-                      foregroundColor:
-                          isPopular ? Colors.white : context.text1,
+                      foregroundColor: isPopular ? Colors.white : context.text1,
                       side: isPopular
                           ? null
                           : const BorderSide(color: AppTheme.primary),

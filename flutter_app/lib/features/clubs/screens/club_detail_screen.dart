@@ -137,400 +137,400 @@ class _ClubDetail extends ConsumerWidget {
         await ref.read(clubDetailProvider(club.id).future);
       },
       child: CustomScrollView(
-      slivers: [
-        // ── Photo gallery ──────────────────────────────
-        SliverAppBar(
-          expandedHeight: 280,
-          pinned: true,
-          backgroundColor: context.bg,
-          flexibleSpace: FlexibleSpaceBar(
-            background: Hero(
-              tag: 'club_image_${club.id}',
-              child: club.photos.isNotEmpty
-                  ? _PhotoGallery(photos: club.photos)
-                  : Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            AppTheme.primary.withValues(alpha: 0.3),
-                            context.bg,
-                          ],
-                        ),
-                      ),
-                      child: Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.sports_esports,
-                                size: 64, color: context.text3.withValues(alpha: 0.5)),
-                            const SizedBox(height: 8),
-                            Text(club.name,
-                                style: TextStyle(
-                                    color: context.text3, fontSize: 16)),
-                          ],
-                        ),
-                      ),
-                    ),
-            ),
-          ),
-          leading: _AppBarButton(
-            icon: Icons.arrow_back_ios_new_rounded,
-            onTap: () => context.pop(),
-          ),
-          actions: [
-            // Share button
-            _AppBarButton(
-              icon: Icons.share_rounded,
-              onTap: _share,
-            ),
-            const SizedBox(width: 4),
-            // Favorite button
-            Consumer(builder: (context, ref, _) {
-              final isFav = ref.watch(favoritesProvider).contains(club.id);
-              return _AppBarButton(
-                icon: isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                iconColor: isFav ? AppTheme.error : Colors.white,
-                onTap: () => ref.read(favoritesProvider.notifier).toggle(club.id),
-              );
-            }),
-            const SizedBox(width: 8),
-          ],
-        ),
-
-        SliverPadding(
-          padding: const EdgeInsets.all(16),
-          sliver: SliverList(
-            delegate: SliverChildListDelegate([
-              // ── Name + Tier + Status ─────────────────
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Flexible(
-                              child: Text(club.name,
-                                  style: TextStyle(
-                                    color: context.text1,
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w800,
-                                  )),
-                            ),
-                            if (club.tier == 'vip') ...[
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFFBBF24)
-                                      .withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: const Text('VIP',
-                                    style: TextStyle(
-                                        color: Color(0xFFFBBF24),
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w700)),
-                              ),
+        slivers: [
+          // ── Photo gallery ──────────────────────────────
+          SliverAppBar(
+            expandedHeight: 280,
+            pinned: true,
+            backgroundColor: context.bg,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Hero(
+                tag: 'club_image_${club.id}',
+                child: club.photos.isNotEmpty
+                    ? _PhotoGallery(photos: club.photos)
+                    : Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              AppTheme.primary.withValues(alpha: 0.3),
+                              context.bg,
                             ],
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        // Rating row
-                        Row(
-                          children: [
-                            const Icon(Icons.star_rounded,
-                                size: 18, color: Color(0xFFFBBF24)),
-                            const SizedBox(width: 3),
-                            Text(club.rating.toStringAsFixed(1),
-                                style: TextStyle(
-                                    color: context.text1,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 15)),
-                            const SizedBox(width: 6),
-                            Text('(${club.reviewCount} отзывов)',
-                                style: TextStyle(
-                                    color: context.text3, fontSize: 13)),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: (club.isOpen ? AppTheme.success : AppTheme.error)
-                          .withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 7,
-                          height: 7,
-                          decoration: BoxDecoration(
-                            color: club.isOpen
-                                ? AppTheme.success
-                                : AppTheme.error,
-                            shape: BoxShape.circle,
                           ),
                         ),
-                        const SizedBox(width: 5),
-                        Text(
-                          club.isOpen ? 'Открыт' : 'Закрыт',
-                          style: TextStyle(
-                            color: club.isOpen
-                                ? AppTheme.success
-                                : AppTheme.error,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.sports_esports,
+                                  size: 64,
+                                  color: context.text3.withValues(alpha: 0.5)),
+                              const SizedBox(height: 8),
+                              Text(club.name,
+                                  style: TextStyle(
+                                      color: context.text3, fontSize: 16)),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                ],
+                      ),
               ),
+            ),
+            leading: _AppBarButton(
+              icon: Icons.arrow_back_ios_new_rounded,
+              onTap: () => context.pop(),
+            ),
+            actions: [
+              // Share button
+              _AppBarButton(
+                icon: Icons.share_rounded,
+                onTap: _share,
+              ),
+              const SizedBox(width: 4),
+              // Favorite button
+              Consumer(builder: (context, ref, _) {
+                final isFav = ref.watch(favoritesProvider).contains(club.id);
+                return _AppBarButton(
+                  icon: isFav
+                      ? Icons.favorite_rounded
+                      : Icons.favorite_border_rounded,
+                  iconColor: isFav ? AppTheme.error : Colors.white,
+                  onTap: () =>
+                      ref.read(favoritesProvider.notifier).toggle(club.id),
+                );
+              }),
+              const SizedBox(width: 8),
+            ],
+          ),
 
-              const SizedBox(height: 14),
-
-              // ── Quick stats row ──────────────────────
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: context.card,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Row(
+          SliverPadding(
+            padding: const EdgeInsets.all(16),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                // ── Name + Tier + Status ─────────────────
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _StatItem(
-                        icon: Icons.computer_rounded,
-                        label: '${club.pcCount} ПК',
-                        color: AppTheme.primary),
-                    _StatDivider(),
-                    _StatItem(
-                        icon: Icons.attach_money_rounded,
-                        label: '${club.pricePerHour} сум/ч',
-                        color: AppTheme.success),
-                    if (club.hasPlaystation) ...[
-                      _StatDivider(),
-                      _StatItem(
-                          icon: Icons.videogame_asset_rounded,
-                          label: 'PS5',
-                          color: const Color(0xFF3B82F6)),
-                    ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(club.name,
+                                    style: TextStyle(
+                                      color: context.text1,
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w800,
+                                    )),
+                              ),
+                              if (club.tier == 'vip') ...[
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFBBF24)
+                                        .withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Text('VIP',
+                                      style: TextStyle(
+                                          color: Color(0xFFFBBF24),
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700)),
+                                ),
+                              ],
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          // Rating row
+                          Row(
+                            children: [
+                              const Icon(Icons.star_rounded,
+                                  size: 18, color: Color(0xFFFBBF24)),
+                              const SizedBox(width: 3),
+                              Text(club.rating.toStringAsFixed(1),
+                                  style: TextStyle(
+                                      color: context.text1,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 15)),
+                              const SizedBox(width: 6),
+                              Text('(${club.reviewCount} отзывов)',
+                                  style: TextStyle(
+                                      color: context.text3, fontSize: 13)),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: (club.isOpen ? AppTheme.success : AppTheme.error)
+                            .withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 7,
+                            height: 7,
+                            decoration: BoxDecoration(
+                              color: club.isOpen
+                                  ? AppTheme.success
+                                  : AppTheme.error,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 5),
+                          Text(
+                            club.isOpen ? 'Открыт' : 'Закрыт',
+                            style: TextStyle(
+                              color: club.isOpen
+                                  ? AppTheme.success
+                                  : AppTheme.error,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
-              ),
 
-              const SizedBox(height: 12),
+                const SizedBox(height: 14),
 
-              // ── Occupancy badge ──────────────────────
-              ref.watch(clubOccupancyProvider(club.id)).when(
-                    data: (occupancy) => occupancy > 0
-                        ? Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: OccupancyBadge(
-                              current: occupancy,
-                              capacity: club.pcCount,
-                            ),
-                          )
-                        : const SizedBox.shrink(),
-                    loading: () => const SizedBox.shrink(),
-                    error: (_, __) => const SizedBox.shrink(),
+                // ── Quick stats row ──────────────────────
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: context.card,
+                    borderRadius: BorderRadius.circular(14),
                   ),
+                  child: Row(
+                    children: [
+                      _StatItem(
+                          icon: Icons.computer_rounded,
+                          label: '${club.pcCount} ПК',
+                          color: AppTheme.primary),
+                      _StatDivider(),
+                      _StatItem(
+                          icon: Icons.attach_money_rounded,
+                          label: '${club.pricePerHour} сум/ч',
+                          color: AppTheme.success),
+                      if (club.hasPlaystation) ...[
+                        _StatDivider(),
+                        _StatItem(
+                            icon: Icons.videogame_asset_rounded,
+                            label: 'PS5',
+                            color: const Color(0xFF3B82F6)),
+                      ],
+                    ],
+                  ),
+                ),
 
-              // ── Contact info ─────────────────────────
-              _InfoRow(
-                  icon: Icons.location_on_outlined, text: club.address),
-              const SizedBox(height: 8),
-              _InfoRow(
-                  icon: Icons.access_time_rounded,
-                  text: _getTodayHours(club)),
-              if (club.contactPhone != null) ...[
+                const SizedBox(height: 12),
+
+                // ── Occupancy badge ──────────────────────
+                ref.watch(clubOccupancyProvider(club.id)).when(
+                      data: (occupancy) => occupancy > 0
+                          ? Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: OccupancyBadge(
+                                current: occupancy,
+                                capacity: club.pcCount,
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                      loading: () => const SizedBox.shrink(),
+                      error: (_, __) => const SizedBox.shrink(),
+                    ),
+
+                // ── Contact info ─────────────────────────
+                _InfoRow(icon: Icons.location_on_outlined, text: club.address),
                 const SizedBox(height: 8),
                 _InfoRow(
-                    icon: Icons.phone_outlined,
-                    text: club.contactPhone!),
-              ],
-
-              const SizedBox(height: 14),
-
-              // ── Book button ─────────────────────────
-              SizedBox(
-                height: 48,
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                      builder: (_) => BookingScreen(preselectedClubId: club.id),
-                    ));
-                  },
-                  icon: const Icon(Icons.event_seat_rounded, size: 20),
-                  label: const Text('Забронировать место',
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primary,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 12),
-
-              // ── Action buttons row ───────────────────
-              Row(
-                children: [
-                  if (club.contactPhone != null)
-                    Expanded(
-                      child: _ActionButton(
-                        icon: Icons.phone_rounded,
-                        label: 'Позвонить',
-                        color: AppTheme.success,
-                        onTap: _call,
-                      ),
-                    ),
-                  if (club.contactPhone != null)
-                    const SizedBox(width: 8),
-                  if (club.contactTelegram != null)
-                    Expanded(
-                      child: _ActionButton(
-                        icon: Icons.telegram,
-                        label: 'Telegram',
-                        color: const Color(0xFF2AABEE),
-                        onTap: _openTelegram,
-                      ),
-                    ),
-                  if (club.contactTelegram != null)
-                    const SizedBox(width: 8),
-                  Expanded(
-                    child: _ActionButton(
-                      icon: Icons.directions_rounded,
-                      label: 'Маршрут',
-                      color: AppTheme.primary,
-                      onTap: () => _openMaps(context),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _ActionButton(
-                      icon: Icons.share_rounded,
-                      label: 'Поделиться',
-                      color: AppTheme.info,
-                      onTap: _share,
-                    ),
-                  ),
+                    icon: Icons.access_time_rounded,
+                    text: _getTodayHours(club)),
+                if (club.contactPhone != null) ...[
+                  const SizedBox(height: 8),
+                  _InfoRow(
+                      icon: Icons.phone_outlined, text: club.contactPhone!),
                 ],
-              ),
 
-              // ── Description ──────────────────────────
-              if (club.description != null &&
-                  club.description!.isNotEmpty) ...[
-                const SizedBox(height: 20),
-                _SectionTitle(title: 'О клубе'),
-                const SizedBox(height: 8),
-                Text(
-                  club.description!,
-                  style: TextStyle(
-                      color: context.text2, fontSize: 14, height: 1.5),
-                ),
-              ],
+                const SizedBox(height: 14),
 
-              // ── Zones section ────────────────────────
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  _SectionTitle(title: 'Зоны'),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: AppTheme.primary.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      AppConstants.timeSlotLabel(currentSlot),
-                      style: const TextStyle(
-                          color: AppTheme.primary,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-
-              zonesAsync.when(
-                data: (zones) => zones.isEmpty
-                    ? _buildSingleZone()
-                    : Column(
-                        children: zones
-                            .map((z) => _ZoneCard(
-                                zone: z, currentSlot: currentSlot))
-                            .toList()),
-                loading: () => const Padding(
-                    padding: EdgeInsets.all(16),
-                    child: CircularProgressIndicator()),
-                error: (_, __) => _buildSingleZone(),
-              ),
-
-              // ── Working hours ────────────────────────
-              const SizedBox(height: 20),
-              _SectionTitle(title: 'Часы работы'),
-              const SizedBox(height: 8),
-              _WorkingHoursTable(hours: club.workingHours),
-
-              // ── Reviews section ──────────────────────
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  _SectionTitle(title: 'Отзывы'),
-                  const Spacer(),
-                  reviewsAsync.when(
-                    data: (reviews) => Text(
-                        '${reviews.length}',
+                // ── Book button ─────────────────────────
+                SizedBox(
+                  height: 48,
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) =>
+                            BookingScreen(preselectedClubId: club.id),
+                      ));
+                    },
+                    icon: const Icon(Icons.event_seat_rounded, size: 20),
+                    label: const Text('Забронировать место',
                         style: TextStyle(
-                            color: context.text3, fontSize: 13)),
-                    loading: () => const SizedBox.shrink(),
-                    error: (_, __) => const SizedBox.shrink(),
+                            fontSize: 15, fontWeight: FontWeight.w700)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primary,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14)),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // ── Action buttons row ───────────────────
+                Row(
+                  children: [
+                    if (club.contactPhone != null)
+                      Expanded(
+                        child: _ActionButton(
+                          icon: Icons.phone_rounded,
+                          label: 'Позвонить',
+                          color: AppTheme.success,
+                          onTap: _call,
+                        ),
+                      ),
+                    if (club.contactPhone != null) const SizedBox(width: 8),
+                    if (club.contactTelegram != null)
+                      Expanded(
+                        child: _ActionButton(
+                          icon: Icons.telegram,
+                          label: 'Telegram',
+                          color: const Color(0xFF2AABEE),
+                          onTap: _openTelegram,
+                        ),
+                      ),
+                    if (club.contactTelegram != null) const SizedBox(width: 8),
+                    Expanded(
+                      child: _ActionButton(
+                        icon: Icons.directions_rounded,
+                        label: 'Маршрут',
+                        color: AppTheme.primary,
+                        onTap: () => _openMaps(context),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _ActionButton(
+                        icon: Icons.share_rounded,
+                        label: 'Поделиться',
+                        color: AppTheme.info,
+                        onTap: _share,
+                      ),
+                    ),
+                  ],
+                ),
+
+                // ── Description ──────────────────────────
+                if (club.description != null &&
+                    club.description!.isNotEmpty) ...[
+                  const SizedBox(height: 20),
+                  _SectionTitle(title: 'О клубе'),
+                  const SizedBox(height: 8),
+                  Text(
+                    club.description!,
+                    style: TextStyle(
+                        color: context.text2, fontSize: 14, height: 1.5),
                   ),
                 ],
-              ),
-              const SizedBox(height: 8),
 
-              // Add review button (top)
-              _AddReviewButton(club: club, ref: ref),
-              const SizedBox(height: 12),
-
-              reviewsAsync.when(
-                data: (reviews) => reviews.isEmpty
-                    ? _EmptyReviewsPlaceholder()
-                    : Column(
-                        children: reviews
-                            .take(10)
-                            .map((r) => _ReviewCard(review: r))
-                            .toList(),
+                // ── Zones section ────────────────────────
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    _SectionTitle(title: 'Зоны'),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                loading: () => const SizedBox.shrink(),
-                error: (_, __) => const SizedBox.shrink(),
-              ),
+                      child: Text(
+                        AppConstants.timeSlotLabel(currentSlot),
+                        style: const TextStyle(
+                            color: AppTheme.primary,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
 
-              const SizedBox(height: 100),
-            ]),
+                zonesAsync.when(
+                  data: (zones) => zones.isEmpty
+                      ? _buildSingleZone()
+                      : Column(
+                          children: zones
+                              .map((z) =>
+                                  _ZoneCard(zone: z, currentSlot: currentSlot))
+                              .toList()),
+                  loading: () => const Padding(
+                      padding: EdgeInsets.all(16),
+                      child: CircularProgressIndicator()),
+                  error: (_, __) => _buildSingleZone(),
+                ),
+
+                // ── Working hours ────────────────────────
+                const SizedBox(height: 20),
+                _SectionTitle(title: 'Часы работы'),
+                const SizedBox(height: 8),
+                _WorkingHoursTable(hours: club.workingHours),
+
+                // ── Reviews section ──────────────────────
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    _SectionTitle(title: 'Отзывы'),
+                    const Spacer(),
+                    reviewsAsync.when(
+                      data: (reviews) => Text('${reviews.length}',
+                          style: TextStyle(color: context.text3, fontSize: 13)),
+                      loading: () => const SizedBox.shrink(),
+                      error: (_, __) => const SizedBox.shrink(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+
+                // Add review button (top)
+                _AddReviewButton(club: club, ref: ref),
+                const SizedBox(height: 12),
+
+                reviewsAsync.when(
+                  data: (reviews) => reviews.isEmpty
+                      ? _EmptyReviewsPlaceholder()
+                      : Column(
+                          children: reviews
+                              .take(10)
+                              .map((r) => _ReviewCard(review: r))
+                              .toList(),
+                        ),
+                  loading: () => const SizedBox.shrink(),
+                  error: (_, __) => const SizedBox.shrink(),
+                ),
+
+                const SizedBox(height: 100),
+              ]),
+            ),
           ),
-        ),
-      ],
-    ),
+        ],
+      ),
     );
   }
 
@@ -541,14 +541,14 @@ class _ClubDetail extends ConsumerWidget {
               decoration: BoxDecoration(
                 color: context.card,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                    color: AppTheme.success.withValues(alpha: 0.3)),
+                border:
+                    Border.all(color: AppTheme.success.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 3),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: AppTheme.success.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(6),
@@ -571,8 +571,8 @@ class _ClubDetail extends ConsumerWidget {
                         if (club.pricePerHour > 0)
                           Text(
                             '${club.pricePerHour} сум/ч',
-                            style: TextStyle(
-                                color: context.text3, fontSize: 12),
+                            style:
+                                TextStyle(color: context.text3, fontSize: 12),
                           ),
                       ],
                     ),
@@ -694,8 +694,7 @@ class _PhotoGalleryState extends State<_PhotoGallery> {
                     color: Colors.black.withValues(alpha: 0.6),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.close,
-                      color: Colors.white, size: 20),
+                  child: const Icon(Icons.close, color: Colors.white, size: 20),
                 ),
               ),
             ),
@@ -712,7 +711,8 @@ class _AppBarButton extends StatelessWidget {
   final IconData icon;
   final Color? iconColor;
   final VoidCallback onTap;
-  const _AppBarButton({required this.icon, this.iconColor, required this.onTap});
+  const _AppBarButton(
+      {required this.icon, this.iconColor, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -760,9 +760,7 @@ class _ActionButton extends StatelessWidget {
             const SizedBox(height: 4),
             Text(label,
                 style: TextStyle(
-                    color: color,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600)),
+                    color: color, fontSize: 10, fontWeight: FontWeight.w600)),
           ],
         ),
       ),
@@ -850,8 +848,7 @@ class _EmptyReviewsPlaceholder extends StatelessWidget {
           const SizedBox(height: 4),
           Text('Будьте первым, кто оставит отзыв!',
               style: TextStyle(
-                  color: context.text3.withValues(alpha: 0.6),
-                  fontSize: 12)),
+                  color: context.text3.withValues(alpha: 0.6), fontSize: 12)),
         ],
       ),
     );
@@ -874,14 +871,12 @@ class _AddReviewButton extends StatelessWidget {
           backgroundColor: context.card,
           isScrollControlled: true,
           shape: const RoundedRectangleBorder(
-            borderRadius:
-                BorderRadius.vertical(top: Radius.circular(20)),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           builder: (_) => AddReviewDialog(
             clubId: club.id,
             clubName: club.name,
-            onSubmitted: () =>
-                ref.invalidate(clubReviewsProvider(club.id)),
+            onSubmitted: () => ref.invalidate(clubReviewsProvider(club.id)),
           ),
         );
       },
@@ -890,14 +885,12 @@ class _AddReviewButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppTheme.neonCyan.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-              color: AppTheme.neonCyan.withValues(alpha: 0.3)),
+          border: Border.all(color: AppTheme.neonCyan.withValues(alpha: 0.3)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.edit_rounded,
-                size: 18, color: AppTheme.neonCyan),
+            Icon(Icons.edit_rounded, size: 18, color: AppTheme.neonCyan),
             const SizedBox(width: 8),
             Text('Оставить отзыв',
                 style: TextStyle(
@@ -938,8 +931,7 @@ class _ZoneCard extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
               color: _zoneColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(6),
@@ -957,17 +949,14 @@ class _ZoneCard extends StatelessWidget {
               children: [
                 Text(zone.name,
                     style: TextStyle(
-                        color: context.text1,
-                        fontWeight: FontWeight.w600)),
+                        color: context.text1, fontWeight: FontWeight.w600)),
                 Text(
                   '${zone.capacity} мест  ·  $price сум/ч',
-                  style:
-                      TextStyle(color: context.text3, fontSize: 12),
+                  style: TextStyle(color: context.text3, fontSize: 12),
                 ),
                 if (zone.description != null)
                   Text(zone.description!,
-                      style: TextStyle(
-                          color: context.text2, fontSize: 12)),
+                      style: TextStyle(color: context.text2, fontSize: 12)),
               ],
             ),
           ),
@@ -1006,8 +995,7 @@ class _WorkingHoursTable extends StatelessWidget {
     ][DateTime.now().weekday - 1];
 
     // Check if all days are the same (24/7)
-    final allSame = _dayNames.keys.every(
-        (k) => hours[k] == hours['mon']);
+    final allSame = _dayNames.keys.every((k) => hours[k] == hours['mon']);
     if (allSame && (hours['mon'] == '00:00-23:59')) {
       return Container(
         padding: const EdgeInsets.all(14),
@@ -1018,8 +1006,7 @@ class _WorkingHoursTable extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.access_time_rounded,
-                size: 18, color: AppTheme.success),
+            Icon(Icons.access_time_rounded, size: 18, color: AppTheme.success),
             const SizedBox(width: 8),
             Text('Круглосуточно, 7 дней в неделю',
                 style: TextStyle(
@@ -1050,12 +1037,9 @@ class _WorkingHoursTable extends StatelessWidget {
                   width: 30,
                   child: Text(entry.value,
                       style: TextStyle(
-                        color: isToday
-                            ? AppTheme.primary
-                            : context.text2,
-                        fontWeight: isToday
-                            ? FontWeight.w700
-                            : FontWeight.normal,
+                        color: isToday ? AppTheme.primary : context.text2,
+                        fontWeight:
+                            isToday ? FontWeight.w700 : FontWeight.normal,
                         fontSize: 13,
                       )),
                 ),
@@ -1063,16 +1047,14 @@ class _WorkingHoursTable extends StatelessWidget {
                 Text(display,
                     style: TextStyle(
                       color: isToday ? context.text1 : context.text3,
-                      fontWeight: isToday
-                          ? FontWeight.w600
-                          : FontWeight.normal,
+                      fontWeight: isToday ? FontWeight.w600 : FontWeight.normal,
                       fontSize: 13,
                     )),
                 if (isToday) ...[
                   const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 6, vertical: 1),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                     decoration: BoxDecoration(
                       color: AppTheme.primary.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(4),
@@ -1116,8 +1098,7 @@ class _ReviewCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 16,
-                backgroundColor:
-                    AppTheme.primary.withValues(alpha: 0.15),
+                backgroundColor: AppTheme.primary.withValues(alpha: 0.15),
                 child: Text(
                   (review.userName ?? 'U')[0].toUpperCase(),
                   style: const TextStyle(
@@ -1137,8 +1118,7 @@ class _ReviewCard extends StatelessWidget {
                             fontWeight: FontWeight.w600,
                             fontSize: 13)),
                     Text(timeAgo,
-                        style: TextStyle(
-                            color: context.text3, fontSize: 11)),
+                        style: TextStyle(color: context.text3, fontSize: 11)),
                   ],
                 ),
               ),
@@ -1159,10 +1139,8 @@ class _ReviewCard extends StatelessWidget {
           if (review.text != null && review.text!.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(review.text!,
-                style: TextStyle(
-                    color: context.text2,
-                    fontSize: 13,
-                    height: 1.4)),
+                style:
+                    TextStyle(color: context.text2, fontSize: 13, height: 1.4)),
           ],
           if (review.photoUrls.isNotEmpty) ...[
             const SizedBox(height: 8),
@@ -1222,8 +1200,7 @@ class _InfoRow extends StatelessWidget {
         const SizedBox(width: 8),
         Expanded(
             child: Text(text,
-                style: TextStyle(
-                    color: context.text2, fontSize: 14))),
+                style: TextStyle(color: context.text2, fontSize: 14))),
       ],
     );
   }

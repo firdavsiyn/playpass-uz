@@ -86,8 +86,7 @@ final visitHistoryProvider =
   },
 );
 
-final allTimeStatsProvider =
-    FutureProvider<Map<String, dynamic>>((ref) async {
+final allTimeStatsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
   try {
     return await SupabaseService().getAllTimeVisitStats();
   } catch (_) {
@@ -99,8 +98,7 @@ class VisitHistoryScreen extends ConsumerStatefulWidget {
   const VisitHistoryScreen({super.key});
 
   @override
-  ConsumerState<VisitHistoryScreen> createState() =>
-      _VisitHistoryScreenState();
+  ConsumerState<VisitHistoryScreen> createState() => _VisitHistoryScreenState();
 }
 
 class _VisitHistoryScreenState extends ConsumerState<VisitHistoryScreen> {
@@ -168,11 +166,10 @@ class _VisitHistoryScreenState extends ConsumerState<VisitHistoryScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 IconButton(
-                  icon: Icon(Icons.chevron_left_rounded,
-                      color: context.text1),
+                  icon: Icon(Icons.chevron_left_rounded, color: context.text1),
                   onPressed: () {
-                    final prev = DateTime(
-                        selectedMonth.year, selectedMonth.month - 1);
+                    final prev =
+                        DateTime(selectedMonth.year, selectedMonth.month - 1);
                     ref.read(selectedMonthProvider.notifier).state = prev;
                   },
                 ),
@@ -185,15 +182,13 @@ class _VisitHistoryScreenState extends ConsumerState<VisitHistoryScreen> {
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.chevron_right_rounded,
-                      color: context.text1),
+                  icon: Icon(Icons.chevron_right_rounded, color: context.text1),
                   onPressed: selectedMonth.month < DateTime.now().month ||
                           selectedMonth.year < DateTime.now().year
                       ? () {
                           final next = DateTime(
                               selectedMonth.year, selectedMonth.month + 1);
-                          ref.read(selectedMonthProvider.notifier).state =
-                              next;
+                          ref.read(selectedMonthProvider.notifier).state = next;
                         }
                       : null,
                 ),
@@ -212,10 +207,10 @@ class _VisitHistoryScreenState extends ConsumerState<VisitHistoryScreen> {
                   child: CircularProgressIndicator(),
                 ),
               )
-            else if (historyState.error != null &&
-                historyState.visits.isEmpty)
+            else if (historyState.error != null && historyState.visits.isEmpty)
               Center(
-                child: Text('${ref.lang('common.error_prefix')}: ${historyState.error}',
+                child: Text(
+                    '${ref.lang('common.error_prefix')}: ${historyState.error}',
                     style: const TextStyle(color: AppTheme.error)),
               )
             else ...[
@@ -244,8 +239,7 @@ class _VisitHistoryScreenState extends ConsumerState<VisitHistoryScreen> {
                   padding: EdgeInsets.symmetric(vertical: 16),
                   child: Center(child: CircularProgressIndicator()),
                 )
-              else if (!historyState.hasMore &&
-                  historyState.visits.isNotEmpty)
+              else if (!historyState.hasMore && historyState.visits.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   child: Center(
@@ -354,8 +348,7 @@ class _AllTimeStats extends ConsumerWidget {
                         favoriteClub['address'] as String? ?? '',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            color: context.text3, fontSize: 12),
+                        style: TextStyle(color: context.text3, fontSize: 12),
                       ),
                     ],
                   ),
@@ -372,8 +365,7 @@ class _AllTimeStats extends ConsumerWidget {
                     ),
                     Text(
                       ref.lang('visits.visits_word'),
-                      style: TextStyle(
-                          color: context.text3, fontSize: 11),
+                      style: TextStyle(color: context.text3, fontSize: 11),
                     ),
                   ],
                 ),
@@ -421,7 +413,10 @@ class _StatCard extends StatelessWidget {
             height: 40,
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [color.withValues(alpha: 0.2), color.withValues(alpha: 0.08)],
+                colors: [
+                  color.withValues(alpha: 0.2),
+                  color.withValues(alpha: 0.08)
+                ],
               ),
               borderRadius: BorderRadius.circular(10),
             ),
@@ -437,9 +432,7 @@ class _StatCard extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                     fontSize: 20,
                   )),
-              Text(label,
-                  style: TextStyle(
-                      color: context.text3, fontSize: 11)),
+              Text(label, style: TextStyle(color: context.text3, fontSize: 11)),
             ],
           ),
         ],
@@ -456,8 +449,7 @@ class _MonthlySummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final totalHours =
-        visits.fold(0, (sum, v) => sum + v.hoursSpent);
+    final totalHours = visits.fold(0, (sum, v) => sum + v.hoursSpent);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -470,11 +462,9 @@ class _MonthlySummary extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _StatItem(label: 'Визитов', value: '${visits.length}'),
-          Container(
-              width: 1, height: 32, color: context.border),
+          Container(width: 1, height: 32, color: context.border),
           _StatItem(label: 'Часов', value: '$totalHours'),
-          Container(
-              width: 1, height: 32, color: context.border),
+          Container(width: 1, height: 32, color: context.border),
           _StatItem(
             label: 'Клубов',
             value: '${visits.map((v) => v.clubId).toSet().length}',
@@ -500,9 +490,7 @@ class _StatItem extends StatelessWidget {
                 fontWeight: FontWeight.w700,
                 fontSize: 22)),
         const SizedBox(height: 2),
-        Text(label,
-            style:
-                TextStyle(color: context.text3, fontSize: 12)),
+        Text(label, style: TextStyle(color: context.text3, fontSize: 12)),
       ],
     );
   }
@@ -559,15 +547,13 @@ class _VisitRow extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   dateFmt.format(visit.createdAt),
-                  style: TextStyle(
-                      color: context.text3, fontSize: 12),
+                  style: TextStyle(color: context.text3, fontSize: 12),
                 ),
               ],
             ),
           ),
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
               color: AppTheme.success.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(8),

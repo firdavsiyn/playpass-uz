@@ -35,14 +35,18 @@ class _ActiveSessionWidgetState extends State<ActiveSessionWidget> {
   Duration _elapsed = Duration.zero;
   bool _ending = false;
 
-  DateTime get _checkinTime => DateTime.parse(widget.session['checkin_time'] as String);
-  String get _clubName => (widget.session['clubs'] as Map<String, dynamic>?)?['name'] as String? ?? widget.clubDefault;
+  DateTime get _checkinTime =>
+      DateTime.parse(widget.session['checkin_time'] as String);
+  String get _clubName =>
+      (widget.session['clubs'] as Map<String, dynamic>?)?['name'] as String? ??
+      widget.clubDefault;
 
   @override
   void initState() {
     super.initState();
     _updateElapsed();
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) => _updateElapsed());
+    _timer =
+        Timer.periodic(const Duration(seconds: 1), (_) => _updateElapsed());
   }
 
   void _updateElapsed() {
@@ -60,7 +64,8 @@ class _ActiveSessionWidgetState extends State<ActiveSessionWidget> {
     final h = d.inHours;
     final m = d.inMinutes % 60;
     final s = d.inSeconds % 60;
-    if (h > 0) return '$h${widget.timeH} ${m.toString().padLeft(2, '0')}${widget.timeM}';
+    if (h > 0)
+      return '$h${widget.timeH} ${m.toString().padLeft(2, '0')}${widget.timeM}';
     return '$m${widget.timeM} ${s.toString().padLeft(2, '0')}${widget.timeS}';
   }
 
@@ -96,43 +101,67 @@ class _ActiveSessionWidgetState extends State<ActiveSessionWidget> {
           Row(
             children: [
               Container(
-                width: 8, height: 8,
+                width: 8,
+                height: 8,
                 decoration: BoxDecoration(
                   color: AppTheme.success,
                   shape: BoxShape.circle,
-                  boxShadow: [BoxShadow(color: AppTheme.success.withValues(alpha: 0.5), blurRadius: 6)],
+                  boxShadow: [
+                    BoxShadow(
+                        color: AppTheme.success.withValues(alpha: 0.5),
+                        blurRadius: 6)
+                  ],
                 ),
               ),
               const SizedBox(width: 8),
               Text(widget.activeSessionLabel,
-                  style: const TextStyle(color: AppTheme.success, fontSize: 12, fontWeight: FontWeight.w700)),
+                  style: const TextStyle(
+                      color: AppTheme.success,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700)),
               const Spacer(),
               GestureDetector(
                 onTap: _ending ? null : _endSession,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppTheme.error.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppTheme.error.withValues(alpha: 0.3)),
-                    boxShadow: [BoxShadow(color: AppTheme.error.withValues(alpha: 0.2), blurRadius: 8)],
+                    border: Border.all(
+                        color: AppTheme.error.withValues(alpha: 0.3)),
+                    boxShadow: [
+                      BoxShadow(
+                          color: AppTheme.error.withValues(alpha: 0.2),
+                          blurRadius: 8)
+                    ],
                   ),
                   child: _ending
-                      ? const SizedBox(width: 14, height: 14,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.error))
+                      ? const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: AppTheme.error))
                       : Text(widget.endSessionLabel,
-                          style: const TextStyle(color: AppTheme.error, fontSize: 12, fontWeight: FontWeight.w600)),
+                          style: const TextStyle(
+                              color: AppTheme.error,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600)),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
           Text(_clubName,
-              style: TextStyle(color: context.text1, fontSize: 16, fontWeight: FontWeight.w600)),
+              style: TextStyle(
+                  color: context.text1,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
           Row(
             children: [
-              Icon(Icons.timer_rounded, color: AppTheme.success.withValues(alpha: 0.7), size: 18),
+              Icon(Icons.timer_rounded,
+                  color: AppTheme.success.withValues(alpha: 0.7), size: 18),
               const SizedBox(width: 6),
               Text(
                 _formatDuration(_elapsed),

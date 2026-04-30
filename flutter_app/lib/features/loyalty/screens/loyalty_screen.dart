@@ -50,16 +50,21 @@ class LoyaltyScreen extends ConsumerWidget {
 
                 // XP History
                 Text(t['loyalty_history'] ?? 'История XP',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: context.text1)),
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: context.text1)),
                 const SizedBox(height: 12),
                 if (history.isEmpty)
-                  Center(child: Text('Пока нет XP', style: TextStyle(color: context.text3)))
+                  Center(
+                      child: Text('Пока нет XP',
+                          style: TextStyle(color: context.text3)))
                 else
                   ...history.map((h) => _XpHistoryItem(
-                    amount: h['amount'] as int,
-                    reason: h['reason'] as String,
-                    date: DateTime.parse(h['created_at'] as String),
-                  )),
+                        amount: h['amount'] as int,
+                        reason: h['reason'] as String,
+                        date: DateTime.parse(h['created_at'] as String),
+                      )),
               ],
             ),
           );
@@ -75,10 +80,30 @@ class _LevelCard extends StatelessWidget {
   const _LevelCard({required this.level, required this.xp});
 
   static const _levels = {
-    'bronze': (icon: '🥉', name: 'Bronze', color: Color(0xFFCD7F32), gradient: [Color(0xFF8B4513), Color(0xFFCD7F32)]),
-    'silver': (icon: '🥈', name: 'Silver', color: Color(0xFFC0C0C0), gradient: [Color(0xFF808080), Color(0xFFC0C0C0)]),
-    'gold': (icon: '🥇', name: 'Gold', color: Color(0xFFFFD700), gradient: [Color(0xFFB8860B), Color(0xFFFFD700)]),
-    'diamond': (icon: '💎', name: 'Diamond', color: Color(0xFF00CED1), gradient: [Color(0xFF0066CC), Color(0xFF00CED1)]),
+    'bronze': (
+      icon: '',
+      name: 'Bronze',
+      color: Color(0xFFCD7F32),
+      gradient: [Color(0xFF8B4513), Color(0xFFCD7F32)]
+    ),
+    'silver': (
+      icon: '',
+      name: 'Silver',
+      color: Color(0xFFC0C0C0),
+      gradient: [Color(0xFF808080), Color(0xFFC0C0C0)]
+    ),
+    'gold': (
+      icon: '',
+      name: 'Gold',
+      color: Color(0xFFFFD700),
+      gradient: [Color(0xFFB8860B), Color(0xFFFFD700)]
+    ),
+    'diamond': (
+      icon: '',
+      name: 'Diamond',
+      color: Color(0xFF00CED1),
+      gradient: [Color(0xFF0066CC), Color(0xFF00CED1)]
+    ),
   };
 
   @override
@@ -87,17 +112,31 @@ class _LevelCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: LinearGradient(colors: l.gradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
+        gradient: LinearGradient(
+            colors: l.gradient,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight),
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: l.color.withValues(alpha: 0.3), blurRadius: 20, offset: const Offset(0, 8))],
+        boxShadow: [
+          BoxShadow(
+              color: l.color.withValues(alpha: 0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 8))
+        ],
       ),
       child: Column(
         children: [
           Text(l.icon, style: const TextStyle(fontSize: 48)),
           const SizedBox(height: 8),
-          Text(l.name, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: Colors.white)),
+          Text(l.name,
+              style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white)),
           const SizedBox(height: 4),
-          Text('$xp XP', style: TextStyle(fontSize: 18, color: Colors.white.withValues(alpha: 0.9))),
+          Text('$xp XP',
+              style: TextStyle(
+                  fontSize: 18, color: Colors.white.withValues(alpha: 0.9))),
         ],
       ),
     );
@@ -115,32 +154,45 @@ class _StreakWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.cardDark,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: days > 0 ? AppTheme.warning.withValues(alpha: 0.3) : context.border),
+        border: Border.all(
+            color: days > 0
+                ? AppTheme.warning.withValues(alpha: 0.3)
+                : context.border),
       ),
       child: Row(
         children: [
-          Text(days > 0 ? '🔥' : '❄️', style: const TextStyle(fontSize: 32)),
+          Text(days > 0 ? '' : '', style: const TextStyle(fontSize: 32)),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('$days ${days == 1 ? 'день' : 'дней'} подряд',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: context.text1)),
-                Text(days > 0 ? 'Продолжайте в том же духе!' : 'Посетите клуб чтобы начать серию',
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: context.text1)),
+                Text(
+                    days > 0
+                        ? 'Продолжайте в том же духе!'
+                        : 'Посетите клуб чтобы начать серию',
                     style: TextStyle(fontSize: 13, color: context.text2)),
               ],
             ),
           ),
-          if (days >= 7) Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppTheme.warning.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(8),
+          if (days >= 7)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppTheme.warning.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text('x${(days ~/ 7) + 1}',
+                  style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.warning)),
             ),
-            child: Text('x${(days ~/ 7) + 1}', style: const TextStyle(
-              fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.warning)),
-          ),
         ],
       ),
     );
@@ -155,10 +207,10 @@ class _XpProgressCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (nextLevel, nextXp) = switch (level) {
-      'bronze' => ('Silver 🥈', 500),
-      'silver' => ('Gold 🥇', 2000),
-      'gold' => ('Diamond 💎', 5000),
-      _ => ('Max ✨', xp),
+      'bronze' => ('Silver ', 500),
+      'silver' => ('Gold ', 2000),
+      'gold' => ('Diamond ', 5000),
+      _ => ('Max ', xp),
     };
 
     final prevXp = switch (level) {
@@ -184,8 +236,14 @@ class _XpProgressCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('До $nextLevel', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: context.text1)),
-              if (remaining > 0) Text('$remaining XP', style: TextStyle(fontSize: 13, color: context.text3)),
+              Text('До $nextLevel',
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: context.text1)),
+              if (remaining > 0)
+                Text('$remaining XP',
+                    style: TextStyle(fontSize: 13, color: context.text3)),
             ],
           ),
           const SizedBox(height: 12),
@@ -199,7 +257,8 @@ class _XpProgressCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          Text('${(progress * 100).toInt()}%', style: TextStyle(fontSize: 12, color: context.text3)),
+          Text('${(progress * 100).toInt()}%',
+              style: TextStyle(fontSize: 12, color: context.text3)),
         ],
       ),
     );
@@ -216,19 +275,58 @@ class _PerksSection extends StatelessWidget {
     final currentIdx = levels.indexOf(level);
 
     final allPerks = [
-      (level: 'bronze', icon: '🎮', title: 'Базовый доступ', desc: 'Доступ ко всем клубам'),
-      (level: 'silver', icon: '⏰', title: '+1 час бесплатно', desc: 'Бонусный час каждый месяц'),
-      (level: 'silver', icon: '🏷', title: 'Скидка 5%', desc: 'На продление подписки'),
-      (level: 'gold', icon: '👑', title: 'VIP зоны', desc: 'Приоритетный доступ к VIP'),
-      (level: 'gold', icon: '🎁', title: 'Подарок на ДР', desc: '5 бесплатных часов'),
-      (level: 'diamond', icon: '💎', title: 'Скидка 15%', desc: 'На все подписки'),
-      (level: 'diamond', icon: '🏆', title: 'Бесплатные турниры', desc: 'Участие без взноса'),
+      (
+        level: 'bronze',
+        icon: '',
+        title: 'Базовый доступ',
+        desc: 'Доступ ко всем клубам'
+      ),
+      (
+        level: 'silver',
+        icon: '⏰',
+        title: '+1 час бесплатно',
+        desc: 'Бонусный час каждый месяц'
+      ),
+      (
+        level: 'silver',
+        icon: '',
+        title: 'Скидка 5%',
+        desc: 'На продление подписки'
+      ),
+      (
+        level: 'gold',
+        icon: '',
+        title: 'VIP зоны',
+        desc: 'Приоритетный доступ к VIP'
+      ),
+      (
+        level: 'gold',
+        icon: '',
+        title: 'Подарок на ДР',
+        desc: '5 бесплатных часов'
+      ),
+      (
+        level: 'diamond',
+        icon: '',
+        title: 'Скидка 15%',
+        desc: 'На все подписки'
+      ),
+      (
+        level: 'diamond',
+        icon: '',
+        title: 'Бесплатные турниры',
+        desc: 'Участие без взноса'
+      ),
     ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Привилегии', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: context.text1)),
+        Text('Привилегии',
+            style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: context.text1)),
         const SizedBox(height: 12),
         ...allPerks.map((p) {
           final unlocked = levels.indexOf(p.level) <= currentIdx;
@@ -238,26 +336,36 @@ class _PerksSection extends StatelessWidget {
             decoration: BoxDecoration(
               color: unlocked ? context.cardDark : context.bg,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: unlocked ? AppTheme.primary.withValues(alpha: 0.3) : context.border),
+              border: Border.all(
+                  color: unlocked
+                      ? AppTheme.primary.withValues(alpha: 0.3)
+                      : context.border),
             ),
             child: Row(
               children: [
-                Text(p.icon, style: TextStyle(fontSize: 24, color: unlocked ? null : Colors.grey)),
+                Text(p.icon,
+                    style: TextStyle(
+                        fontSize: 24, color: unlocked ? null : Colors.grey)),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(p.title, style: TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.w600,
-                        color: unlocked ? context.text1 : context.text3)),
-                      Text(p.desc, style: TextStyle(
-                        fontSize: 12, color: unlocked ? context.text2 : context.text3)),
+                      Text(p.title,
+                          style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: unlocked ? context.text1 : context.text3)),
+                      Text(p.desc,
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: unlocked ? context.text2 : context.text3)),
                     ],
                   ),
                 ),
                 unlocked
-                    ? const Icon(Icons.check_circle, color: AppTheme.success, size: 20)
+                    ? const Icon(Icons.check_circle,
+                        color: AppTheme.success, size: 20)
                     : Icon(Icons.lock_outlined, color: context.text3, size: 20),
               ],
             ),
@@ -272,17 +380,18 @@ class _XpHistoryItem extends StatelessWidget {
   final int amount;
   final String reason;
   final DateTime date;
-  const _XpHistoryItem({required this.amount, required this.reason, required this.date});
+  const _XpHistoryItem(
+      {required this.amount, required this.reason, required this.date});
 
   String get _reasonLabel => switch (reason) {
-    'visit' => '🎮 Визит в клуб',
-    'review' => '⭐ Написал отзыв',
-    'tournament_register' => '🏆 Запись на турнир',
-    'referral' => '👥 Пригласил друга',
-    'streak_bonus' => '🔥 Бонус за серию',
-    'achievement' => '🎯 Достижение',
-    _ => '✨ $reason',
-  };
+        'visit' => ' Визит в клуб',
+        'review' => '⭐ Написал отзыв',
+        'tournament_register' => ' Запись на турнир',
+        'referral' => ' Пригласил друга',
+        'streak_bonus' => ' Бонус за серию',
+        'achievement' => ' Достижение',
+        _ => ' $reason',
+      };
 
   @override
   Widget build(BuildContext context) {
@@ -295,9 +404,14 @@ class _XpHistoryItem extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Expanded(child: Text(_reasonLabel, style: TextStyle(fontSize: 13, color: context.text1))),
-          Text('+$amount XP', style: const TextStyle(
-            fontSize: 13, fontWeight: FontWeight.w700, color: AppTheme.success)),
+          Expanded(
+              child: Text(_reasonLabel,
+                  style: TextStyle(fontSize: 13, color: context.text1))),
+          Text('+$amount XP',
+              style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.success)),
         ],
       ),
     );

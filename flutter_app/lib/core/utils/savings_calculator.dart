@@ -17,7 +17,8 @@ class SavingsCalculator {
   static const int defaultHourlyRate = 25000;
 
   /// Returns hourly rate for a given plan name
-  static int rateForPlan(String plan) => hourlyRatesByPlan[plan] ?? defaultHourlyRate;
+  static int rateForPlan(String plan) =>
+      hourlyRatesByPlan[plan] ?? defaultHourlyRate;
 
   /// Calculates savings: (hours × rate) − subscriptionCost
   /// Returns 0 if savings are negative.

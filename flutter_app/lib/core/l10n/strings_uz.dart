@@ -162,7 +162,8 @@ const Map<String, String> stringsUz = {
   'auth.name_hint': 'Ismingiz',
   'auth.login_btn': 'Kirish',
   'auth.register_btn': 'Ro\'yxatdan o\'tish',
-  'auth.terms': 'Tugmani bosish orqali siz\nFoydalanish shartlariga rozilik bildirasiz',
+  'auth.terms':
+      'Tugmani bosish orqali siz\nFoydalanish shartlariga rozilik bildirasiz',
   'auth.enter_email_pass': 'Email va parolni kiriting',
   'auth.name_short': 'Ism kamida 2 ta belgidan iborat bo\'lishi kerak',
   'auth.email_invalid': 'To\'g\'ri email kiriting',
@@ -281,7 +282,8 @@ const Map<String, String> stringsUz = {
   'booking.title': 'Band qilish',
   'booking.my': 'Mening bandlarim',
   'booking.new': 'Yangi band qilish',
-  'booking.info': 'Joy band qiling va o\'z vaqtida keling. Band boshlanganidan keyin 15 daqiqangiz bor. Kelmasangiz — band avtomatik bekor qilinadi.',
+  'booking.info':
+      'Joy band qiling va o\'z vaqtida keling. Band boshlanganidan keyin 15 daqiqangiz bor. Kelmasangiz — band avtomatik bekor qilinadi.',
   'booking.club': 'Klub',
   'booking.select_club': 'Klubni tanlang',
   'booking.zone': 'Zona',
@@ -293,7 +295,8 @@ const Map<String, String> stringsUz = {
   'booking.time': 'Boshlanish vaqti',
   'booking.duration': 'Davomiyligi',
   'booking.price': 'Taxminiy narx',
-  'booking.grace_warn': '15 daqiqa ichida keling. 3 ta kelmaslik = 1 hafta blok.',
+  'booking.grace_warn':
+      '15 daqiqa ichida keling. 3 ta kelmaslik = 1 hafta blok.',
   'booking.submit': 'Band qilish',
   'booking.book_place': 'Joy band qilish',
   'booking.created': 'Band yaratildi! O\'z vaqtida keling',
@@ -304,7 +307,8 @@ const Map<String, String> stringsUz = {
   'booking.completed': 'Yakunlangan',
   'booking.no_show': 'Kelmaslik',
   'booking.cancelled': 'Bekor qilingan',
-  'booking.blocked': 'Kelmasliklar tufayli band qilish bloklangan. Keyinroq urinib ko\'ring.',
+  'booking.blocked':
+      'Kelmasliklar tufayli band qilish bloklangan. Keyinroq urinib ko\'ring.',
 
   // ── Booking extra ──────────────────────────
   'booking.hours_short': 'soat',
@@ -320,7 +324,8 @@ const Map<String, String> stringsUz = {
   // ── Freeze screen ────────────────────────
   'freeze.title': 'Obunani muzlatish',
   'freeze.choose_days': 'Muzlatish kunlarini tanlang',
-  'freeze.desc': 'Kalendardagi kunlarga bosib muzlating yoki eriting. Obuna muddati har bir muzlatilgan kun uchun uzayadi.',
+  'freeze.desc':
+      'Kalendardagi kunlarga bosib muzlating yoki eriting. Obuna muddati har bir muzlatilgan kun uchun uzayadi.',
   'freeze.remaining': 'Qoldi',
   'freeze.of': 'dan',
   'freeze.days': 'kun',
@@ -354,7 +359,8 @@ const Map<String, String> stringsUz = {
   // ── Plans screen ──────────────────────────
   'plans.title': 'Tarifni tanlang',
   'plans.subtitle': 'Bugun o\'ynashni boshlang',
-  'plans.desc': 'Tarifni tanlang va qulay usulda to\'lang. Obuna 30 daqiqa ichida faollashtiriladi.',
+  'plans.desc':
+      'Tarifni tanlang va qulay usulda to\'lang. Obuna 30 daqiqa ichida faollashtiriladi.',
   'plans.select': 'Buyurtma berish',
   'plans.popular': 'Ommabop',
   'plans.visit_day': '1 tashrif/kun',
@@ -391,17 +397,20 @@ const Map<String, String> stringsUz = {
   'pay.via_card': 'HUMO/UZCARD kartasiga',
   'pay.transfer_to_card': '{amount} UZS ni kartaga o\'tkazing:',
   'pay.recipient': 'Qabul qiluvchi: ',
-  'pay.after_transfer_note': 'O\'tkazmadan so\'ng "To\'ladim" tugmasini bosing va qisqa shaklni to\'ldiring. Obunani 30 daqiqa ichida faollashtiramiz.',
+  'pay.after_transfer_note':
+      'O\'tkazmadan so\'ng "To\'ladim" tugmasini bosing va qisqa shaklni to\'ldiring. Obunani 30 daqiqa ichida faollashtiramiz.',
   'pay.i_paid': 'To\'ladim',
   'pay.confirm_title': 'To\'lovni tasdiqlash',
-  'pay.confirm_desc': 'To\'lovni tekshirishimiz va obunani faollashtirish uchun shaklni to\'ldiring.',
+  'pay.confirm_desc':
+      'To\'lovni tekshirishimiz va obunani faollashtirish uchun shaklni to\'ldiring.',
   'pay.phone_label': 'Aloqa uchun telefon raqam *',
   'pay.comment_label': 'Izoh (ixtiyoriy)',
   'pay.comment_hint': 'O\'tkazma summasi, vaqti, qaysi bankdan...',
   'pay.submit': 'Ariza yuborish',
   'pay.back_to_instruction': 'Ko\'rsatmalarga qaytish',
   'pay.request_sent': 'Ariza yuborildi!',
-  'pay.request_sent_desc': 'To\'lovni tekshiramiz va obunangizni 30 daqiqa ichida faollashtiramiz (ish vaqtlari 09:00–22:00).\n\nObuna faol bo\'lganda bildirishnoma olasiz.',
+  'pay.request_sent_desc':
+      'To\'lovni tekshiramiz va obunangizni 30 daqiqa ichida faollashtiramiz (ish vaqtlari 09:00–22:00).\n\nObuna faol bo\'lganda bildirishnoma olasiz.',
   'pay.go_home': 'Bosh sahifaga',
   'pay.copied': 'Nusxalandi',
 
@@ -417,7 +426,8 @@ const Map<String, String> stringsUz = {
   // ── Referral screen ──────────────────────
   'ref.title': 'Referal dasturi',
   'ref.invite_desc': 'Do\'stingizni taklif qiling — ikkalangiz +3 soat olasiz',
-  'ref.share_desc': 'Do\'stingiz bilan kodni ulashing. Uning birinchi obunasidan keyin ikkalangiz bonus soatlar olasiz.',
+  'ref.share_desc':
+      'Do\'stingiz bilan kodni ulashing. Uning birinchi obunasidan keyin ikkalangiz bonus soatlar olasiz.',
   'ref.friends_invited': 'Taklif qilingan do\'stlar',
   'ref.hours_earned': 'Ishlangan soatlar',
   'ref.recent_invites': 'So\'nggi takliflar',
@@ -428,8 +438,9 @@ const Map<String, String> stringsUz = {
   'ref.code_copied': 'Kod nusxalandi',
   'ref.copy': 'Nusxalash',
   'ref.share': 'Ulashish',
-  'ref.share_story': 'Stories\'da ulashish ✨',
-  'ref.share_text': 'Salom! PlayPass ni sinab ko\'r — kompyuter klublarga obuna. Mening kodimni ishlat: {code} va +3 soat bonus ol!',
+  'ref.share_story': 'Stories\'da ulashish ',
+  'ref.share_text':
+      'Salom! PlayPass ni sinab ko\'r — kompyuter klublarga obuna. Mening kodimni ishlat: {code} va +3 soat bonus ol!',
   'ref.share_copied': 'Yuborish uchun matn nusxalandi',
 
   // ── Gift purchase extras ─────────────────
@@ -437,7 +448,8 @@ const Map<String, String> stringsUz = {
   'gift.unlimited_short': 'Cheksiz',
   'gift.hours_short': 'soat',
   'gift.code_copied': 'Kod nusxalandi',
-  'gift.share_text': 'Salom! Senga PlayPass obunasini sovg\'a qilyapman. Ilovada kodni faollashtir: {code}!',
+  'gift.share_text':
+      'Salom! Senga PlayPass obunasini sovg\'a qilyapman. Ilovada kodni faollashtir: {code}!',
   'gift.text_copied': 'Matn nusxalandi',
   'gift.create_price': 'Sovg\'a rasmiylashtirish · {price} UZS',
 
@@ -482,7 +494,7 @@ const Map<String, String> stringsUz = {
   'streak.title': 'Tashriflar seriyasi',
   'streak.days': 'kun ketma-ket',
   'streak.next_reward': 'Bonusgacha {n} kun',
-  'streak.reward_unlocked': '🔥 Bonus ochildi!',
+  'streak.reward_unlocked': ' Bonus ochildi!',
   'streak.bonus_3h': '+3 soat',
   'streak.day_singular': 'kun',
   'streak.day_few': 'kun',
@@ -546,7 +558,8 @@ const Map<String, String> stringsUz = {
   'savings.all_time': 'Jami tejangan',
   'savings.by_months': 'Oylar bo\'yicha',
   'savings.hint': '{hours} soat × {rate} so\'m/soat',
-  'savings.calc_info': 'Hisoblash {plan} tarifi asosida: {rate} so\'m/soat — klublarda sizning tarifingiz uchun o\'rtacha narx',
+  'savings.calc_info':
+      'Hisoblash {plan} tarifi asosida: {rate} so\'m/soat — klublarda sizning tarifingiz uchun o\'rtacha narx',
   'month.jan': 'Yan',
   'month.feb': 'Fev',
   'month.mar': 'Mar',
@@ -593,15 +606,20 @@ const Map<String, String> stringsUz = {
   // ── FAQ content ────────────────────────────────
   'faq.title': 'Savol va javoblar',
   'faq.q1': 'Obunani qanday faollashtirish mumkin?',
-  'faq.a1': 'To\'lovdan so\'ng obuna 30 daqiqa ichida avtomatik faollashtiriladi. Bildirishnoma olasiz.',
+  'faq.a1':
+      'To\'lovdan so\'ng obuna 30 daqiqa ichida avtomatik faollashtiriladi. Bildirishnoma olasiz.',
   'faq.q2': 'Obunani muzlatish mumkinmi?',
-  'faq.a2': 'Ha, oyiga {n} kungacha muzlatishingiz mumkin. Profil bo\'limidagi kalendardan kunlarni tanlang.',
+  'faq.a2':
+      'Ha, oyiga {n} kungacha muzlatishingiz mumkin. Profil bo\'limidagi kalendardan kunlarni tanlang.',
   'faq.q3': 'Cheksiz tarif qanday ishlaydi?',
   'faq.a3': 'Pro va VIP tariflar kuniga 1 tashrif, soat cheklovisiz.',
   'faq.q4': 'Qaysi zonalar menga ochiq?',
-  'faq.a4': 'Oddiy: faqat oddiy zona. Standart va Pro: oddiy + pro zonalar. VIP: barcha zonalar.',
+  'faq.a4':
+      'Oddiy: faqat oddiy zona. Standart va Pro: oddiy + pro zonalar. VIP: barcha zonalar.',
   'faq.q5': 'Tarifni o\'zgartirish mumkinmi?',
-  'faq.a5': 'Ha, "Obuna sotib olish" bo\'limiga o\'ting va yangi tarifni tanlang. Qolgan kunlar hisobga olinadi.',
+  'faq.a5':
+      'Ha, "Obuna sotib olish" bo\'limiga o\'ting va yangi tarifni tanlang. Qolgan kunlar hisobga olinadi.',
   'faq.q6': 'Referal dastur qanday ishlaydi?',
-  'faq.a6': 'Do\'stingizni referal kod bilan taklif qiling va obunangizga +{n} soat oling.',
+  'faq.a6':
+      'Do\'stingizni referal kod bilan taklif qiling va obunangizga +{n} soat oling.',
 };

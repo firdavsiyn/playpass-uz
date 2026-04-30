@@ -38,7 +38,8 @@ Future<void> _runApp() async {
     supabaseOk = true;
   } catch (e, st) {
     debugPrint('[PlayPass] Supabase init error: $e');
-    AppMonitoring.captureException(e, stackTrace: st, extra: {'phase': 'supabase_init'});
+    AppMonitoring.captureException(e,
+        stackTrace: st, extra: {'phase': 'supabase_init'});
   }
 
   if (!supabaseOk) {
@@ -71,11 +72,15 @@ class _ErrorApp extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.wifi_off_rounded, color: AppTheme.primary, size: 64),
+                const Icon(Icons.wifi_off_rounded,
+                    color: AppTheme.primary, size: 64),
                 const SizedBox(height: 16),
                 const Text(
                   'Нет подключения',
-                  style: TextStyle(color: AppTheme.textPrimary, fontSize: 22, fontWeight: FontWeight.w700),
+                  style: TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 8),
                 const Text(
@@ -105,7 +110,9 @@ class PlayPassApp extends ConsumerWidget {
     final router = ref.watch(routerProvider);
     final themeMode = ref.watch(themeModeProvider);
     final effectiveTheme = themeMode == 'auto'
-        ? ((DateTime.now().hour >= 7 && DateTime.now().hour < 20) ? 'light' : 'dark')
+        ? ((DateTime.now().hour >= 7 && DateTime.now().hour < 20)
+            ? 'light'
+            : 'dark')
         : themeMode;
     final isDark = effectiveTheme == 'dark';
 
@@ -134,8 +141,8 @@ class _AppScrollBehavior extends MaterialScrollBehavior {
 
   @override
   Set<PointerDeviceKind> get dragDevices => {
-    PointerDeviceKind.touch,
-    PointerDeviceKind.mouse,
-    PointerDeviceKind.trackpad,
-  };
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.trackpad,
+      };
 }

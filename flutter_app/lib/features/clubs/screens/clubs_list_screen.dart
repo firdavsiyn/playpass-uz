@@ -37,7 +37,8 @@ final nearbyClubsListProvider = FutureProvider<List<Club>>((ref) async {
     final pos = await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.medium,
     );
-    return SupabaseService().getNearbyClubs(pos.latitude, pos.longitude, radiusKm: 50);
+    return SupabaseService()
+        .getNearbyClubs(pos.latitude, pos.longitude, radiusKm: 50);
   } catch (_) {
     // Fallback to Tashkent center
     return SupabaseService().getNearbyClubs(41.2995, 69.2401, radiusKm: 50);
@@ -112,7 +113,8 @@ class ClubsListScreen extends ConsumerWidget {
                   GestureDetector(
                     onTap: () => context.push('/notifications'),
                     child: Container(
-                      width: 40, height: 40,
+                      width: 40,
+                      height: 40,
                       decoration: BoxDecoration(
                         color: context.card,
                         shape: BoxShape.circle,
@@ -140,8 +142,8 @@ class ClubsListScreen extends ConsumerWidget {
                   decoration: InputDecoration(
                     hintText: ref.lang('clubs.search_hint'),
                     hintStyle: TextStyle(color: context.text3),
-                    prefixIcon:
-                        Icon(Icons.search_rounded, color: context.text3, size: 22),
+                    prefixIcon: Icon(Icons.search_rounded,
+                        color: context.text3, size: 22),
                     filled: true,
                     fillColor: context.surface,
                     contentPadding:
@@ -269,7 +271,9 @@ class ClubsListScreen extends ConsumerWidget {
             const SizedBox(height: 10),
 
             // ── Sort row ──────────────────────────────────
-            if (viewMode == 'list' || viewMode == 'zones' || viewMode == 'nearby')
+            if (viewMode == 'list' ||
+                viewMode == 'zones' ||
+                viewMode == 'nearby')
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
                 child: Row(
@@ -300,11 +304,13 @@ class ClubsListScreen extends ConsumerWidget {
                             ),
                             child: Text(label,
                                 style: TextStyle(
-                                  color:
-                                      selected ? AppTheme.primary : context.text3,
+                                  color: selected
+                                      ? AppTheme.primary
+                                      : context.text3,
                                   fontSize: 11,
-                                  fontWeight:
-                                      selected ? FontWeight.w600 : FontWeight.normal,
+                                  fontWeight: selected
+                                      ? FontWeight.w600
+                                      : FontWeight.normal,
                                 )),
                           ),
                         ),
@@ -329,13 +335,15 @@ class ClubsListScreen extends ConsumerWidget {
                     var filtered = query.isEmpty
                         ? clubs
                         : clubs
-                            .where((c) =>
-                                c.name.toLowerCase().contains(query.toLowerCase()))
+                            .where((c) => c.name
+                                .toLowerCase()
+                                .contains(query.toLowerCase()))
                             .toList();
 
                     // Apply "Свободные" filter — hide clubs with >80% occupancy
                     if (ref.watch(filterFreeProvider)) {
-                      final occ = ref.watch(clubsOccupancyProvider).valueOrNull ?? {};
+                      final occ =
+                          ref.watch(clubsOccupancyProvider).valueOrNull ?? {};
                       filtered = filtered.where((c) {
                         final count = occ[c.id] ?? 0;
                         if (c.pcCount == 0) return true;
@@ -358,16 +366,18 @@ class ClubsListScreen extends ConsumerWidget {
                     return _ListView(clubs: filtered);
                   },
                   loading: () => GridView.builder(
-                      padding: const EdgeInsets.all(16),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 0.75,
-                        mainAxisSpacing: 12,
-                        crossAxisSpacing: 12,
-                      ),
-                      itemCount: 6,
-                      itemBuilder: (_, __) => const NeonSkeletonCard(height: 200, borderRadius: 16),
+                    padding: const EdgeInsets.all(16),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 0.75,
+                      mainAxisSpacing: 12,
+                      crossAxisSpacing: 12,
                     ),
+                    itemCount: 6,
+                    itemBuilder: (_, __) =>
+                        const NeonSkeletonCard(height: 200, borderRadius: 16),
+                  ),
                   error: (e, _) => Center(
                     child: Text('${ref.lang('common.error')}: $e',
                         style: const TextStyle(color: AppTheme.error)),
@@ -479,7 +489,8 @@ class _QuickChip extends StatelessWidget {
             color: selected ? color.withValues(alpha: 0.15) : context.surface,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: selected ? color.withValues(alpha: 0.4) : Colors.transparent,
+              color:
+                  selected ? color.withValues(alpha: 0.4) : Colors.transparent,
             ),
           ),
           child: Row(
@@ -549,7 +560,8 @@ class FullscreenMapScreen extends ConsumerStatefulWidget {
   const FullscreenMapScreen({super.key});
 
   @override
-  ConsumerState<FullscreenMapScreen> createState() => _FullscreenMapScreenState();
+  ConsumerState<FullscreenMapScreen> createState() =>
+      _FullscreenMapScreenState();
 }
 
 class _FullscreenMapScreenState extends ConsumerState<FullscreenMapScreen> {
@@ -659,8 +671,7 @@ class _FullscreenMapScreenState extends ConsumerState<FullscreenMapScreen> {
                             color: const Color(0xFFFBBF24),
                             selected: _tierFilter == 'vip',
                             onTap: () => setState(() {
-                              _tierFilter =
-                                  _tierFilter == 'vip' ? null : 'vip';
+                              _tierFilter = _tierFilter == 'vip' ? null : 'vip';
                             }),
                           ),
                           _MapFilterChip(
@@ -668,9 +679,8 @@ class _FullscreenMapScreenState extends ConsumerState<FullscreenMapScreen> {
                             color: AppTheme.primary,
                             selected: _tierFilter == 'standard',
                             onTap: () => setState(() {
-                              _tierFilter = _tierFilter == 'standard'
-                                  ? null
-                                  : 'standard';
+                              _tierFilter =
+                                  _tierFilter == 'standard' ? null : 'standard';
                             }),
                           ),
                           _MapFilterChip(
@@ -686,8 +696,7 @@ class _FullscreenMapScreenState extends ConsumerState<FullscreenMapScreen> {
                             label: 'PS',
                             color: const Color(0xFF3B82F6),
                             selected: _psFilter,
-                            onTap: () =>
-                                setState(() => _psFilter = !_psFilter),
+                            onTap: () => setState(() => _psFilter = !_psFilter),
                           ),
                         ],
                       ),
@@ -810,7 +819,8 @@ class _FavoritesView extends ConsumerWidget {
                 style: TextStyle(color: context.text3, fontSize: 15)),
             const SizedBox(height: 6),
             Text(ref.lang('clubs.no_favorites_hint'),
-                style: TextStyle(color: context.text3.withValues(alpha: 0.6), fontSize: 12)),
+                style: TextStyle(
+                    color: context.text3.withValues(alpha: 0.6), fontSize: 12)),
           ],
         ),
       );
@@ -818,10 +828,12 @@ class _FavoritesView extends ConsumerWidget {
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
-      children: favClubs.map((club) => Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: _ClubListCard(club: club),
-      )).toList(),
+      children: favClubs
+          .map((club) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _ClubListCard(club: club),
+              ))
+          .toList(),
     );
   }
 }
@@ -976,14 +988,19 @@ class _NearbyClubChip extends ConsumerWidget {
                   Row(
                     children: [
                       Container(
-                        width: 6, height: 6,
+                        width: 6,
+                        height: 6,
                         decoration: BoxDecoration(
-                          color: club.isOpen ? AppTheme.success : AppTheme.error,
+                          color:
+                              club.isOpen ? AppTheme.success : AppTheme.error,
                           shape: BoxShape.circle,
                         ),
                       ),
                       const SizedBox(width: 4),
-                      Text(club.isOpen ? ref.lang('clubs.open') : ref.lang('clubs.closed'),
+                      Text(
+                          club.isOpen
+                              ? ref.lang('clubs.open')
+                              : ref.lang('clubs.closed'),
                           style: TextStyle(
                             color:
                                 club.isOpen ? AppTheme.success : AppTheme.error,
@@ -993,8 +1010,8 @@ class _NearbyClubChip extends ConsumerWidget {
                       if (club.distanceMeters != null) ...[
                         const Spacer(),
                         Text(club.distanceText,
-                            style: TextStyle(
-                                color: context.text3, fontSize: 9)),
+                            style:
+                                TextStyle(color: context.text3, fontSize: 9)),
                       ],
                     ],
                   ),
@@ -1071,13 +1088,12 @@ class _ClubListCard extends ConsumerWidget {
                           ),
                         ),
                         if (club.tier == 'vip')
-                          _Badge(
-                              label: 'VIP',
-                              color: const Color(0xFFFBBF24)),
+                          _Badge(label: 'VIP', color: const Color(0xFFFBBF24)),
                         const SizedBox(width: 4),
                         GestureDetector(
-                          onTap: () =>
-                              ref.read(favoritesProvider.notifier).toggle(club.id),
+                          onTap: () => ref
+                              .read(favoritesProvider.notifier)
+                              .toggle(club.id),
                           child: Icon(
                             isFav
                                 ? Icons.favorite_rounded
@@ -1127,9 +1143,7 @@ class _ClubListCard extends ConsumerWidget {
                         child: Wrap(
                           spacing: 4,
                           children: [
-                            _Badge(
-                                label: 'PS',
-                                color: const Color(0xFF3B82F6)),
+                            _Badge(label: 'PS', color: const Color(0xFF3B82F6)),
                           ],
                         ),
                       ),
@@ -1140,16 +1154,14 @@ class _ClubListCard extends ConsumerWidget {
                         const SizedBox(width: 2),
                         Text(
                           club.rating.toStringAsFixed(1),
-                          style:
-                              TextStyle(color: context.text2, fontSize: 12),
+                          style: TextStyle(color: context.text2, fontSize: 12),
                         ),
                         const SizedBox(width: 10),
                         Icon(Icons.computer, size: 14, color: context.text3),
                         const SizedBox(width: 2),
                         Text(
                           '${club.pcCount} ${ref.lang('clubs.pc')}',
-                          style:
-                              TextStyle(color: context.text3, fontSize: 12),
+                          style: TextStyle(color: context.text3, fontSize: 12),
                         ),
                         Consumer(builder: (_, ref, __) {
                           final occ =
@@ -1183,21 +1195,22 @@ class _ClubListCard extends ConsumerWidget {
                         }),
                         const Spacer(),
                         Container(
-                          width: 7, height: 7,
+                          width: 7,
+                          height: 7,
                           decoration: BoxDecoration(
-                            color: club.isOpen
-                                ? AppTheme.success
-                                : AppTheme.error,
+                            color:
+                                club.isOpen ? AppTheme.success : AppTheme.error,
                             shape: BoxShape.circle,
                           ),
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          club.isOpen ? ref.lang('clubs.open') : ref.lang('clubs.closed'),
+                          club.isOpen
+                              ? ref.lang('clubs.open')
+                              : ref.lang('clubs.closed'),
                           style: TextStyle(
-                            color: club.isOpen
-                                ? AppTheme.success
-                                : AppTheme.error,
+                            color:
+                                club.isOpen ? AppTheme.success : AppTheme.error,
                             fontSize: 11,
                           ),
                         ),
@@ -1309,7 +1322,8 @@ class _ZoneSectionHeader extends StatelessWidget {
                   color: color, fontWeight: FontWeight.w700, fontSize: 15)),
           const Spacer(),
           Text('$count $countSuffix',
-              style: TextStyle(color: color.withValues(alpha: 0.7), fontSize: 12)),
+              style:
+                  TextStyle(color: color.withValues(alpha: 0.7), fontSize: 12)),
         ],
       ),
     );
@@ -1340,7 +1354,8 @@ class _NearbyView extends ConsumerWidget {
                 const SizedBox(height: 6),
                 Text(ref.lang('clubs.allow_location'),
                     style: TextStyle(
-                        color: context.text3.withValues(alpha: 0.6), fontSize: 12)),
+                        color: context.text3.withValues(alpha: 0.6),
+                        fontSize: 12)),
               ],
             ),
           );

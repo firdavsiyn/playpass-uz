@@ -31,166 +31,168 @@ class MySubscriptionScreen extends ConsumerWidget {
           await ref.read(_mySubProvider.future).catchError((_) {});
         },
         child: CustomScrollView(
-        slivers: [
-          // ── Header ──────────────────────────────────
-          SliverToBoxAdapter(
-            child: SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                child: Text(
-                  ref.lang('sub.my'),
-                  style: TextStyle(
-                    color: context.text1,
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
+          slivers: [
+            // ── Header ──────────────────────────────────
+            SliverToBoxAdapter(
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                  child: Text(
+                    ref.lang('sub.my'),
+                    style: TextStyle(
+                      color: context.text1,
+                      fontSize: 28,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
 
-          // ── Subscription card ───────────────────────
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-              child: subAsync.when(
-                data: (sub) => _SubscriptionCard(subscription: sub),
-                loading: () => _SubscriptionCardSkeleton(),
-                error: (_, __) => _SubscriptionCard(subscription: null),
-              ),
-            ),
-          ),
-
-          // ── Actions section ─────────────────────────
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
-              child: Text(
-                ref.lang('sub.actions'),
-                style: TextStyle(
-                  color: context.text3,
-                  fontSize: 14,
+            // ── Subscription card ───────────────────────
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                child: subAsync.when(
+                  data: (sub) => _SubscriptionCard(subscription: sub),
+                  loading: () => _SubscriptionCardSkeleton(),
+                  error: (_, __) => _SubscriptionCard(subscription: null),
                 ),
               ),
             ),
-          ),
 
-          // Day-Pass CTA — show only if user has no active subscription
-          SliverToBoxAdapter(
-            child: subAsync.maybeWhen(
-              data: (sub) {
-                if (sub != null && sub.isActive) return const SizedBox.shrink();
-                return Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-                  child: _DayPassCard(),
-                );
-              },
-              orElse: () => const SizedBox.shrink(),
-            ),
-          ),
-
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: context.card,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppTheme.primary.withValues(alpha: 0.08)),
-                  boxShadow: AppTheme.cardGlow(),
-                ),
-                child: Column(
-                  children: [
-                    _ActionTile(
-                      icon: Icons.card_membership_rounded,
-                      iconColor: AppTheme.primary,
-                      title: ref.lang('sub.buy'),
-                      onTap: () => context.push('/plans'),
-                    ),
-                    const _Divider(),
-                    _ActionTile(
-                      icon: Icons.confirmation_number_outlined,
-                      iconColor: const Color(0xFF22C55E),
-                      title: ref.lang('sub.promo'),
-                      onTap: () => _showPromoDialog(context, ref),
-                    ),
-                    const _Divider(),
-                    _ActionTile(
-                      icon: Icons.card_giftcard_rounded,
-                      iconColor: const Color(0xFFEF4444),
-                      title: ref.lang('sub.gift_buy'),
-                      onTap: () => _showGiftInfo(context),
-                    ),
-                    const _Divider(),
-                    _ActionTile(
-                      icon: Icons.redeem_rounded,
-                      iconColor: const Color(0xFF8B5CF6),
-                      title: ref.lang('sub.gift_redeem'),
-                      onTap: () => context.push('/gift/redeem'),
-                    ),
-                  ],
+            // ── Actions section ─────────────────────────
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
+                child: Text(
+                  ref.lang('sub.actions'),
+                  style: TextStyle(
+                    color: context.text3,
+                    fontSize: 14,
+                  ),
                 ),
               ),
             ),
-          ),
 
-          // ── FAQ section ─────────────────────────────
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: context.card,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: _ActionTile(
-                  icon: Icons.help_outline_rounded,
-                  iconColor: context.text3,
-                  title: ref.lang('sub.faq'),
-                  onTap: () => _showFAQ(context, ref: ref),
-                ),
-              ),
-            ),
-          ),
-
-          // ── Plan comparison ─────────────────────────
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
-              child: Text(
-                ref.lang('sub.compare'),
-                style: TextStyle(
-                  color: context.text3,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-          ),
-
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: 200,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                itemCount: AppConstants.plans.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 12),
-                itemBuilder: (context, index) {
-                  final plan = AppConstants.plans.values.toList()[index];
-                  return _MiniPlanCard(
-                    plan: plan,
-                    onTap: () => context.push('/payment', extra: plan.id),
+            // Day-Pass CTA — show only if user has no active subscription
+            SliverToBoxAdapter(
+              child: subAsync.maybeWhen(
+                data: (sub) {
+                  if (sub != null && sub.isActive)
+                    return const SizedBox.shrink();
+                  return Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                    child: _DayPassCard(),
                   );
                 },
+                orElse: () => const SizedBox.shrink(),
               ),
             ),
-          ),
 
-          // Bottom spacing
-          const SliverToBoxAdapter(child: SizedBox(height: 100)),
-        ],
-      ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: context.card,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                        color: AppTheme.primary.withValues(alpha: 0.08)),
+                    boxShadow: AppTheme.cardGlow(),
+                  ),
+                  child: Column(
+                    children: [
+                      _ActionTile(
+                        icon: Icons.card_membership_rounded,
+                        iconColor: AppTheme.primary,
+                        title: ref.lang('sub.buy'),
+                        onTap: () => context.push('/plans'),
+                      ),
+                      const _Divider(),
+                      _ActionTile(
+                        icon: Icons.confirmation_number_outlined,
+                        iconColor: const Color(0xFF22C55E),
+                        title: ref.lang('sub.promo'),
+                        onTap: () => _showPromoDialog(context, ref),
+                      ),
+                      const _Divider(),
+                      _ActionTile(
+                        icon: Icons.card_giftcard_rounded,
+                        iconColor: const Color(0xFFEF4444),
+                        title: ref.lang('sub.gift_buy'),
+                        onTap: () => _showGiftInfo(context),
+                      ),
+                      const _Divider(),
+                      _ActionTile(
+                        icon: Icons.redeem_rounded,
+                        iconColor: const Color(0xFF8B5CF6),
+                        title: ref.lang('sub.gift_redeem'),
+                        onTap: () => context.push('/gift/redeem'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // ── FAQ section ─────────────────────────────
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: context.card,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: _ActionTile(
+                    icon: Icons.help_outline_rounded,
+                    iconColor: context.text3,
+                    title: ref.lang('sub.faq'),
+                    onTap: () => _showFAQ(context, ref: ref),
+                  ),
+                ),
+              ),
+            ),
+
+            // ── Plan comparison ─────────────────────────
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
+                child: Text(
+                  ref.lang('sub.compare'),
+                  style: TextStyle(
+                    color: context.text3,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ),
+
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 200,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: AppConstants.plans.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (context, index) {
+                    final plan = AppConstants.plans.values.toList()[index];
+                    return _MiniPlanCard(
+                      plan: plan,
+                      onTap: () => context.push('/payment', extra: plan.id),
+                    );
+                  },
+                ),
+              ),
+            ),
+
+            // Bottom spacing
+            const SliverToBoxAdapter(child: SizedBox(height: 100)),
+          ],
+        ),
       ),
     );
   }
@@ -229,7 +231,8 @@ class MySubscriptionScreen extends ConsumerWidget {
           children: [
             Center(
               child: Container(
-                width: 40, height: 4,
+                width: 40,
+                height: 4,
                 margin: const EdgeInsets.only(bottom: 20),
                 decoration: BoxDecoration(
                   color: context.text3.withValues(alpha: 0.3),
@@ -244,11 +247,18 @@ class MySubscriptionScreen extends ConsumerWidget {
                     fontWeight: FontWeight.w700)),
             const SizedBox(height: 20),
             _faqItem(ref.lang('faq.q1'), ref.lang('faq.a1')),
-            _faqItem(ref.lang('faq.q2'), ref.lang('faq.a2').replaceAll('{n}', '${AppConstants.freezeMaxDaysPerMonth}')),
+            _faqItem(
+                ref.lang('faq.q2'),
+                ref.lang('faq.a2').replaceAll(
+                    '{n}', '${AppConstants.freezeMaxDaysPerMonth}')),
             _faqItem(ref.lang('faq.q3'), ref.lang('faq.a3')),
             _faqItem(ref.lang('faq.q4'), ref.lang('faq.a4')),
             _faqItem(ref.lang('faq.q5'), ref.lang('faq.a5')),
-            _faqItem(ref.lang('faq.q6'), ref.lang('faq.a6').replaceAll('{n}', '${AppConstants.referralBonusHours}')),
+            _faqItem(
+                ref.lang('faq.q6'),
+                ref
+                    .lang('faq.a6')
+                    .replaceAll('{n}', '${AppConstants.referralBonusHours}')),
           ],
         ),
       ),
@@ -258,23 +268,24 @@ class MySubscriptionScreen extends ConsumerWidget {
   Widget _faqItem(String q, String a) {
     // Note: This method doesn't have BuildContext, but it's called inside
     // a builder that provides context. We need to convert to a widget.
-    return Builder(builder: (context) => Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(q,
-              style: TextStyle(
-                  color: context.text1,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 15)),
-          const SizedBox(height: 6),
-          Text(a,
-              style: TextStyle(
-                  color: context.text2, fontSize: 14, height: 1.4)),
-        ],
-      ),
-    ));
+    return Builder(
+        builder: (context) => Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(q,
+                      style: TextStyle(
+                          color: context.text1,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15)),
+                  const SizedBox(height: 6),
+                  Text(a,
+                      style: TextStyle(
+                          color: context.text2, fontSize: 14, height: 1.4)),
+                ],
+              ),
+            ));
   }
 }
 
@@ -314,23 +325,25 @@ class _SubscriptionCard extends ConsumerWidget {
             ? AppTheme.neonGlow(color: glowColor, radius: 20)
             : [],
       ),
-      child: hasActive ? _activeContent(context, ref, sub!) : _expiredContent(context, ref),
+      child: hasActive
+          ? _activeContent(context, ref, sub!)
+          : _expiredContent(context, ref),
     );
   }
 
   List<Color> _gradientForPlan(String plan) => switch (plan) {
-    'vip' => [const Color(0xFF92400E), const Color(0xFFB45309)],
-    'pro' => [const Color(0xFF581C87), const Color(0xFF7C3AED)],
-    'standard' => [const Color(0xFF1E1B4B), const Color(0xFF312E81)],
-    _ => [const Color(0xFF1E3A5F), const Color(0xFF1E40AF)],
-  };
+        'vip' => [const Color(0xFF92400E), const Color(0xFFB45309)],
+        'pro' => [const Color(0xFF581C87), const Color(0xFF7C3AED)],
+        'standard' => [const Color(0xFF1E1B4B), const Color(0xFF312E81)],
+        _ => [const Color(0xFF1E3A5F), const Color(0xFF1E40AF)],
+      };
 
   Color _glowForPlan(String plan) => switch (plan) {
-    'vip' => const Color(0xFFD4A017),
-    'pro' => AppTheme.neonPurple,
-    'standard' => AppTheme.primary,
-    _ => AppTheme.neonBlue,
-  };
+        'vip' => const Color(0xFFD4A017),
+        'pro' => AppTheme.neonPurple,
+        'standard' => AppTheme.primary,
+        _ => AppTheme.neonBlue,
+      };
 
   Widget _activeContent(BuildContext context, WidgetRef ref, Subscription sub) {
     final config = sub.planConfig;
@@ -358,7 +371,8 @@ class _SubscriptionCard extends ConsumerWidget {
             if (sub.isFrozen) ...[
               const SizedBox(width: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
                   color: Colors.blueGrey.withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(20),
@@ -366,10 +380,14 @@ class _SubscriptionCard extends ConsumerWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.ac_unit_rounded, color: Colors.white70, size: 14),
+                    const Icon(Icons.ac_unit_rounded,
+                        color: Colors.white70, size: 14),
                     const SizedBox(width: 4),
                     Text(ref.lang('sub.frozen_label'),
-                        style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
+                        style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600)),
                   ],
                 ),
               ),
@@ -384,20 +402,29 @@ class _SubscriptionCard extends ConsumerWidget {
         // Hours or unlimited
         if (sub.isUnlimited) ...[
           const Text('∞',
-              style: TextStyle(color: Colors.white, fontSize: 52, fontWeight: FontWeight.w800)),
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 52,
+                  fontWeight: FontWeight.w800)),
           Text(sub.localizedHoursSubtext(ref),
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 15)),
+              style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.7), fontSize: 15)),
         ] else ...[
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(sub.hoursText,
-                  style: const TextStyle(color: Colors.white, fontSize: 52, fontWeight: FontWeight.w800)),
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 52,
+                      fontWeight: FontWeight.w800)),
               const SizedBox(width: 8),
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
                 child: Text(sub.localizedHoursSubtext(ref),
-                    style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 15)),
+                    style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 15)),
               ),
             ],
           ),
@@ -422,7 +449,8 @@ class _SubscriptionCard extends ConsumerWidget {
             const SizedBox(width: 6),
             Text(
               '${sub.daysRemaining} ${ref.lang('sub.days_remaining')}',
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 14),
+              style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.7), fontSize: 14),
             ),
             if (!sub.isFrozen && sub.daysRemaining <= 3) ...[
               const SizedBox(width: 8),
@@ -433,7 +461,10 @@ class _SubscriptionCard extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(ref.lang('sub.expires'),
-                    style: const TextStyle(color: Colors.orange, fontSize: 11, fontWeight: FontWeight.w700)),
+                    style: const TextStyle(
+                        color: Colors.orange,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700)),
               ),
             ],
           ],
@@ -444,17 +475,22 @@ class _SubscriptionCard extends ConsumerWidget {
           const SizedBox(height: 12),
           Wrap(
             spacing: 6,
-            children: config.allowedZones.map((z) => Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                AppConstants.localizedZoneLabel(z, ref),
-                style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12),
-              ),
-            )).toList(),
+            children: config.allowedZones
+                .map((z) => Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        AppConstants.localizedZoneLabel(z, ref),
+                        style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.8),
+                            fontSize: 12),
+                      ),
+                    ))
+                .toList(),
           ),
         ],
       ],
@@ -467,10 +503,14 @@ class _SubscriptionCard extends ConsumerWidget {
       children: [
         Row(
           children: [
-            const Icon(Icons.info_outline_rounded, color: Colors.white54, size: 20),
+            const Icon(Icons.info_outline_rounded,
+                color: Colors.white54, size: 20),
             const SizedBox(width: 8),
             Text(ref.lang('sub.no_active_label'),
-                style: const TextStyle(color: Colors.white70, fontSize: 15, fontWeight: FontWeight.w600)),
+                style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600)),
             const Spacer(),
             Icon(Icons.arrow_forward_ios_rounded,
                 color: Colors.white.withValues(alpha: 0.4), size: 16),
@@ -488,10 +528,12 @@ class _SubscriptionCard extends ConsumerWidget {
               backgroundColor: AppTheme.primary,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
             child: Text(ref.lang('sub.buy'),
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                style:
+                    const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
           ),
         ),
       ],
@@ -604,7 +646,11 @@ class _PromoDialogState extends ConsumerState<_PromoDialog> {
       setState(() => _error = ref.lang('sub.promo_enter'));
       return;
     }
-    setState(() { _loading = true; _error = null; _success = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+      _success = null;
+    });
     try {
       final result = await SupabaseService().applyPromoCode(code);
       final type = result['type'] as String;
@@ -669,15 +715,19 @@ class _PromoDialogState extends ConsumerState<_PromoDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: Text(_success != null ? ref.lang('sub.promo_close') : ref.lang('sub.promo_cancel')),
+          child: Text(_success != null
+              ? ref.lang('sub.promo_close')
+              : ref.lang('sub.promo_cancel')),
         ),
         if (_success == null)
           ElevatedButton(
             onPressed: _loading ? null : _apply,
             child: _loading
                 ? const SizedBox(
-                    width: 18, height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: Colors.white))
                 : Text(ref.lang('sub.promo_activate')),
           ),
       ],
@@ -694,11 +744,11 @@ class _MiniPlanCard extends ConsumerWidget {
   const _MiniPlanCard({required this.plan, required this.onTap});
 
   Color get _color => switch (plan.id) {
-    'vip' => const Color(0xFFFBBF24),
-    'pro' => const Color(0xFF8B5CF6),
-    'standard' => AppTheme.primary,
-    _ => const Color(0xFF6B7280),
-  };
+        'vip' => const Color(0xFFFBBF24),
+        'pro' => const Color(0xFF8B5CF6),
+        'standard' => AppTheme.primary,
+        _ => const Color(0xFF6B7280),
+      };
 
   String _formatPrice(int priceUzs) {
     final str = priceUzs.toString();
@@ -744,7 +794,9 @@ class _MiniPlanCard extends ConsumerWidget {
             const SizedBox(height: 6),
             // Hours
             Text(
-              plan.isUnlimited ? ref.lang('sub.visit_per_day') : '${plan.hours} ${ref.lang('sub.hours_per_month')}',
+              plan.isUnlimited
+                  ? ref.lang('sub.visit_per_day')
+                  : '${plan.hours} ${ref.lang('sub.hours_per_month')}',
               style: TextStyle(color: context.text2, fontSize: 13),
             ),
             const Spacer(),
@@ -828,7 +880,8 @@ class _DayPassCard extends ConsumerWidget {
                 ),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.flash_on_rounded, color: Colors.white, size: 22),
+              child: const Icon(Icons.flash_on_rounded,
+                  color: Colors.white, size: 22),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -848,7 +901,8 @@ class _DayPassCard extends ConsumerWidget {
                       ),
                       const SizedBox(width: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: AppTheme.success.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(4),

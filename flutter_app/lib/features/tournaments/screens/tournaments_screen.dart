@@ -29,7 +29,8 @@ class TournamentsScreen extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.emoji_events_outlined, size: 64, color: context.text3),
+                  Icon(Icons.emoji_events_outlined,
+                      size: 64, color: context.text3),
                   const SizedBox(height: 12),
                   Text(t['tournaments_empty'] ?? 'Пока нет турниров',
                       style: TextStyle(color: context.text2)),
@@ -38,9 +39,14 @@ class TournamentsScreen extends ConsumerWidget {
             );
           }
 
-          final upcoming = tournaments.where((t) => t.status == 'upcoming' || t.status == 'registration').toList();
-          final ongoing = tournaments.where((t) => t.status == 'ongoing').toList();
-          final finished = tournaments.where((t) => t.status == 'finished').toList();
+          final upcoming = tournaments
+              .where(
+                  (t) => t.status == 'upcoming' || t.status == 'registration')
+              .toList();
+          final ongoing =
+              tournaments.where((t) => t.status == 'ongoing').toList();
+          final finished =
+              tournaments.where((t) => t.status == 'finished').toList();
 
           return RefreshIndicator(
             onRefresh: () => ref.refresh(tournamentsProvider.future),
@@ -48,17 +54,20 @@ class TournamentsScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(16),
               children: [
                 if (ongoing.isNotEmpty) ...[
-                  _SectionTitle(t['tournaments_ongoing'] ?? 'Сейчас идут', Icons.play_circle, AppTheme.error),
+                  _SectionTitle(t['tournaments_ongoing'] ?? 'Сейчас идут',
+                      Icons.play_circle, AppTheme.error),
                   ...ongoing.map((t) => _TournamentCard(tournament: t)),
                   const SizedBox(height: 16),
                 ],
                 if (upcoming.isNotEmpty) ...[
-                  _SectionTitle(t['tournaments_upcoming'] ?? 'Предстоящие', Icons.schedule, AppTheme.primary),
+                  _SectionTitle(t['tournaments_upcoming'] ?? 'Предстоящие',
+                      Icons.schedule, AppTheme.primary),
                   ...upcoming.map((t) => _TournamentCard(tournament: t)),
                   const SizedBox(height: 16),
                 ],
                 if (finished.isNotEmpty) ...[
-                  _SectionTitle(t['tournaments_finished'] ?? 'Завершённые', Icons.check_circle, AppTheme.success),
+                  _SectionTitle(t['tournaments_finished'] ?? 'Завершённые',
+                      Icons.check_circle, AppTheme.success),
                   ...finished.map((t) => _TournamentCard(tournament: t)),
                 ],
               ],
@@ -83,7 +92,9 @@ class _SectionTitle extends StatelessWidget {
       child: Row(children: [
         Icon(icon, size: 20, color: color),
         const SizedBox(width: 8),
-        Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: color)),
+        Text(title,
+            style: TextStyle(
+                fontSize: 16, fontWeight: FontWeight.w600, color: color)),
       ]),
     );
   }
@@ -106,7 +117,9 @@ class _TournamentCard extends StatelessWidget {
           color: context.cardDark,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: t.status == 'ongoing' ? AppTheme.error.withValues(alpha: 0.5) : context.border,
+            color: t.status == 'ongoing'
+                ? AppTheme.error.withValues(alpha: 0.5)
+                : context.border,
           ),
         ),
         child: Column(
@@ -119,27 +132,33 @@ class _TournamentCard extends StatelessWidget {
                 children: [
                   // Game icon
                   Container(
-                    width: 48, height: 48,
+                    width: 48,
+                    height: 48,
                     decoration: BoxDecoration(
                       color: AppTheme.primary.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.sports_esports, color: AppTheme.primary, size: 24),
+                    child: const Icon(Icons.sports_esports,
+                        color: AppTheme.primary, size: 24),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(t.title, style: TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.w600, color: context.text1)),
+                        Text(t.title,
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: context.text1)),
                         const SizedBox(height: 4),
                         Row(children: [
                           _GameBadge(t.game),
                           const SizedBox(width: 8),
                           if (t.clubName != null)
-                            Text(t.clubName!, style: TextStyle(
-                              fontSize: 12, color: context.text2)),
+                            Text(t.clubName!,
+                                style: TextStyle(
+                                    fontSize: 12, color: context.text2)),
                         ]),
                       ],
                     ),
@@ -163,17 +182,24 @@ class _TournamentCard extends StatelessWidget {
                   const Spacer(),
                   if (t.isFree)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: AppTheme.success.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: const Text('FREE', style: TextStyle(
-                        fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.success)),
+                      child: const Text('FREE',
+                          style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.success)),
                     )
                   else
-                    Text('${t.entryFee} UZS', style: const TextStyle(
-                      fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.warning)),
+                    Text('${t.entryFee} UZS',
+                        style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.warning)),
                 ],
               ),
             ),
@@ -200,8 +226,10 @@ class _TournamentCard extends StatelessWidget {
   String _formatDate(DateTime dt) {
     final now = DateTime.now();
     final diff = dt.difference(now);
-    if (diff.inDays == 0) return 'Сегодня ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
-    if (diff.inDays == 1) return 'Завтра ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
+    if (diff.inDays == 0)
+      return 'Сегодня ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
+    if (diff.inDays == 1)
+      return 'Завтра ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
     return '${dt.day}.${dt.month.toString().padLeft(2, '0')} ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
   }
 }
@@ -218,8 +246,11 @@ class _GameBadge extends StatelessWidget {
         color: AppTheme.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(4),
       ),
-      child: Text(game, style: const TextStyle(
-        fontSize: 10, fontWeight: FontWeight.w700, color: AppTheme.primary)),
+      child: Text(game,
+          style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.primary)),
     );
   }
 }
@@ -229,20 +260,20 @@ class _StatusBadge extends StatelessWidget {
   const _StatusBadge(this.status);
 
   Color _getColor(BuildContext context) => switch (status) {
-    'ongoing' => AppTheme.error,
-    'upcoming' || 'registration' => AppTheme.primary,
-    'finished' => AppTheme.success,
-    _ => context.text3,
-  };
+        'ongoing' => AppTheme.error,
+        'upcoming' || 'registration' => AppTheme.primary,
+        'finished' => AppTheme.success,
+        _ => context.text3,
+      };
 
   String get _label => switch (status) {
-    'ongoing' => 'LIVE',
-    'upcoming' => 'Скоро',
-    'registration' => 'Запись',
-    'finished' => 'Готово',
-    'cancelled' => 'Отмена',
-    _ => status,
-  };
+        'ongoing' => 'LIVE',
+        'upcoming' => 'Скоро',
+        'registration' => 'Запись',
+        'finished' => 'Готово',
+        'cancelled' => 'Отмена',
+        _ => status,
+      };
 
   @override
   Widget build(BuildContext context) {
@@ -253,8 +284,9 @@ class _StatusBadge extends StatelessWidget {
         color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Text(_label, style: TextStyle(
-        fontSize: 11, fontWeight: FontWeight.w700, color: color)),
+      child: Text(_label,
+          style: TextStyle(
+              fontSize: 11, fontWeight: FontWeight.w700, color: color)),
     );
   }
 }

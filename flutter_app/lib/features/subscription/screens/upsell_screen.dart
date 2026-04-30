@@ -20,8 +20,10 @@ class UpsellScreen extends ConsumerWidget {
 
     // Determine the minimum plan needed for the required zone
     final requiredPlan = _requiredPlanForZone(requiredZone);
-    final requiredPlanName = AppConstants.plans[requiredPlan]?.name ?? requiredPlan;
-    final currentPlanName = AppConstants.plans[currentPlan]?.name ?? currentPlan;
+    final requiredPlanName =
+        AppConstants.plans[requiredPlan]?.name ?? requiredPlan;
+    final currentPlanName =
+        AppConstants.plans[currentPlan]?.name ?? currentPlan;
 
     return Scaffold(
       appBar: AppBar(
@@ -99,7 +101,9 @@ class UpsellScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16),
                   _PlanRow(
-                    label: ref.lang('upsell.required_for_zone').replaceFirst('{zone}', zoneName),
+                    label: ref
+                        .lang('upsell.required_for_zone')
+                        .replaceFirst('{zone}', zoneName),
                     planName: requiredPlanName,
                     color: context.text1,
                     icon: Icons.check_circle_rounded,
@@ -116,7 +120,9 @@ class UpsellScreen extends ConsumerWidget {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () => context.push('/plans'),
-                child: Text(ref.lang('upsell.upgrade_to').replaceFirst('{plan}', requiredPlanName)),
+                child: Text(ref
+                    .lang('upsell.upgrade_to')
+                    .replaceFirst('{plan}', requiredPlanName)),
               ),
             ),
 

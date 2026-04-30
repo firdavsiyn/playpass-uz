@@ -80,7 +80,8 @@ class _StoryCard extends StatelessWidget {
               placeholder: (_, __) => Container(
                 height: 180,
                 color: context.card,
-                child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                child: const Center(
+                    child: CircularProgressIndicator(strokeWidth: 2)),
               ),
               errorWidget: (_, __, ___) => const SizedBox.shrink(),
             ),
@@ -96,7 +97,8 @@ class _StoryCard extends StatelessWidget {
                     if (story.clubLogo != null)
                       CircleAvatar(
                         radius: 14,
-                        backgroundImage: CachedNetworkImageProvider(story.clubLogo!),
+                        backgroundImage:
+                            CachedNetworkImageProvider(story.clubLogo!),
                       )
                     else
                       CircleAvatar(
@@ -105,38 +107,52 @@ class _StoryCard extends StatelessWidget {
                             ? AppTheme.primary.withValues(alpha: 0.2)
                             : AppTheme.warning.withValues(alpha: 0.2),
                         child: Icon(
-                          story.authorType == 'platform' ? Icons.star : Icons.storefront,
+                          story.authorType == 'platform'
+                              ? Icons.star
+                              : Icons.storefront,
                           size: 14,
-                          color: story.authorType == 'platform' ? AppTheme.primary : AppTheme.warning,
+                          color: story.authorType == 'platform'
+                              ? AppTheme.primary
+                              : AppTheme.warning,
                         ),
                       ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         story.clubName ?? 'PlayPass',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: context.text1),
+                        style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: context.text1),
                       ),
                     ),
-                    Text(story.timeAgo, style: TextStyle(fontSize: 12, color: context.text3)),
+                    Text(story.timeAgo,
+                        style: TextStyle(fontSize: 12, color: context.text3)),
                     if (story.isPinned) ...[
                       const SizedBox(width: 6),
-                      const Icon(Icons.push_pin, size: 14, color: AppTheme.warning),
+                      const Icon(Icons.push_pin,
+                          size: 14, color: AppTheme.warning),
                     ],
                   ],
                 ),
                 const SizedBox(height: 12),
 
                 // Title
-                Text(story.title, style: TextStyle(
-                  fontSize: 16, fontWeight: FontWeight.w600, color: context.text1, height: 1.3)),
+                Text(story.title,
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: context.text1,
+                        height: 1.3)),
 
                 // Body
                 if (story.body != null) ...[
                   const SizedBox(height: 8),
                   Text(story.body!,
-                    maxLines: 4,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 14, color: context.text2, height: 1.5)),
+                      maxLines: 4,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          fontSize: 14, color: context.text2, height: 1.5)),
                 ],
 
                 // Link button
@@ -145,7 +161,8 @@ class _StoryCard extends StatelessWidget {
                   GestureDetector(
                     onTap: () => launchUrl(Uri.parse(story.linkUrl!)),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 8),
                       decoration: BoxDecoration(
                         color: AppTheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
@@ -154,9 +171,13 @@ class _StoryCard extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(story.linkLabel ?? 'Подробнее',
-                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.primary)),
+                              style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppTheme.primary)),
                           const SizedBox(width: 4),
-                          const Icon(Icons.arrow_forward, size: 14, color: AppTheme.primary),
+                          const Icon(Icons.arrow_forward,
+                              size: 14, color: AppTheme.primary),
                         ],
                       ),
                     ),
@@ -167,9 +188,11 @@ class _StoryCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Icon(Icons.visibility_outlined, size: 14, color: context.text3),
+                    Icon(Icons.visibility_outlined,
+                        size: 14, color: context.text3),
                     const SizedBox(width: 4),
-                    Text('${story.viewsCount}', style: TextStyle(fontSize: 12, color: context.text3)),
+                    Text('${story.viewsCount}',
+                        style: TextStyle(fontSize: 12, color: context.text3)),
                   ],
                 ),
               ],
@@ -212,21 +235,29 @@ class StoryBubbles extends ConsumerWidget {
                   child: Column(
                     children: [
                       Container(
-                        width: 60, height: 60,
+                        width: 60,
+                        height: 60,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: s.isViewed ? context.text3 : AppTheme.primary,
+                            color:
+                                s.isViewed ? context.text3 : AppTheme.primary,
                             width: 2,
                           ),
                         ),
                         child: CircleAvatar(
                           radius: 27,
                           backgroundColor: context.card,
-                          backgroundImage: s.clubLogo != null ? CachedNetworkImageProvider(s.clubLogo!) : null,
+                          backgroundImage: s.clubLogo != null
+                              ? CachedNetworkImageProvider(s.clubLogo!)
+                              : null,
                           child: s.clubLogo == null
-                              ? Icon(s.authorType == 'platform' ? Icons.star : Icons.storefront,
-                                  size: 20, color: AppTheme.primary)
+                              ? Icon(
+                                  s.authorType == 'platform'
+                                      ? Icons.star
+                                      : Icons.storefront,
+                                  size: 20,
+                                  color: AppTheme.primary)
                               : null,
                         ),
                       ),
@@ -255,7 +286,8 @@ class StoryBubbles extends ConsumerWidget {
     );
   }
 
-  void _showStoryViewer(BuildContext context, List<Story> stories, int index, WidgetRef ref) {
+  void _showStoryViewer(
+      BuildContext context, List<Story> stories, int index, WidgetRef ref) {
     showDialog(
       context: context,
       barrierColor: Colors.black87,
@@ -294,7 +326,8 @@ class _StoryViewerDialogState extends State<_StoryViewerDialog> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onVerticalDragEnd: (d) {
-        if (d.primaryVelocity != null && d.primaryVelocity! > 300) Navigator.pop(context);
+        if (d.primaryVelocity != null && d.primaryVelocity! > 300)
+          Navigator.pop(context);
       },
       child: PageView.builder(
         controller: _controller,
@@ -311,14 +344,19 @@ class _StoryViewerDialogState extends State<_StoryViewerDialog> {
                 // Progress dots
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(widget.stories.length.clamp(0, 10), (j) => Container(
-                    width: _current == j ? 16 : 6, height: 4,
-                    margin: const EdgeInsets.symmetric(horizontal: 2),
-                    decoration: BoxDecoration(
-                      color: _current == j ? AppTheme.primary : context.text3,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  )),
+                  children: List.generate(
+                      widget.stories.length.clamp(0, 10),
+                      (j) => Container(
+                            width: _current == j ? 16 : 6,
+                            height: 4,
+                            margin: const EdgeInsets.symmetric(horizontal: 2),
+                            decoration: BoxDecoration(
+                              color: _current == j
+                                  ? AppTheme.primary
+                                  : context.text3,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          )),
                 ),
                 const SizedBox(height: 8),
                 // Close button
@@ -347,16 +385,25 @@ class _StoryViewerDialogState extends State<_StoryViewerDialog> {
                             ),
                           ),
                         const SizedBox(height: 20),
-                        Text(s.title, textAlign: TextAlign.center, style: const TextStyle(
-                          fontSize: 22, fontWeight: FontWeight.w700, color: Colors.white)),
+                        Text(s.title,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white)),
                         if (s.body != null) ...[
                           const SizedBox(height: 12),
-                          Text(s.body!, textAlign: TextAlign.center,
-                            style: const TextStyle(fontSize: 15, color: Colors.white70, height: 1.5)),
+                          Text(s.body!,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                  fontSize: 15,
+                                  color: Colors.white70,
+                                  height: 1.5)),
                         ],
                         const SizedBox(height: 16),
                         Text(s.clubName ?? 'PlayPass',
-                            style: const TextStyle(fontSize: 13, color: AppTheme.primary)),
+                            style: const TextStyle(
+                                fontSize: 13, color: AppTheme.primary)),
                       ],
                     ),
                   ),

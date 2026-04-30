@@ -10,10 +10,12 @@ class TournamentDetailScreen extends ConsumerStatefulWidget {
   const TournamentDetailScreen({super.key, required this.tournamentId});
 
   @override
-  ConsumerState<TournamentDetailScreen> createState() => _TournamentDetailScreenState();
+  ConsumerState<TournamentDetailScreen> createState() =>
+      _TournamentDetailScreenState();
 }
 
-class _TournamentDetailScreenState extends ConsumerState<TournamentDetailScreen> {
+class _TournamentDetailScreenState
+    extends ConsumerState<TournamentDetailScreen> {
   final _svc = SupabaseService();
   Tournament? _tournament;
   List<Map<String, dynamic>> _participants = [];
@@ -58,7 +60,8 @@ class _TournamentDetailScreenState extends ConsumerState<TournamentDetailScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка: $e'), backgroundColor: AppTheme.error),
+          SnackBar(
+              content: Text('Ошибка: $e'), backgroundColor: AppTheme.error),
         );
       }
     }
@@ -85,7 +88,9 @@ class _TournamentDetailScreenState extends ConsumerState<TournamentDetailScreen>
     return Scaffold(
       appBar: AppBar(
         title: Text(t.title),
-        leading: IconButton(icon: const Icon(Icons.arrow_back_ios), onPressed: () => context.pop()),
+        leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios),
+            onPressed: () => context.pop()),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -94,21 +99,27 @@ class _TournamentDetailScreenState extends ConsumerState<TournamentDetailScreen>
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: AppTheme.primary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.sports_esports, size: 16, color: AppTheme.primary),
+                    const Icon(Icons.sports_esports,
+                        size: 16, color: AppTheme.primary),
                     const SizedBox(width: 6),
-                    Text(t.game, style: const TextStyle(fontWeight: FontWeight.w700, color: AppTheme.primary)),
+                    Text(t.game,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.primary)),
                   ],
                 ),
               ),
               const SizedBox(width: 8),
-              if (t.clubName != null) Text(t.clubName!, style: TextStyle(color: context.text2)),
+              if (t.clubName != null)
+                Text(t.clubName!, style: TextStyle(color: context.text2)),
             ],
           ),
           const SizedBox(height: 20),
@@ -118,7 +129,8 @@ class _TournamentDetailScreenState extends ConsumerState<TournamentDetailScreen>
             children: [
               _InfoCard('Дата', _formatDate(t.startsAt), Icons.calendar_today),
               const SizedBox(width: 12),
-              _InfoCard('Участники', '${t.participantCount}/${t.maxPlayers}', Icons.people),
+              _InfoCard('Участники', '${t.participantCount}/${t.maxPlayers}',
+                  Icons.people),
               const SizedBox(width: 12),
               _InfoCard('Приз', t.prizePool ?? 'Нет', Icons.emoji_events),
             ],
@@ -127,15 +139,24 @@ class _TournamentDetailScreenState extends ConsumerState<TournamentDetailScreen>
 
           // Description
           if (t.description != null) ...[
-            Text('Описание', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: context.text1)),
+            Text('Описание',
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: context.text1)),
             const SizedBox(height: 8),
-            Text(t.description!, style: TextStyle(color: context.text2, height: 1.5)),
+            Text(t.description!,
+                style: TextStyle(color: context.text2, height: 1.5)),
             const SizedBox(height: 20),
           ],
 
           // Rules
           if (t.rules != null) ...[
-            Text('Правила', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: context.text1)),
+            Text('Правила',
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: context.text1)),
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.all(16),
@@ -144,17 +165,22 @@ class _TournamentDetailScreenState extends ConsumerState<TournamentDetailScreen>
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: context.border),
               ),
-              child: Text(t.rules!, style: TextStyle(color: context.text2, height: 1.5)),
+              child: Text(t.rules!,
+                  style: TextStyle(color: context.text2, height: 1.5)),
             ),
             const SizedBox(height: 20),
           ],
 
           // Participants
-          Text('Участники (${_participants.length})', style: TextStyle(
-            fontSize: 16, fontWeight: FontWeight.w600, color: context.text1)),
+          Text('Участники (${_participants.length})',
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: context.text1)),
           const SizedBox(height: 12),
           if (_participants.isEmpty)
-            Text('Пока никто не записался', style: TextStyle(color: context.text3))
+            Text('Пока никто не записался',
+                style: TextStyle(color: context.text3))
           else
             ..._participants.map((p) {
               final user = p['users'] as Map<String, dynamic>?;
@@ -170,10 +196,16 @@ class _TournamentDetailScreenState extends ConsumerState<TournamentDetailScreen>
                     CircleAvatar(
                       radius: 18,
                       backgroundColor: AppTheme.primary.withValues(alpha: 0.2),
-                      backgroundImage: user?['avatar_url'] != null ? NetworkImage(user!['avatar_url']) : null,
+                      backgroundImage: user?['avatar_url'] != null
+                          ? NetworkImage(user!['avatar_url'])
+                          : null,
                       child: user?['avatar_url'] == null
-                          ? Text((user?['name'] as String? ?? '?')[0].toUpperCase(),
-                              style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.w600))
+                          ? Text(
+                              (user?['name'] as String? ?? '?')[0]
+                                  .toUpperCase(),
+                              style: const TextStyle(
+                                  color: AppTheme.primary,
+                                  fontWeight: FontWeight.w600))
                           : null,
                     ),
                     const SizedBox(width: 12),
@@ -182,11 +214,13 @@ class _TournamentDetailScreenState extends ConsumerState<TournamentDetailScreen>
                           style: TextStyle(color: context.text1)),
                     ),
                     if (p['team_name'] != null)
-                      Text(p['team_name'], style: TextStyle(fontSize: 12, color: context.text3)),
+                      Text(p['team_name'],
+                          style: TextStyle(fontSize: 12, color: context.text3)),
                     if (p['status'] == 'winner')
                       const Padding(
                         padding: EdgeInsets.only(left: 8),
-                        child: Icon(Icons.emoji_events, color: AppTheme.warning, size: 20),
+                        child: Icon(Icons.emoji_events,
+                            color: AppTheme.warning, size: 20),
                       ),
                   ],
                 ),
@@ -195,22 +229,35 @@ class _TournamentDetailScreenState extends ConsumerState<TournamentDetailScreen>
           const SizedBox(height: 80),
         ],
       ),
-      bottomNavigationBar: t.isRegistrationOpen ? SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: ElevatedButton(
-            onPressed: _registering || t.isFull && !_isRegistered ? null : _toggleRegistration,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _isRegistered ? AppTheme.error : AppTheme.primary,
-              minimumSize: const Size.fromHeight(52),
-            ),
-            child: _registering
-                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                : Text(_isRegistered ? 'Отменить запись' : (t.isFull ? 'Мест нет' : 'Записаться'),
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-          ),
-        ),
-      ) : null,
+      bottomNavigationBar: t.isRegistrationOpen
+          ? SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: ElevatedButton(
+                  onPressed: _registering || t.isFull && !_isRegistered
+                      ? null
+                      : _toggleRegistration,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        _isRegistered ? AppTheme.error : AppTheme.primary,
+                    minimumSize: const Size.fromHeight(52),
+                  ),
+                  child: _registering
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white))
+                      : Text(
+                          _isRegistered
+                              ? 'Отменить запись'
+                              : (t.isFull ? 'Мест нет' : 'Записаться'),
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w600)),
+                ),
+              ),
+            )
+          : null,
     );
   }
 
@@ -239,7 +286,11 @@ class _InfoCard extends StatelessWidget {
           children: [
             Icon(icon, size: 20, color: AppTheme.primary),
             const SizedBox(height: 8),
-            Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: context.text1)),
+            Text(value,
+                style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: context.text1)),
             const SizedBox(height: 4),
             Text(label, style: TextStyle(fontSize: 11, color: context.text3)),
           ],

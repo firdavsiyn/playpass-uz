@@ -12,10 +12,12 @@ class NotificationSettingsScreen extends ConsumerStatefulWidget {
   const NotificationSettingsScreen({super.key});
 
   @override
-  ConsumerState<NotificationSettingsScreen> createState() => _NotificationSettingsScreenState();
+  ConsumerState<NotificationSettingsScreen> createState() =>
+      _NotificationSettingsScreenState();
 }
 
-class _NotificationSettingsScreenState extends ConsumerState<NotificationSettingsScreen> {
+class _NotificationSettingsScreenState
+    extends ConsumerState<NotificationSettingsScreen> {
   final _svc = SupabaseService();
   Map<String, bool> _prefs = {};
   bool _loaded = false;
@@ -64,7 +66,8 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
                 _ToggleCard(
                   icon: Icons.notifications_active,
                   title: t['notif_push'] ?? 'Push-уведомления',
-                  subtitle: t['notif_push_desc'] ?? 'Получать уведомления на устройство',
+                  subtitle: t['notif_push_desc'] ??
+                      'Получать уведомления на устройство',
                   value: _prefs['push_enabled'] ?? true,
                   onChanged: (v) => _toggle('push_enabled', v),
                   isPrimary: true,
@@ -74,34 +77,40 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
                 if (_prefs['push_enabled'] == true) ...[
                   const SizedBox(height: 8),
                   Text(t['notif_categories'] ?? 'Категории',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: context.text3)),
+                      style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: context.text3)),
                   const SizedBox(height: 12),
-
                   _ToggleCard(
                     icon: Icons.local_offer,
                     title: t['notif_promo'] ?? 'Акции и скидки',
-                    subtitle: t['notif_promo_desc'] ?? 'Новые промокоды и спецпредложения',
+                    subtitle: t['notif_promo_desc'] ??
+                        'Новые промокоды и спецпредложения',
                     value: _prefs['promo_enabled'] ?? true,
                     onChanged: (v) => _toggle('promo_enabled', v),
                   ),
                   _ToggleCard(
                     icon: Icons.emoji_events,
                     title: t['notif_tournaments'] ?? 'Турниры',
-                    subtitle: t['notif_tournaments_desc'] ?? 'Новые турниры и результаты',
+                    subtitle: t['notif_tournaments_desc'] ??
+                        'Новые турниры и результаты',
                     value: _prefs['tournament_enabled'] ?? true,
                     onChanged: (v) => _toggle('tournament_enabled', v),
                   ),
                   _ToggleCard(
                     icon: Icons.card_membership,
                     title: t['notif_subscription'] ?? 'Подписка',
-                    subtitle: t['notif_subscription_desc'] ?? 'Истечение, заморозка, продление',
+                    subtitle: t['notif_subscription_desc'] ??
+                        'Истечение, заморозка, продление',
                     value: _prefs['subscription_enabled'] ?? true,
                     onChanged: (v) => _toggle('subscription_enabled', v),
                   ),
                   _ToggleCard(
                     icon: Icons.newspaper,
                     title: t['notif_news'] ?? 'Новости клубов',
-                    subtitle: t['notif_news_desc'] ?? 'Новые публикации от клубов',
+                    subtitle:
+                        t['notif_news_desc'] ?? 'Новые публикации от клубов',
                     value: _prefs['club_news_enabled'] ?? true,
                     onChanged: (v) => _toggle('club_news_enabled', v),
                   ),
@@ -138,28 +147,37 @@ class _ToggleCard extends StatelessWidget {
         color: context.card,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isPrimary && value ? AppTheme.primary.withValues(alpha: 0.3) : context.border,
+          color: isPrimary && value
+              ? AppTheme.primary.withValues(alpha: 0.3)
+              : context.border,
         ),
       ),
       child: Row(
         children: [
           Container(
-            width: 40, height: 40,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
-              color: (value ? AppTheme.primary : context.text3).withValues(alpha: 0.15),
+              color: (value ? AppTheme.primary : context.text3)
+                  .withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: value ? AppTheme.primary : context.text3, size: 20),
+            child: Icon(icon,
+                color: value ? AppTheme.primary : context.text3, size: 20),
           ),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: TextStyle(
-                  fontSize: 14, fontWeight: FontWeight.w600, color: context.text1)),
+                Text(title,
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: context.text1)),
                 const SizedBox(height: 2),
-                Text(subtitle, style: TextStyle(fontSize: 12, color: context.text2)),
+                Text(subtitle,
+                    style: TextStyle(fontSize: 12, color: context.text2)),
               ],
             ),
           ),

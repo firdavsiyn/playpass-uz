@@ -148,21 +148,21 @@ class ClubMapBottomSheet extends StatelessWidget {
                             size: 14, color: Color(0xFFFBBF24)),
                         const SizedBox(width: 2),
                         Text(club.rating.toStringAsFixed(1),
-                            style: TextStyle(
-                                color: context.text2, fontSize: 12)),
+                            style:
+                                TextStyle(color: context.text2, fontSize: 12)),
                         const SizedBox(width: 10),
-                        Icon(Icons.computer,
-                            size: 14, color: context.text3),
+                        Icon(Icons.computer, size: 14, color: context.text3),
                         const SizedBox(width: 2),
                         Text('${club.pcCount} ПК',
-                            style: TextStyle(
-                                color: context.text3, fontSize: 12)),
+                            style:
+                                TextStyle(color: context.text3, fontSize: 12)),
                         const Spacer(),
                         Container(
                           width: 7,
                           height: 7,
                           decoration: BoxDecoration(
-                            color: club.isOpen ? AppTheme.success : AppTheme.error,
+                            color:
+                                club.isOpen ? AppTheme.success : AppTheme.error,
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -170,7 +170,8 @@ class ClubMapBottomSheet extends StatelessWidget {
                         Text(
                           club.isOpen ? 'Открыт' : 'Закрыт',
                           style: TextStyle(
-                            color: club.isOpen ? AppTheme.success : AppTheme.error,
+                            color:
+                                club.isOpen ? AppTheme.success : AppTheme.error,
                             fontSize: 11,
                           ),
                         ),

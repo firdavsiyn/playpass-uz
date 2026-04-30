@@ -90,7 +90,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               ),
         ),
         const SizedBox(height: 32),
-
         const Text('Новый пароль'),
         const SizedBox(height: 8),
         TextField(
@@ -101,14 +100,14 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             hintText: 'Минимум 8 символов',
             prefixIcon: const Icon(Icons.lock_outline, size: 20),
             suffixIcon: IconButton(
-              icon: Icon(_obscure1 ? Icons.visibility_off : Icons.visibility, size: 20),
+              icon: Icon(_obscure1 ? Icons.visibility_off : Icons.visibility,
+                  size: 20),
               onPressed: () => setState(() => _obscure1 = !_obscure1),
             ),
           ),
           onChanged: (_) => setState(() => _error = null),
         ),
         const SizedBox(height: 16),
-
         const Text('Подтвердите пароль'),
         const SizedBox(height: 8),
         TextField(
@@ -119,25 +118,27 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             hintText: 'Повторите пароль',
             prefixIcon: const Icon(Icons.lock_outline, size: 20),
             suffixIcon: IconButton(
-              icon: Icon(_obscure2 ? Icons.visibility_off : Icons.visibility, size: 20),
+              icon: Icon(_obscure2 ? Icons.visibility_off : Icons.visibility,
+                  size: 20),
               onPressed: () => setState(() => _obscure2 = !_obscure2),
             ),
           ),
           onSubmitted: (_) => _updatePassword(),
         ),
-
         if (_error != null) ...[
           const SizedBox(height: 12),
-          Text(_error!, style: const TextStyle(color: AppTheme.error, fontSize: 13)),
+          Text(_error!,
+              style: const TextStyle(color: AppTheme.error, fontSize: 13)),
         ],
-
         const SizedBox(height: 24),
         ElevatedButton(
           onPressed: _loading ? null : _updatePassword,
           child: _loading
               ? const SizedBox(
-                  height: 20, width: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: Colors.white))
               : const Text('Сохранить пароль'),
         ),
       ],
@@ -148,7 +149,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Icon(Icons.check_circle_rounded, size: 72, color: AppTheme.success),
+        const Icon(Icons.check_circle_rounded,
+            size: 72, color: AppTheme.success),
         const SizedBox(height: 24),
         Text(
           'Пароль обновлён!',

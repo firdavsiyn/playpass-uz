@@ -39,7 +39,8 @@ class Story {
       id: id,
       clubId: json['club_id'] as String?,
       clubName: (json['clubs'] as Map<String, dynamic>?)?['name'] as String?,
-      clubLogo: (json['clubs'] as Map<String, dynamic>?)?['logo_url'] as String?,
+      clubLogo:
+          (json['clubs'] as Map<String, dynamic>?)?['logo_url'] as String?,
       authorType: json['author_type'] as String? ?? 'club',
       title: json['title'] as String,
       body: json['body'] as String?,

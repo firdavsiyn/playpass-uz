@@ -39,7 +39,8 @@ class _GiftRedeemScreenState extends State<GiftRedeemScreen> {
       if (gift == null) {
         setState(() => _error = 'Сертификат не найден');
       } else if (gift['status'] != 'paid') {
-        setState(() => _error = 'Сертификат уже использован или недействителен');
+        setState(
+            () => _error = 'Сертификат уже использован или недействителен');
       } else {
         setState(() => _giftInfo = gift);
       }
@@ -131,7 +132,8 @@ class _GiftRedeemScreenState extends State<GiftRedeemScreen> {
               fillColor: context.surface,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide(color: AppTheme.primary.withValues(alpha: 0.2)),
+                borderSide:
+                    BorderSide(color: AppTheme.primary.withValues(alpha: 0.2)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
@@ -141,7 +143,8 @@ class _GiftRedeemScreenState extends State<GiftRedeemScreen> {
           ),
           if (_error != null) ...[
             const SizedBox(height: 12),
-            Text(_error!, style: const TextStyle(color: AppTheme.error, fontSize: 14)),
+            Text(_error!,
+                style: const TextStyle(color: AppTheme.error, fontSize: 14)),
           ],
           if (_giftInfo != null) ...[
             const SizedBox(height: 16),
@@ -150,13 +153,15 @@ class _GiftRedeemScreenState extends State<GiftRedeemScreen> {
               decoration: BoxDecoration(
                 color: context.card,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppTheme.success.withValues(alpha: 0.2)),
+                border:
+                    Border.all(color: AppTheme.success.withValues(alpha: 0.2)),
               ),
               child: Column(
                 children: [
                   Text(
                     'Тариф: ${_giftInfo!['plan'] ?? ''}',
-                    style: TextStyle(color: context.text1, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                        color: context.text1, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -190,9 +195,11 @@ class _GiftRedeemScreenState extends State<GiftRedeemScreen> {
                     ? const SizedBox(
                         width: 20,
                         height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white),
                       )
-                    : Text(_giftInfo != null ? 'Активировать' : 'Проверить код'),
+                    : Text(
+                        _giftInfo != null ? 'Активировать' : 'Проверить код'),
               ),
             ),
           ),
@@ -217,7 +224,8 @@ class _GiftRedeemScreenState extends State<GiftRedeemScreen> {
                   AppTheme.neonCyan.withValues(alpha: 0.15),
                 ]),
                 shape: BoxShape.circle,
-                boxShadow: AppTheme.neonGlow(color: AppTheme.success, radius: 20),
+                boxShadow:
+                    AppTheme.neonGlow(color: AppTheme.success, radius: 20),
               ),
               child: const Icon(Icons.check_circle_rounded,
                   color: AppTheme.success, size: 36),

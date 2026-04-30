@@ -39,37 +39,34 @@ class YandexMapService {
   /// Used to color-code marker borders: green (free) / yellow (busy) /
   /// red (full) for at-a-glance availability.
   static void setMarkers(List<Club> clubs, {Map<String, int>? occupancy}) {
-    final markersData = clubs
-        .where((c) {
-          if (c.lat == null || c.lon == null) return false;
-          final lat = c.lat!;
-          final lon = c.lon!;
-          return lat >= 37.0 && lat <= 46.0 && lon >= 55.0 && lon <= 74.0;
-        })
-        .map((c) {
-          final hasPc = c.pcCount > 0;
-          final hasPs = c.hasPlaystation;
-          final occ = occupancy?[c.id] ?? 0;
-          // Occupancy %: 0–100. -1 means no data (capacity unknown).
-          int occupancyPct = -1;
-          if (c.pcCount > 0) {
-            occupancyPct = ((occ / c.pcCount) * 100).clamp(0, 100).round();
-          }
-          return {
-            'id': c.id,
-            'name': c.name,
-            'lat': c.lat,
-            'lon': c.lon,
-            'tier': c.tier,
-            'isOpen': c.isOpen,
-            'hasPc': hasPc,
-            'hasPs': hasPs,
-            'occupancyPct': occupancyPct,
-            'pcCount': c.pcCount,
-            'occupied': occ,
-          };
-        })
-        .toList();
+    final markersData = clubs.where((c) {
+      if (c.lat == null || c.lon == null) return false;
+      final lat = c.lat!;
+      final lon = c.lon!;
+      return lat >= 37.0 && lat <= 46.0 && lon >= 55.0 && lon <= 74.0;
+    }).map((c) {
+      final hasPc = c.pcCount > 0;
+      final hasPs = c.hasPlaystation;
+      final occ = occupancy?[c.id] ?? 0;
+      // Occupancy %: 0–100. -1 means no data (capacity unknown).
+      int occupancyPct = -1;
+      if (c.pcCount > 0) {
+        occupancyPct = ((occ / c.pcCount) * 100).clamp(0, 100).round();
+      }
+      return {
+        'id': c.id,
+        'name': c.name,
+        'lat': c.lat,
+        'lon': c.lon,
+        'tier': c.tier,
+        'isOpen': c.isOpen,
+        'hasPc': hasPc,
+        'hasPs': hasPs,
+        'occupancyPct': occupancyPct,
+        'pcCount': c.pcCount,
+        'occupied': occ,
+      };
+    }).toList();
     final jsonStr = jsonEncode(markersData);
     _eval('window.__tempMarkers = $jsonStr');
     _eval('addClubMarkers(JSON.stringify(window.__tempMarkers))');
@@ -112,8 +109,7 @@ class YandexMapService {
       if (!_polling) return;
       try {
         final raw = _evalReturn(
-          '(function(){var q=window._ymapClickQueue||[];window._ymapClickQueue=[];return JSON.stringify(q);})()'
-        );
+            '(function(){var q=window._ymapClickQueue||[];window._ymapClickQueue=[];return JSON.stringify(q);})()');
         if (raw != null && raw != '[]' && raw.isNotEmpty) {
           final List<dynamic> ids = jsonDecode(raw);
           for (final id in ids) {

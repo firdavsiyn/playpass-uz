@@ -20,30 +20,31 @@ class NeonShimmer extends StatefulWidget {
     double width = double.infinity,
     double height = 60,
     double borderRadius = 14,
-  }) => NeonShimmer(
-    borderRadius: borderRadius,
-    child: Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: AppTheme.bgCard,
-        borderRadius: BorderRadius.circular(borderRadius),
-      ),
-    ),
-  );
+  }) =>
+      NeonShimmer(
+        borderRadius: borderRadius,
+        child: Container(
+          width: width,
+          height: height,
+          decoration: BoxDecoration(
+            color: AppTheme.bgCard,
+            borderRadius: BorderRadius.circular(borderRadius),
+          ),
+        ),
+      );
 
   /// Quick circular shimmer
   factory NeonShimmer.circle({double size = 48}) => NeonShimmer(
-    borderRadius: size / 2,
-    child: Container(
-      width: size,
-      height: size,
-      decoration: const BoxDecoration(
-        color: AppTheme.bgCard,
-        shape: BoxShape.circle,
-      ),
-    ),
-  );
+        borderRadius: size / 2,
+        child: Container(
+          width: size,
+          height: size,
+          decoration: const BoxDecoration(
+            color: AppTheme.bgCard,
+            shape: BoxShape.circle,
+          ),
+        ),
+      );
 
   @override
   State<NeonShimmer> createState() => _NeonShimmerState();

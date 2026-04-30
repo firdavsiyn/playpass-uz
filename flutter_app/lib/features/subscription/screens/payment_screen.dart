@@ -70,7 +70,9 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           icon: Icon(Icons.arrow_back_ios),
           onPressed: () => context.pop(),
         ),
-        title: Text(_step == 2 ? ref.lang('pay.request_sent_title') : ref.lang('pay.title')),
+        title: Text(_step == 2
+            ? ref.lang('pay.request_sent_title')
+            : ref.lang('pay.title')),
       ),
       body: SafeArea(
         child: switch (_step) {
@@ -98,7 +100,8 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
             decoration: BoxDecoration(
               color: AppTheme.primary.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3)),
+              border:
+                  Border.all(color: AppTheme.primary.withValues(alpha: 0.3)),
             ),
             child: Row(
               children: [
@@ -118,9 +121,10 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                       Text(
                         _plan.isUnlimited
                             ? ref.lang('pay.unlimited_desc')
-                            : ref.lang('pay.hours_desc').replaceFirst('{n}', '${_plan.hours}'),
-                        style: TextStyle(
-                            color: context.text2, fontSize: 13),
+                            : ref
+                                .lang('pay.hours_desc')
+                                .replaceFirst('{n}', '${_plan.hours}'),
+                        style: TextStyle(color: context.text2, fontSize: 13),
                       ),
                     ],
                   ),
@@ -153,7 +157,9 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           _PaymentOption(
             icon: Icons.phone_android,
             title: ref.lang('pay.via_payme'),
-            subtitle: ref.lang('pay.transfer_to_phone').replaceFirst('{amount}', priceFormatted),
+            subtitle: ref
+                .lang('pay.transfer_to_phone')
+                .replaceFirst('{amount}', priceFormatted),
             value: AppConstants.paymentPaymePhone,
             onCopy: () => _copyToClipboard(AppConstants.paymentPaymePhone),
           ),
@@ -163,7 +169,9 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           _PaymentOption(
             icon: Icons.credit_card,
             title: ref.lang('pay.via_card'),
-            subtitle: ref.lang('pay.transfer_to_card').replaceFirst('{amount}', priceFormatted),
+            subtitle: ref
+                .lang('pay.transfer_to_card')
+                .replaceFirst('{amount}', priceFormatted),
             value: AppConstants.paymentCardNumber,
             onCopy: () => _copyToClipboard(AppConstants.paymentCardNumber),
           ),
@@ -196,7 +204,8 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
             decoration: BoxDecoration(
               color: const Color(0xFFF59E0B).withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.3)),
+              border: Border.all(
+                  color: const Color(0xFFF59E0B).withValues(alpha: 0.3)),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -223,7 +232,8 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
               child: Text(ref.lang('pay.i_paid'),
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w600)),
             ),
           ),
         ],
@@ -252,7 +262,6 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
             style: TextStyle(color: context.text2, fontSize: 14),
           ),
           const SizedBox(height: 24),
-
           Text(ref.lang('pay.phone_label'),
               style: Theme.of(context).textTheme.bodyMedium),
           const SizedBox(height: 8),
@@ -267,7 +276,6 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
             onChanged: (_) => setState(() => _error = null),
           ),
           const SizedBox(height: 16),
-
           Text(ref.lang('pay.comment_label'),
               style: Theme.of(context).textTheme.bodyMedium),
           const SizedBox(height: 8),
@@ -279,15 +287,12 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
               hintText: ref.lang('pay.comment_hint'),
             ),
           ),
-
           if (_error != null) ...[
             const SizedBox(height: 12),
             Text(_error!,
                 style: const TextStyle(color: AppTheme.error, fontSize: 13)),
           ],
-
           const SizedBox(height: 32),
-
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -303,11 +308,10 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                           strokeWidth: 2, color: Colors.white),
                     )
                   : Text(ref.lang('pay.submit'),
-                      style:
-                          const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w600)),
             ),
           ),
-
           const SizedBox(height: 12),
           Center(
             child: TextButton(
@@ -328,8 +332,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.check_circle_rounded,
-                color: AppTheme.success, size: 80),
+            Icon(Icons.check_circle_rounded, color: AppTheme.success, size: 80),
             const SizedBox(height: 24),
             Text(
               ref.lang('pay.request_sent'),
@@ -360,7 +363,9 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
   void _copyToClipboard(String text) {
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(ref.lang('pay.copied')), duration: const Duration(seconds: 1)),
+      SnackBar(
+          content: Text(ref.lang('pay.copied')),
+          duration: const Duration(seconds: 1)),
     );
   }
 }
@@ -401,9 +406,7 @@ class _PaymentOption extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 6),
-          Text(subtitle,
-              style: TextStyle(
-                  color: context.text2, fontSize: 13)),
+          Text(subtitle, style: TextStyle(color: context.text2, fontSize: 13)),
           const SizedBox(height: 8),
           Row(
             children: [

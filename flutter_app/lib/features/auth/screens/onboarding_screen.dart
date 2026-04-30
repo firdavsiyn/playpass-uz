@@ -357,7 +357,8 @@ class _SlideContent extends StatelessWidget {
       case 1:
         return _ScanningQRIcon(controller: scanController);
       case 2:
-        return _PulsingDiamondIcon(controller: pulseController, isActive: isActive);
+        return _PulsingDiamondIcon(
+            controller: pulseController, isActive: isActive);
       default:
         return const SizedBox.shrink();
     }
@@ -486,8 +487,7 @@ class _ScanningQRIcon extends StatelessWidget {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color:
-                              const Color(0xFF10B981).withValues(alpha: 0.5),
+                          color: const Color(0xFF10B981).withValues(alpha: 0.5),
                           blurRadius: 12,
                           spreadRadius: 2,
                         ),

@@ -32,7 +32,8 @@ void _keepAliveFor(Ref ref, Duration duration) {
   Timer(duration, link.close);
 }
 
-final activeSubscriptionProvider = FutureProvider.autoDispose<Subscription?>((ref) async {
+final activeSubscriptionProvider =
+    FutureProvider.autoDispose<Subscription?>((ref) async {
   _keepAliveFor(ref, _kHomeCacheDuration);
   return SupabaseService().getActiveSubscription();
 });
@@ -43,12 +44,14 @@ final nearbyClubsProvider = FutureProvider.autoDispose<List<Club>>((ref) async {
   return SupabaseService().getActiveClubs(limit: 15);
 });
 
-final recentVisitsProvider = FutureProvider.autoDispose<List<Visit>>((ref) async {
+final recentVisitsProvider =
+    FutureProvider.autoDispose<List<Visit>>((ref) async {
   _keepAliveFor(ref, _kHomeCacheDuration);
   return SupabaseService().getVisitHistory(limit: 3);
 });
 
-final activeSessionProvider = FutureProvider.autoDispose<Map<String, dynamic>?>((ref) async {
+final activeSessionProvider =
+    FutureProvider.autoDispose<Map<String, dynamic>?>((ref) async {
   return SupabaseService().getActiveSession();
 });
 
@@ -57,13 +60,15 @@ final unreadNotifCountProvider = FutureProvider.autoDispose<int>((ref) async {
 });
 
 /// Personalized home feed cards (favorite club, comeback, time-suggest, expiring)
-final homeRecommendationsProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
+final homeRecommendationsProvider =
+    FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
   _keepAliveFor(ref, _kHomeCacheDuration);
   return SupabaseService().getHomeRecommendations();
 });
 
 /// Streak data: { streak_days: int, last_visit_date: DateTime? }
-final streakProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
+final streakProvider =
+    FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
   _keepAliveFor(ref, _kHomeCacheDuration);
   final userId = SupabaseService().currentUser?.id;
   if (userId == null) return {'streak_days': 0, 'last_visit_date': null};
@@ -184,7 +189,8 @@ class HomeScreen extends ConsumerWidget {
                           ],
                         ),
                         child: const Center(
-                          child: Icon(Icons.sports_esports_rounded, color: Colors.white, size: 20),
+                          child: Icon(Icons.sports_esports_rounded,
+                              color: Colors.white, size: 20),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -201,12 +207,14 @@ class HomeScreen extends ConsumerWidget {
                   ),
                   actions: [
                     Consumer(builder: (context, ref, _) {
-                      final count = ref.watch(unreadNotifCountProvider).valueOrNull ?? 0;
+                      final count =
+                          ref.watch(unreadNotifCountProvider).valueOrNull ?? 0;
                       return IconButton(
                         icon: Stack(
                           clipBehavior: Clip.none,
                           children: [
-                            Icon(Icons.notifications_outlined, color: context.text1),
+                            Icon(Icons.notifications_outlined,
+                                color: context.text1),
                             if (count > 0)
                               Positioned(
                                 right: -4,
@@ -216,12 +224,21 @@ class HomeScreen extends ConsumerWidget {
                                   decoration: BoxDecoration(
                                     color: AppTheme.error,
                                     shape: BoxShape.circle,
-                                    boxShadow: [BoxShadow(color: AppTheme.error.withValues(alpha: 0.4), blurRadius: 6)],
+                                    boxShadow: [
+                                      BoxShadow(
+                                          color: AppTheme.error
+                                              .withValues(alpha: 0.4),
+                                          blurRadius: 6)
+                                    ],
                                   ),
-                                  constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                                  constraints: const BoxConstraints(
+                                      minWidth: 16, minHeight: 16),
                                   child: Text(
                                     count > 99 ? '99+' : '$count',
-                                    style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w700),
+                                    style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w700),
                                     textAlign: TextAlign.center,
                                   ),
                                 ),
@@ -243,28 +260,33 @@ class HomeScreen extends ConsumerWidget {
 
                       // ── Active session widget ─────────────────
                       ref.watch(activeSessionProvider).when(
-                        data: (session) => session != null
-                            ? Padding(
-                                padding: const EdgeInsets.only(bottom: 16),
-                                child: ActiveSessionWidget(
-                                  session: session,
-                                  onEnded: () {
-                                    ref.invalidate(activeSessionProvider);
-                                    ref.invalidate(activeSubscriptionProvider);
-                                  },
-                                  activeSessionLabel: ref.lang('home.active_session'),
-                                  endSessionLabel: ref.lang('home.end_session'),
-                                  clubDefault: ref.lang('common.club_default'),
-                                  errorPrefix: ref.lang('common.error_prefix'),
-                                  timeH: ref.lang('common.time_h'),
-                                  timeM: ref.lang('common.time_m'),
-                                  timeS: ref.lang('common.time_s'),
-                                ),
-                              )
-                            : const SizedBox.shrink(),
-                        loading: () => const SizedBox.shrink(),
-                        error: (_, __) => const SizedBox.shrink(),
-                      ),
+                            data: (session) => session != null
+                                ? Padding(
+                                    padding: const EdgeInsets.only(bottom: 16),
+                                    child: ActiveSessionWidget(
+                                      session: session,
+                                      onEnded: () {
+                                        ref.invalidate(activeSessionProvider);
+                                        ref.invalidate(
+                                            activeSubscriptionProvider);
+                                      },
+                                      activeSessionLabel:
+                                          ref.lang('home.active_session'),
+                                      endSessionLabel:
+                                          ref.lang('home.end_session'),
+                                      clubDefault:
+                                          ref.lang('common.club_default'),
+                                      errorPrefix:
+                                          ref.lang('common.error_prefix'),
+                                      timeH: ref.lang('common.time_h'),
+                                      timeM: ref.lang('common.time_m'),
+                                      timeS: ref.lang('common.time_s'),
+                                    ),
+                                  )
+                                : const SizedBox.shrink(),
+                            loading: () => const SizedBox.shrink(),
+                            error: (_, __) => const SizedBox.shrink(),
+                          ),
 
                       // ── Subscription widget ────────────────────
                       subscriptionAsync.when(
@@ -287,7 +309,8 @@ class HomeScreen extends ConsumerWidget {
                                 padding: const EdgeInsets.only(bottom: 12),
                                 child: StreakWidget(
                                   streakDays: days,
-                                  lastVisitDate: data['last_visit_date'] as DateTime?,
+                                  lastVisitDate:
+                                      data['last_visit_date'] as DateTime?,
                                 ),
                               );
                             },
@@ -301,15 +324,21 @@ class HomeScreen extends ConsumerWidget {
                       if (FeatureFlags.smartHomeFeed)
                         Consumer(
                           builder: (context, ref, _) {
-                            final hintsAsync = ref.watch(homeRecommendationsProvider);
+                            final hintsAsync =
+                                ref.watch(homeRecommendationsProvider);
                             return hintsAsync.when(
                               data: (hints) {
-                                if (hints.isEmpty) return const SizedBox.shrink();
+                                if (hints.isEmpty)
+                                  return const SizedBox.shrink();
                                 return Column(
-                                  children: hints.take(2).map((h) => Padding(
-                                    padding: const EdgeInsets.only(bottom: 10),
-                                    child: SmartHintCard(hint: h),
-                                  )).toList(),
+                                  children: hints
+                                      .take(2)
+                                      .map((h) => Padding(
+                                            padding: const EdgeInsets.only(
+                                                bottom: 10),
+                                            child: SmartHintCard(hint: h),
+                                          ))
+                                      .toList(),
                                 );
                               },
                               loading: () => const SizedBox.shrink(),
@@ -327,8 +356,10 @@ class HomeScreen extends ConsumerWidget {
                       // ── Savings indicator ──────────────────────
                       subscriptionAsync.when(
                         data: (sub) {
-                          if (sub == null || !sub.isActive) return const SizedBox.shrink();
-                          final hoursUsed = (sub.hoursTotal ?? 0) - (sub.hoursBalance ?? 0);
+                          if (sub == null || !sub.isActive)
+                            return const SizedBox.shrink();
+                          final hoursUsed =
+                              (sub.hoursTotal ?? 0) - (sub.hoursBalance ?? 0);
                           final saved = SavingsCalculator.calculate(
                             hoursUsed: hoursUsed,
                             plan: sub.plan,
@@ -375,7 +406,8 @@ class HomeScreen extends ConsumerWidget {
                         onAction: () => context.go('/clubs'),
                       ),
                       const SizedBox(height: 12),
-                      NearbyClubsRow(clubsAsync: ref.watch(nearbyClubsProvider)),
+                      NearbyClubsRow(
+                          clubsAsync: ref.watch(nearbyClubsProvider)),
 
                       const SizedBox(height: 28),
 
@@ -386,7 +418,8 @@ class HomeScreen extends ConsumerWidget {
                         onAction: () => context.push('/profile/history'),
                       ),
                       const SizedBox(height: 12),
-                      RecentVisitsWidget(visitsAsync: ref.watch(recentVisitsProvider)),
+                      RecentVisitsWidget(
+                          visitsAsync: ref.watch(recentVisitsProvider)),
 
                       const SizedBox(height: 100),
                     ]),
@@ -407,31 +440,35 @@ class _SectionHeader extends StatelessWidget {
   final String title;
   final String action;
   final VoidCallback onAction;
-  const _SectionHeader({required this.title, required this.action, required this.onAction});
+  const _SectionHeader(
+      {required this.title, required this.action, required this.onAction});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title, style: TextStyle(
-          color: context.text1,
-          fontSize: 17,
-          fontWeight: FontWeight.w700,
-          letterSpacing: -0.3,
-        )),
+        Text(title,
+            style: TextStyle(
+              color: context.text1,
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.3,
+            )),
         GestureDetector(
           onTap: onAction,
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(action, style: const TextStyle(
-                color: AppTheme.primary,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              )),
+              Text(action,
+                  style: const TextStyle(
+                    color: AppTheme.primary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  )),
               const SizedBox(width: 2),
-              const Icon(Icons.chevron_right_rounded, color: AppTheme.primary, size: 18),
+              const Icon(Icons.chevron_right_rounded,
+                  color: AppTheme.primary, size: 18),
             ],
           ),
         ),
@@ -445,7 +482,8 @@ class _SectionHeader extends StatelessWidget {
 class _ScanButton extends ConsumerStatefulWidget {
   final bool hasActiveSubscription;
   final bool isFrozen;
-  const _ScanButton({required this.hasActiveSubscription, this.isFrozen = false});
+  const _ScanButton(
+      {required this.hasActiveSubscription, this.isFrozen = false});
 
   @override
   ConsumerState<_ScanButton> createState() => _ScanButtonState();
@@ -509,23 +547,31 @@ class _ScanButtonState extends ConsumerState<_ScanButton>
             decoration: BoxDecoration(
               gradient: canScan
                   ? const LinearGradient(
-                      colors: [Color(0xFF7C3AED), Color(0xFF6366F1), Color(0xFF06B6D4)],
+                      colors: [
+                        Color(0xFF7C3AED),
+                        Color(0xFF6366F1),
+                        Color(0xFF06B6D4)
+                      ],
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
                     )
                   : null,
               color: canScan ? null : context.card,
               borderRadius: BorderRadius.circular(16),
-              border: canScan ? null : Border.all(color: AppTheme.primary.withValues(alpha: 0.15)),
+              border: canScan
+                  ? null
+                  : Border.all(color: AppTheme.primary.withValues(alpha: 0.15)),
               boxShadow: canScan
                   ? [
                       BoxShadow(
-                        color: AppTheme.primary.withValues(alpha: 0.35 + pulse * 0.25),
+                        color: AppTheme.primary
+                            .withValues(alpha: 0.35 + pulse * 0.25),
                         blurRadius: 20 + pulse * 16,
                         offset: const Offset(0, 6),
                       ),
                       BoxShadow(
-                        color: AppTheme.neonCyan.withValues(alpha: 0.15 + pulse * 0.15),
+                        color: AppTheme.neonCyan
+                            .withValues(alpha: 0.15 + pulse * 0.15),
                         blurRadius: 30 + pulse * 20,
                         offset: const Offset(0, 8),
                       ),
@@ -586,7 +632,8 @@ class _ScanButtonState extends ConsumerState<_ScanButton>
                         ),
                         if (canScan) ...[
                           const SizedBox(width: 8),
-                          const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 20),
+                          const Icon(Icons.arrow_forward_rounded,
+                              color: Colors.white, size: 20),
                         ],
                       ],
                     ),
@@ -614,29 +661,53 @@ class _QuickActions extends ConsumerWidget {
     // When a feature isn't ready for prod, its tile is just omitted.
     final all = <_QuickAction>[
       if (FeatureFlags.tournaments)
-        _QuickAction(icon: Icons.emoji_events_rounded, label: t['home_tournaments'] ?? 'home_tournaments',
-            color: AppTheme.warning, onTap: () => context.push('/tournaments')),
+        _QuickAction(
+            icon: Icons.emoji_events_rounded,
+            label: t['home_tournaments'] ?? 'home_tournaments',
+            color: AppTheme.warning,
+            onTap: () => context.push('/tournaments')),
       if (FeatureFlags.lfg)
-        _QuickAction(icon: Icons.people_rounded, label: t['home_lfg'] ?? 'home_lfg',
-            color: AppTheme.neonBlue, onTap: () => context.push('/lfg')),
+        _QuickAction(
+            icon: Icons.people_rounded,
+            label: t['home_lfg'] ?? 'home_lfg',
+            color: AppTheme.neonBlue,
+            onTap: () => context.push('/lfg')),
       if (FeatureFlags.leaderboard)
-        _QuickAction(icon: Icons.leaderboard_rounded, label: t['home_leaderboard'] ?? 'home_leaderboard',
-            color: AppTheme.neonPurple, onTap: () => context.push('/leaderboard')),
+        _QuickAction(
+            icon: Icons.leaderboard_rounded,
+            label: t['home_leaderboard'] ?? 'home_leaderboard',
+            color: AppTheme.neonPurple,
+            onTap: () => context.push('/leaderboard')),
       if (FeatureFlags.stories)
-        _QuickAction(icon: Icons.newspaper_rounded, label: t['home_news'] ?? 'home_news',
-            color: AppTheme.success, onTap: () => context.push('/stories')),
+        _QuickAction(
+            icon: Icons.newspaper_rounded,
+            label: t['home_news'] ?? 'home_news',
+            color: AppTheme.success,
+            onTap: () => context.push('/stories')),
       if (FeatureFlags.fullscreenMapShortcut)
-        _QuickAction(icon: Icons.map_rounded, label: t['home_map'] ?? 'home_map',
-            color: AppTheme.neonCyan, onTap: () => context.push('/clubs-map')),
+        _QuickAction(
+            icon: Icons.map_rounded,
+            label: t['home_map'] ?? 'home_map',
+            color: AppTheme.neonCyan,
+            onTap: () => context.push('/clubs-map')),
       if (FeatureFlags.loyalty)
-        _QuickAction(icon: Icons.star_rounded, label: t['home_loyalty'] ?? 'home_loyalty',
-            color: AppTheme.tierVip, onTap: () => context.push('/loyalty')),
+        _QuickAction(
+            icon: Icons.star_rounded,
+            label: t['home_loyalty'] ?? 'home_loyalty',
+            color: AppTheme.tierVip,
+            onTap: () => context.push('/loyalty')),
       if (FeatureFlags.playerStats)
-        _QuickAction(icon: Icons.sports_esports_rounded, label: t['home_stats'] ?? 'home_stats',
-            color: AppTheme.neonPink, onTap: () => context.push('/player-stats')),
+        _QuickAction(
+            icon: Icons.sports_esports_rounded,
+            label: t['home_stats'] ?? 'home_stats',
+            color: AppTheme.neonPink,
+            onTap: () => context.push('/player-stats')),
       if (FeatureFlags.happyHours)
-        _QuickAction(icon: Icons.local_offer_rounded, label: t['home_happy'] ?? 'home_happy',
-            color: AppTheme.neonPurple, onTap: () => context.push('/happy-hours')),
+        _QuickAction(
+            icon: Icons.local_offer_rounded,
+            label: t['home_happy'] ?? 'home_happy',
+            color: AppTheme.neonPurple,
+            onTap: () => context.push('/happy-hours')),
     ];
 
     if (all.isEmpty) return const SizedBox.shrink();
@@ -678,7 +749,11 @@ class _QuickAction extends StatelessWidget {
   final String label;
   final Color color;
   final VoidCallback onTap;
-  const _QuickAction({required this.icon, required this.label, required this.color, required this.onTap});
+  const _QuickAction(
+      {required this.icon,
+      required this.label,
+      required this.color,
+      required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -712,7 +787,10 @@ class _QuickAction extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Text(label,
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: context.text2),
+                  style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: context.text2),
                   overflow: TextOverflow.ellipsis),
             ],
           ),
@@ -756,19 +834,26 @@ class _SavingsWidget extends ConsumerWidget {
                 color: AppTheme.success.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.savings_rounded, color: AppTheme.success, size: 20),
+              child: const Icon(Icons.savings_rounded,
+                  color: AppTheme.success, size: 20),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(ref.lang('home.you_saved'), style: TextStyle(color: context.text2, fontSize: 12)),
-                  Text('$formattedSaved ${ref.lang('home.currency')}', style: const TextStyle(color: AppTheme.success, fontSize: 16, fontWeight: FontWeight.w700)),
+                  Text(ref.lang('home.you_saved'),
+                      style: TextStyle(color: context.text2, fontSize: 12)),
+                  Text('$formattedSaved ${ref.lang('home.currency')}',
+                      style: const TextStyle(
+                          color: AppTheme.success,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700)),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right_rounded, color: AppTheme.success.withValues(alpha: 0.6), size: 24),
+            Icon(Icons.chevron_right_rounded,
+                color: AppTheme.success.withValues(alpha: 0.6), size: 24),
           ],
         ),
       ),
@@ -795,7 +880,8 @@ class _SubscriptionError extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: AppTheme.gamingCard(glowColor: AppTheme.error),
-      child: Text(ref.lang('common.error'), style: const TextStyle(color: AppTheme.error)),
+      child: Text(ref.lang('common.error'),
+          style: const TextStyle(color: AppTheme.error)),
     );
   }
 }

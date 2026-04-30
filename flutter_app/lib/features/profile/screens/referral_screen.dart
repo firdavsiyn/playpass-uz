@@ -45,7 +45,8 @@ class ReferralScreen extends ConsumerWidget {
             decoration: BoxDecoration(
               color: context.card,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppTheme.primary.withValues(alpha: 0.1)),
+              border:
+                  Border.all(color: AppTheme.primary.withValues(alpha: 0.1)),
               boxShadow: AppTheme.cardGlow(),
             ),
             child: Column(
@@ -169,8 +170,8 @@ class ReferralScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 12),
                     ...transactions.map<Widget>((tx) {
-                      final inviteeName =
-                          (tx['users']?['name'] as String?) ?? ref.lang('ref.friend_default');
+                      final inviteeName = (tx['users']?['name'] as String?) ??
+                          ref.lang('ref.friend_default');
                       final bonusHours = tx['bonus_hours'] as int? ?? 3;
                       final createdAt = tx['created_at'] as String? ?? '';
                       final date = createdAt.length >= 10
@@ -191,8 +192,7 @@ class ReferralScreen extends ConsumerWidget {
                               width: 40,
                               height: 40,
                               decoration: BoxDecoration(
-                                color:
-                                    AppTheme.success.withValues(alpha: 0.15),
+                                color: AppTheme.success.withValues(alpha: 0.15),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
@@ -334,7 +334,8 @@ class _ReferralCodeCard extends StatelessWidget {
                     );
                   },
                   icon: const Icon(Icons.copy_rounded, size: 18),
-                  label: Text(copyLabel, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  label: Text(copyLabel,
+                      maxLines: 1, overflow: TextOverflow.ellipsis),
                 ),
               ),
               const SizedBox(width: 12),
@@ -349,7 +350,8 @@ class _ReferralCodeCard extends StatelessWidget {
                     );
                   },
                   icon: const Icon(Icons.share_rounded, size: 18),
-                  label: Text(shareLabel, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  label: Text(shareLabel,
+                      maxLines: 1, overflow: TextOverflow.ellipsis),
                 ),
               ),
             ],
@@ -482,10 +484,12 @@ class _ShareStoryButtonState extends ConsumerState<_ShareStoryButton> {
               const SizedBox(
                 width: 18,
                 height: 18,
-                child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                child: CircularProgressIndicator(
+                    strokeWidth: 2.5, color: Colors.white),
               )
             else
-              const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 20),
+              const Icon(Icons.auto_awesome_rounded,
+                  color: Colors.white, size: 20),
             const SizedBox(width: 10),
             Text(
               ref.lang('ref.share_story'),

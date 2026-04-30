@@ -17,7 +17,8 @@ class NearbyClubsRow extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return clubsAsync.when(
       data: (clubs) => clubs.isEmpty
-          ? Text(ref.lang('nearby.not_found'), style: TextStyle(color: context.text3))
+          ? Text(ref.lang('nearby.not_found'),
+              style: TextStyle(color: context.text3))
           : SizedBox(
               height: 175,
               child: ListView.separated(
@@ -36,7 +37,8 @@ class NearbyClubsRow extends ConsumerWidget {
           itemBuilder: (_, __) => const _ClubCardSkeleton(),
         ),
       ),
-      error: (_, __) => Text(ref.lang('nearby.error'), style: const TextStyle(color: AppTheme.error)),
+      error: (_, __) => Text(ref.lang('nearby.error'),
+          style: const TextStyle(color: AppTheme.error)),
     );
   }
 }
@@ -77,7 +79,8 @@ class _ClubCard extends StatelessWidget {
                 Hero(
                   tag: 'club_image_${club.id}',
                   child: ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(16)),
                     child: club.thumbnail != null
                         ? CachedNetworkImage(
                             imageUrl: club.thumbnail!,
@@ -88,7 +91,8 @@ class _ClubCard extends StatelessWidget {
                               height: 100,
                               color: context.surface,
                               child: const Center(
-                                child: Icon(Icons.image_outlined, color: AppTheme.textMuted, size: 24),
+                                child: Icon(Icons.image_outlined,
+                                    color: AppTheme.textMuted, size: 24),
                               ),
                             ),
                             errorWidget: (_, __, ___) => Container(
@@ -104,7 +108,8 @@ class _ClubCard extends StatelessWidget {
                                 ),
                               ),
                               child: const Center(
-                                child: Icon(Icons.sports_esports_rounded, color: AppTheme.textMuted, size: 28),
+                                child: Icon(Icons.sports_esports_rounded,
+                                    color: AppTheme.textMuted, size: 28),
                               ),
                             ),
                           )
@@ -121,7 +126,8 @@ class _ClubCard extends StatelessWidget {
                               ),
                             ),
                             child: const Center(
-                              child: Icon(Icons.sports_esports_rounded, color: AppTheme.textMuted, size: 32),
+                              child: Icon(Icons.sports_esports_rounded,
+                                  color: AppTheme.textMuted, size: 32),
                             ),
                           ),
                   ),
@@ -152,11 +158,13 @@ class _ClubCard extends StatelessWidget {
                   top: 8,
                   right: 8,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                     decoration: BoxDecoration(
                       color: statusColor.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: statusColor.withValues(alpha: 0.4)),
+                      border:
+                          Border.all(color: statusColor.withValues(alpha: 0.4)),
                       boxShadow: [
                         BoxShadow(
                           color: statusColor.withValues(alpha: 0.3),
@@ -174,7 +182,9 @@ class _ClubCard extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: statusColor,
                             shape: BoxShape.circle,
-                            boxShadow: [BoxShadow(color: statusColor, blurRadius: 4)],
+                            boxShadow: [
+                              BoxShadow(color: statusColor, blurRadius: 4)
+                            ],
                           ),
                         ),
                         const SizedBox(width: 3),
@@ -198,11 +208,13 @@ class _ClubCard extends StatelessWidget {
                     top: 8,
                     left: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 3),
                       decoration: BoxDecoration(
                         color: AppTheme.tierVip.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: AppTheme.tierVip.withValues(alpha: 0.4)),
+                        border: Border.all(
+                            color: AppTheme.tierVip.withValues(alpha: 0.4)),
                       ),
                       child: const Text('VIP',
                           style: TextStyle(
@@ -234,7 +246,8 @@ class _ClubCard extends StatelessWidget {
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      Icon(Icons.star_rounded, size: 14, color: AppTheme.tierVip),
+                      Icon(Icons.star_rounded,
+                          size: 14, color: AppTheme.tierVip),
                       const SizedBox(width: 2),
                       Text(
                         club.rating.toStringAsFixed(1),
@@ -245,7 +258,8 @@ class _ClubCard extends StatelessWidget {
                         ),
                       ),
                       const Spacer(),
-                      Icon(Icons.computer_rounded, size: 12, color: context.text3),
+                      Icon(Icons.computer_rounded,
+                          size: 12, color: context.text3),
                       const SizedBox(width: 3),
                       Text(
                         '${club.pcCount}',

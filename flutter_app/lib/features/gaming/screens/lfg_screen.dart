@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../services/supabase_service.dart';
 
-final lfgPostsProvider = FutureProvider.family<List<Map<String, dynamic>>, String?>((ref, game) {
+final lfgPostsProvider =
+    FutureProvider.family<List<Map<String, dynamic>>, String?>((ref, game) {
   return SupabaseService().getLfgPosts(game: game);
 });
 
@@ -34,13 +35,21 @@ class LfgScreen extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
               children: [
-                _GameChip(label: 'Все', selected: selectedGame == null,
-                    onTap: () => ref.read(selectedLfgGameProvider.notifier).state = null),
+                _GameChip(
+                    label: 'Все',
+                    selected: selectedGame == null,
+                    onTap: () => ref
+                        .read(selectedLfgGameProvider.notifier)
+                        .state = null),
                 ...games.map((g) => Padding(
-                  padding: const EdgeInsets.only(left: 8),
-                  child: _GameChip(label: g, selected: selectedGame == g,
-                      onTap: () => ref.read(selectedLfgGameProvider.notifier).state = g),
-                )),
+                      padding: const EdgeInsets.only(left: 8),
+                      child: _GameChip(
+                          label: g,
+                          selected: selectedGame == g,
+                          onTap: () => ref
+                              .read(selectedLfgGameProvider.notifier)
+                              .state = g),
+                    )),
               ],
             ),
           ),
@@ -57,18 +66,23 @@ class LfgScreen extends ConsumerWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.people_outline, size: 64, color: context.text3),
+                        Icon(Icons.people_outline,
+                            size: 64, color: context.text3),
                         const SizedBox(height: 12),
-                        Text('Нет активных запросов', style: TextStyle(color: context.text2)),
+                        Text('Нет активных запросов',
+                            style: TextStyle(color: context.text2)),
                         const SizedBox(height: 4),
-                        Text('Создайте первый!', style: TextStyle(color: context.text3, fontSize: 13)),
+                        Text('Создайте первый!',
+                            style:
+                                TextStyle(color: context.text3, fontSize: 13)),
                       ],
                     ),
                   );
                 }
 
                 return RefreshIndicator(
-                  onRefresh: () => ref.refresh(lfgPostsProvider(selectedGame).future),
+                  onRefresh: () =>
+                      ref.refresh(lfgPostsProvider(selectedGame).future),
                   child: ListView.builder(
                     padding: const EdgeInsets.all(16),
                     itemCount: posts.length,
@@ -93,74 +107,108 @@ class LfgScreen extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: context.cardDark,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setState) => Padding(
-          padding: EdgeInsets.fromLTRB(24, 24, 24, MediaQuery.of(ctx).viewInsets.bottom + 24),
+          padding: EdgeInsets.fromLTRB(
+              24, 24, 24, MediaQuery.of(ctx).viewInsets.bottom + 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Найти тиммейтов', style: TextStyle(
-                fontSize: 18, fontWeight: FontWeight.w600, color: context.text1)),
+              Text('Найти тиммейтов',
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: context.text1)),
               const SizedBox(height: 16),
-
-              Text('Игра', style: TextStyle(fontSize: 13, color: context.text2)),
+              Text('Игра',
+                  style: TextStyle(fontSize: 13, color: context.text2)),
               const SizedBox(height: 8),
               Wrap(
-                spacing: 8, runSpacing: 8,
-                children: ['CS2', 'Dota 2', 'Valorant', 'PUBG', 'Apex Legends'].map((g) => GestureDetector(
-                  onTap: () => setState(() => game = g),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: game == g ? AppTheme.primary : context.bg,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: game == g ? AppTheme.primary : context.border),
-                    ),
-                    child: Text(g, style: TextStyle(fontSize: 13,
-                      color: game == g ? Colors.white : context.text2)),
-                  ),
-                )).toList(),
+                spacing: 8,
+                runSpacing: 8,
+                children: ['CS2', 'Dota 2', 'Valorant', 'PUBG', 'Apex Legends']
+                    .map((g) => GestureDetector(
+                          onTap: () => setState(() => game = g),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: game == g ? AppTheme.primary : context.bg,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                  color: game == g
+                                      ? AppTheme.primary
+                                      : context.border),
+                            ),
+                            child: Text(g,
+                                style: TextStyle(
+                                    fontSize: 13,
+                                    color: game == g
+                                        ? Colors.white
+                                        : context.text2)),
+                          ),
+                        ))
+                    .toList(),
               ),
               const SizedBox(height: 16),
-
               Row(
                 children: [
-                  Text('Нужно игроков: ', style: TextStyle(color: context.text2)),
-                  IconButton(icon: Icon(Icons.remove_circle_outline, color: context.text3),
-                      onPressed: playersNeeded > 1 ? () => setState(() => playersNeeded--) : null),
-                  Text('$playersNeeded', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: context.text1)),
-                  IconButton(icon: const Icon(Icons.add_circle_outline, color: AppTheme.primary),
-                      onPressed: playersNeeded < 9 ? () => setState(() => playersNeeded++) : null),
+                  Text('Нужно игроков: ',
+                      style: TextStyle(color: context.text2)),
+                  IconButton(
+                      icon: Icon(Icons.remove_circle_outline,
+                          color: context.text3),
+                      onPressed: playersNeeded > 1
+                          ? () => setState(() => playersNeeded--)
+                          : null),
+                  Text('$playersNeeded',
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: context.text1)),
+                  IconButton(
+                      icon: const Icon(Icons.add_circle_outline,
+                          color: AppTheme.primary),
+                      onPressed: playersNeeded < 9
+                          ? () => setState(() => playersNeeded++)
+                          : null),
                 ],
               ),
-
               Row(
                 children: [
-                  Checkbox(value: micRequired, onChanged: (v) => setState(() => micRequired = v ?? false),
+                  Checkbox(
+                      value: micRequired,
+                      onChanged: (v) =>
+                          setState(() => micRequired = v ?? false),
                       activeColor: AppTheme.primary),
-                  Text('Микрофон обязателен', style: TextStyle(color: context.text2)),
+                  Text('Микрофон обязателен',
+                      style: TextStyle(color: context.text2)),
                 ],
               ),
-
               TextField(
                 controller: msgCtrl,
                 style: TextStyle(color: context.text1),
                 maxLines: 2,
-                decoration: const InputDecoration(labelText: 'Сообщение', hintText: 'Ищу в рейт, ранг Faceit 7+...'),
+                decoration: const InputDecoration(
+                    labelText: 'Сообщение',
+                    hintText: 'Ищу в рейт, ранг Faceit 7+...'),
               ),
               const SizedBox(height: 20),
-
               ElevatedButton(
                 onPressed: () async {
                   await SupabaseService().createLfgPost(
                     game: game,
                     playersNeeded: playersNeeded,
-                    message: msgCtrl.text.trim().isEmpty ? null : msgCtrl.text.trim(),
+                    message: msgCtrl.text.trim().isEmpty
+                        ? null
+                        : msgCtrl.text.trim(),
                     micRequired: micRequired,
                   );
-                  ref.invalidate(lfgPostsProvider(ref.read(selectedLfgGameProvider)));
+                  ref.invalidate(
+                      lfgPostsProvider(ref.read(selectedLfgGameProvider)));
                   if (ctx.mounted) Navigator.pop(ctx);
                 },
                 child: const Text('Опубликовать'),
@@ -177,7 +225,8 @@ class _GameChip extends StatelessWidget {
   final String label;
   final bool selected;
   final VoidCallback onTap;
-  const _GameChip({required this.label, required this.selected, required this.onTap});
+  const _GameChip(
+      {required this.label, required this.selected, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -188,11 +237,14 @@ class _GameChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected ? AppTheme.primary : context.cardDark,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: selected ? AppTheme.primary : context.border),
+          border:
+              Border.all(color: selected ? AppTheme.primary : context.border),
         ),
-        child: Text(label, style: TextStyle(
-          fontSize: 13, color: selected ? Colors.white : context.text2,
-          fontWeight: selected ? FontWeight.w600 : FontWeight.normal)),
+        child: Text(label,
+            style: TextStyle(
+                fontSize: 13,
+                color: selected ? Colors.white : context.text2,
+                fontWeight: selected ? FontWeight.w600 : FontWeight.normal)),
       ),
     );
   }
@@ -228,10 +280,14 @@ class _LfgCard extends StatelessWidget {
               CircleAvatar(
                 radius: 18,
                 backgroundColor: AppTheme.primary.withValues(alpha: 0.2),
-                backgroundImage: user?['avatar_url'] != null ? NetworkImage(user!['avatar_url']) : null,
+                backgroundImage: user?['avatar_url'] != null
+                    ? NetworkImage(user!['avatar_url'])
+                    : null,
                 child: user?['avatar_url'] == null
                     ? Text((user?['name'] as String? ?? '?')[0].toUpperCase(),
-                        style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.w600))
+                        style: const TextStyle(
+                            color: AppTheme.primary,
+                            fontWeight: FontWeight.w600))
                     : null,
               ),
               const SizedBox(width: 10),
@@ -239,10 +295,12 @@ class _LfgCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(user?['name'] ?? 'Игрок', style: TextStyle(
-                      fontWeight: FontWeight.w600, color: context.text1)),
-                    if (club != null) Text(club['name'] as String? ?? '', style: TextStyle(
-                      fontSize: 12, color: context.text3)),
+                    Text(user?['name'] ?? 'Игрок',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w600, color: context.text1)),
+                    if (club != null)
+                      Text(club['name'] as String? ?? '',
+                          style: TextStyle(fontSize: 12, color: context.text3)),
                   ],
                 ),
               ),
@@ -252,8 +310,11 @@ class _LfgCard extends StatelessWidget {
                   color: AppTheme.primary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(post['game'] as String? ?? '', style: const TextStyle(
-                  fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.primary)),
+                child: Text(post['game'] as String? ?? '',
+                    style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.primary)),
               ),
             ],
           ),
@@ -263,8 +324,8 @@ class _LfgCard extends StatelessWidget {
           if (post['message'] != null)
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              child: Text(post['message'] as String, style: TextStyle(
-                color: context.text2, height: 1.4)),
+              child: Text(post['message'] as String,
+                  style: TextStyle(color: context.text2, height: 1.4)),
             ),
 
           // Info row
@@ -276,8 +337,11 @@ class _LfgCard extends StatelessWidget {
                 _InfoBadge(Icons.mic, 'Микрофон'),
                 const SizedBox(width: 8),
               ],
-              _InfoBadge(Icons.timer_outlined,
-                  timeLeft.inMinutes > 60 ? '${timeLeft.inHours}ч' : '${timeLeft.inMinutes}м'),
+              _InfoBadge(
+                  Icons.timer_outlined,
+                  timeLeft.inMinutes > 60
+                      ? '${timeLeft.inHours}ч'
+                      : '${timeLeft.inMinutes}м'),
               const Spacer(),
               if (!isOwn)
                 ElevatedButton(
@@ -285,15 +349,19 @@ class _LfgCard extends StatelessWidget {
                     await SupabaseService().respondToLfg(post['id'] as String);
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Запрос отправлен!'), backgroundColor: AppTheme.success),
+                        const SnackBar(
+                            content: Text('Запрос отправлен!'),
+                            backgroundColor: AppTheme.success),
                       );
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     minimumSize: Size.zero,
                   ),
-                  child: const Text('Присоединиться', style: TextStyle(fontSize: 13)),
+                  child: const Text('Присоединиться',
+                      style: TextStyle(fontSize: 13)),
                 ),
             ],
           ),

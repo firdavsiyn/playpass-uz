@@ -8,7 +8,8 @@ import '../../../services/supabase_service.dart';
 
 /// Compact "Friends in clubs right now" widget. Shows up to 3 avatar
 /// stacks of online friends + a count, tapping opens friends screen.
-final friendsOnlineProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
+final friendsOnlineProvider =
+    FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
   return SupabaseService().getFriendsWithStatus();
 });
 
@@ -40,12 +41,16 @@ class FriendsOnlineWidget extends ConsumerWidget {
                 ],
               ),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppTheme.success.withValues(alpha: 0.2)),
+              border:
+                  Border.all(color: AppTheme.success.withValues(alpha: 0.2)),
             ),
             child: Row(
               children: [
                 // Stacked avatars
-                _AvatarStack(friends: online.isEmpty ? accepted.take(3).toList() : online.take(3).toList()),
+                _AvatarStack(
+                    friends: online.isEmpty
+                        ? accepted.take(3).toList()
+                        : online.take(3).toList()),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -63,14 +68,15 @@ class FriendsOnlineWidget extends ConsumerWidget {
                       ),
                       Text(
                         online.isNotEmpty
-                            ? 'Присоединяйся 🎮'
+                            ? 'Присоединяйся '
                             : 'Никто сейчас не играет',
                         style: TextStyle(color: context.text3, fontSize: 11),
                       ),
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right_rounded, color: context.text3, size: 20),
+                Icon(Icons.chevron_right_rounded,
+                    color: context.text3, size: 20),
               ],
             ),
           ),
@@ -85,7 +91,8 @@ class FriendsOnlineWidget extends ConsumerWidget {
     final mod10 = n % 10;
     final mod100 = n % 100;
     if (mod10 == 1 && mod100 != 11) return 'друг';
-    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'друга';
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14))
+      return 'друга';
     return 'друзей';
   }
 }
@@ -110,18 +117,25 @@ class _AvatarStack extends StatelessWidget {
           return Positioned(
             left: i * 18.0,
             child: Container(
-              width: 32, height: 32,
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(color: context.bg, width: 2),
                 gradient: avatar == null
-                    ? const LinearGradient(colors: [AppTheme.primary, AppTheme.neonCyan])
+                    ? const LinearGradient(
+                        colors: [AppTheme.primary, AppTheme.neonCyan])
                     : null,
                 image: avatar != null
-                    ? DecorationImage(image: NetworkImage(avatar), fit: BoxFit.cover)
+                    ? DecorationImage(
+                        image: NetworkImage(avatar), fit: BoxFit.cover)
                     : null,
                 boxShadow: isOnline
-                    ? [BoxShadow(color: AppTheme.success.withValues(alpha: 0.5), blurRadius: 6)]
+                    ? [
+                        BoxShadow(
+                            color: AppTheme.success.withValues(alpha: 0.5),
+                            blurRadius: 6)
+                      ]
                     : null,
               ),
               child: avatar == null

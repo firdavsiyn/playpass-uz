@@ -22,7 +22,8 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     setState(() => _loading = true);
 
     try {
-      await SupabaseService().updateUserProfile(name: _nameController.text.trim());
+      await SupabaseService()
+          .updateUserProfile(name: _nameController.text.trim());
       if (mounted) context.go('/home');
     } catch (e) {
       if (mounted) {
@@ -61,13 +62,11 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 40),
-
                 TextFormField(
                   controller: _nameController,
                   autofocus: true,
                   textCapitalization: TextCapitalization.words,
-                  style: TextStyle(
-                      color: context.text1, fontSize: 18),
+                  style: TextStyle(color: context.text1, fontSize: 18),
                   decoration: InputDecoration(
                     hintText: 'Введите имя',
                     prefixIcon:
@@ -79,9 +78,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                     return null;
                   },
                 ),
-
                 const SizedBox(height: 32),
-
                 ElevatedButton(
                   onPressed: _loading ? null : _save,
                   child: _loading

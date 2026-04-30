@@ -9,7 +9,8 @@ class NotificationService {
   factory NotificationService() => _instance;
   NotificationService._internal();
 
-  final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _plugin =
+      FlutterLocalNotificationsPlugin();
   bool _initialized = false;
 
   Future<void> init() async {
@@ -18,7 +19,8 @@ class NotificationService {
 
     tz_data.initializeTimeZones();
 
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
@@ -38,11 +40,13 @@ class NotificationService {
     if (kIsWeb || _initialized == false) return;
     if (!kIsWeb && (Platform.isIOS || Platform.isMacOS)) {
       await _plugin
-          .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
+          .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>()
           ?.requestPermissions(alert: true, badge: true, sound: true);
     } else if (!kIsWeb && Platform.isAndroid) {
       await _plugin
-          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>()
           ?.requestNotificationsPermission();
     }
   }
@@ -65,7 +69,8 @@ class NotificationService {
       icon: '@mipmap/ic_launcher',
     );
     const iosDetails = DarwinNotificationDetails();
-    final details = NotificationDetails(android: androidDetails, iOS: iosDetails);
+    final details =
+        NotificationDetails(android: androidDetails, iOS: iosDetails);
     await _plugin.show(id, title, body, details);
   }
 
@@ -87,7 +92,8 @@ class NotificationService {
       priority: Priority.high,
     );
     const iosDetails = DarwinNotificationDetails();
-    const details = NotificationDetails(android: androidDetails, iOS: iosDetails);
+    const details =
+        NotificationDetails(android: androidDetails, iOS: iosDetails);
 
     await _plugin.zonedSchedule(
       subscriptionId.hashCode,
@@ -119,11 +125,12 @@ class NotificationService {
       priority: Priority.max,
     );
     const iosDetails = DarwinNotificationDetails();
-    const details = NotificationDetails(android: androidDetails, iOS: iosDetails);
+    const details =
+        NotificationDetails(android: androidDetails, iOS: iosDetails);
 
     await _plugin.zonedSchedule(
       subscriptionId.hashCode + 1,
-      '🚨 Подписка истекает завтра!',
+      ' Подписка истекает завтра!',
       'Осталось меньше 24 часов. Продлите сейчас!',
       scheduledDate,
       details,
@@ -139,7 +146,7 @@ class NotificationService {
     if (hoursLeft > 3) return;
     await showNotification(
       id: 9999,
-      title: '⚠️ Мало часов осталось',
+      title: ' Мало часов осталось',
       body: 'Баланс: ${hoursLeft.toStringAsFixed(0)} ч. Пополните подписку!',
     );
   }
@@ -148,7 +155,7 @@ class NotificationService {
   Future<void> notifyAchievement(String achievementName) async {
     await showNotification(
       id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-      title: '🏆 Новое достижение!',
+      title: ' Новое достижение!',
       body: 'Вы разблокировали: $achievementName',
       channelId: 'playpass_achievements',
       channelName: 'Достижения',
@@ -159,7 +166,7 @@ class NotificationService {
   Future<void> notifyPromoApplied(String bonus) async {
     await showNotification(
       id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-      title: '🎉 Промокод активирован!',
+      title: ' Промокод активирован!',
       body: 'Получен бонус: $bonus',
       channelId: 'playpass_promo',
       channelName: 'Промокоды',
@@ -185,11 +192,12 @@ class NotificationService {
       priority: Priority.high,
     );
     const iosDetails = DarwinNotificationDetails();
-    const details = NotificationDetails(android: androidDetails, iOS: iosDetails);
+    const details =
+        NotificationDetails(android: androidDetails, iOS: iosDetails);
 
     await _plugin.zonedSchedule(
       bookingId.hashCode,
-      '🎮 Бронь через 30 минут',
+      ' Бронь через 30 минут',
       'Не забудьте прийти в $clubName',
       scheduledDate,
       details,
@@ -203,7 +211,7 @@ class NotificationService {
   Future<void> notifyNewPromo(String title, String description) async {
     await showNotification(
       id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-      title: '🔥 $title',
+      title: ' $title',
       body: description,
       channelId: 'playpass_promo',
       channelName: 'Акции и новости',

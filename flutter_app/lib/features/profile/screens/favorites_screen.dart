@@ -51,7 +51,8 @@ class FavoritesScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('${ref.lang('common.error_prefix')}: $e')),
+        error: (e, _) =>
+            Center(child: Text('${ref.lang('common.error_prefix')}: $e')),
       ),
     );
   }
@@ -77,7 +78,8 @@ class _FavClubCard extends ConsumerWidget {
         child: Row(
           children: [
             Container(
-              width: 48, height: 48,
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
                 gradient: LinearGradient(colors: [
                   AppTheme.primary.withValues(alpha: 0.2),
@@ -85,7 +87,8 @@ class _FavClubCard extends ConsumerWidget {
                 ]),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.sports_esports, color: AppTheme.primaryLight, size: 24),
+              child: const Icon(Icons.sports_esports,
+                  color: AppTheme.primaryLight, size: 24),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -94,16 +97,21 @@ class _FavClubCard extends ConsumerWidget {
                 children: [
                   Text(club.name,
                       style: TextStyle(
-                          color: context.text1, fontWeight: FontWeight.w600, fontSize: 15)),
+                          color: context.text1,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15)),
                   const SizedBox(height: 2),
-                  Text(club.address, maxLines: 1, overflow: TextOverflow.ellipsis,
+                  Text(club.address,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(color: context.text3, fontSize: 12)),
                 ],
               ),
             ),
             IconButton(
               icon: const Icon(Icons.favorite_rounded, color: AppTheme.error),
-              onPressed: () => ref.read(favoritesProvider.notifier).toggle(club.id),
+              onPressed: () =>
+                  ref.read(favoritesProvider.notifier).toggle(club.id),
             ),
           ],
         ),

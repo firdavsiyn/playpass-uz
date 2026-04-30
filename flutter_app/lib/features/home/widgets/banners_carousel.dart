@@ -6,7 +6,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../services/supabase_service.dart';
 
-final bannersProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
+final bannersProvider =
+    FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
   return SupabaseService().getActiveBanners();
 });
 
@@ -70,38 +71,53 @@ class _BannerCard extends StatelessWidget {
     }
 
     return GestureDetector(
-      onTap: actionUrl != null ? () async {
-        final url = Uri.tryParse(actionUrl);
-        if (url != null && await canLaunchUrl(url)) {
-          await launchUrl(url, mode: LaunchMode.externalApplication);
-        }
-      } : null,
+      onTap: actionUrl != null
+          ? () async {
+              final url = Uri.tryParse(actionUrl);
+              if (url != null && await canLaunchUrl(url)) {
+                await launchUrl(url, mode: LaunchMode.externalApplication);
+              }
+            }
+          : null,
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 6),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
-          gradient: imageUrl == null ? LinearGradient(
-            colors: [color, color.withValues(alpha: 0.7)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ) : null,
-          image: imageUrl != null ? DecorationImage(
-            image: CachedNetworkImageProvider(imageUrl),
-            fit: BoxFit.cover,
-          ) : null,
+          gradient: imageUrl == null
+              ? LinearGradient(
+                  colors: [color, color.withValues(alpha: 0.7)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : null,
+          image: imageUrl != null
+              ? DecorationImage(
+                  image: CachedNetworkImageProvider(imageUrl),
+                  fit: BoxFit.cover,
+                )
+              : null,
           boxShadow: [
-            BoxShadow(color: color.withValues(alpha: 0.2), blurRadius: 16, spreadRadius: -4, offset: const Offset(0, 4)),
+            BoxShadow(
+                color: color.withValues(alpha: 0.2),
+                blurRadius: 16,
+                spreadRadius: -4,
+                offset: const Offset(0, 4)),
           ],
         ),
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
-            gradient: imageUrl != null ? LinearGradient(
-              colors: [Colors.black.withValues(alpha: 0.5), Colors.transparent],
-              begin: Alignment.bottomCenter,
-              end: Alignment.topCenter,
-            ) : null,
+            gradient: imageUrl != null
+                ? LinearGradient(
+                    colors: [
+                      Colors.black.withValues(alpha: 0.5),
+                      Colors.transparent
+                    ],
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                  )
+                : null,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

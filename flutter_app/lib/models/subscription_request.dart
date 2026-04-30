@@ -29,12 +29,12 @@ class SubscriptionRequest {
   bool get isRejected => status == 'rejected';
 
   String get planName => switch (plan) {
-    'basic' => 'Базовый',
-    'standard' => 'Стандарт',
-    'pro' => 'Про',
-    'vip' => 'VIP',
-    _ => plan,
-  };
+        'basic' => 'Базовый',
+        'standard' => 'Стандарт',
+        'pro' => 'Про',
+        'vip' => 'VIP',
+        _ => plan,
+      };
 
   factory SubscriptionRequest.fromJson(Map<String, dynamic> json) =>
       SubscriptionRequest(

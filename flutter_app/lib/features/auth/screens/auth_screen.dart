@@ -325,7 +325,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                     decoration: BoxDecoration(
                       color: context.surface,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppTheme.primary.withValues(alpha: 0.1)),
+                      border: Border.all(
+                          color: AppTheme.primary.withValues(alpha: 0.1)),
                     ),
                     child: TabBar(
                       controller: _tabController,
@@ -345,7 +346,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                       indicatorSize: TabBarIndicatorSize.tab,
                       labelColor: Colors.white,
                       unselectedLabelColor: context.text3,
-                      labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                      labelStyle: const TextStyle(
+                          fontWeight: FontWeight.w700, fontSize: 14),
                       dividerHeight: 0,
                       tabs: [
                         Tab(text: ref.lang('auth.tab_login')),
@@ -382,10 +384,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     required VoidCallback onTap,
   }) {
     return GestureDetector(
-      onTap: loading ? null : () {
-        HapticFeedback.mediumImpact();
-        onTap();
-      },
+      onTap: loading
+          ? null
+          : () {
+              HapticFeedback.mediumImpact();
+              onTap();
+            },
       child: AnimatedBuilder(
         animation: _glowController,
         builder: (_, __) {
@@ -396,7 +400,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
               gradient: loading
                   ? null
                   : const LinearGradient(
-                      colors: [Color(0xFF7C3AED), Color(0xFF6366F1), Color(0xFF06B6D4)],
+                      colors: [
+                        Color(0xFF7C3AED),
+                        Color(0xFF6366F1),
+                        Color(0xFF06B6D4)
+                      ],
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
                     ),
@@ -483,7 +491,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
             onChanged: (_) => setState(() => _loginError = null),
           ),
           const SizedBox(height: 16),
-
           _inputLabel(ref.lang('auth.password')),
           const SizedBox(height: 8),
           TextField(
@@ -496,16 +503,17 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
               prefixIcon: const Icon(Icons.lock_outline, size: 20),
               suffixIcon: IconButton(
                 icon: Icon(
-                  _loginPasswordVisible ? Icons.visibility_off : Icons.visibility,
+                  _loginPasswordVisible
+                      ? Icons.visibility_off
+                      : Icons.visibility,
                   size: 20,
                 ),
-                onPressed: () =>
-                    setState(() => _loginPasswordVisible = !_loginPasswordVisible),
+                onPressed: () => setState(
+                    () => _loginPasswordVisible = !_loginPasswordVisible),
               ),
             ),
             onSubmitted: (_) => _login(),
           ),
-
           AnimatedSize(
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeInOut,
@@ -514,19 +522,23 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                 ? Padding(
                     padding: const EdgeInsets.only(top: 12),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
                         color: AppTheme.error.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: AppTheme.error.withValues(alpha: 0.2)),
+                        border: Border.all(
+                            color: AppTheme.error.withValues(alpha: 0.2)),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.error_outline, color: AppTheme.error, size: 16),
+                          const Icon(Icons.error_outline,
+                              color: AppTheme.error, size: 16),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(_loginError!,
-                                style: const TextStyle(color: AppTheme.error, fontSize: 13)),
+                                style: const TextStyle(
+                                    color: AppTheme.error, fontSize: 13)),
                           ),
                         ],
                       ),
@@ -534,17 +546,16 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                   )
                 : const SizedBox.shrink(),
           ),
-
           const SizedBox(height: 8),
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
               onPressed: () => context.push('/auth/forgot-password'),
               child: Text(ref.lang('auth.forgot'),
-                  style: const TextStyle(fontSize: 13, color: AppTheme.neonCyan)),
+                  style:
+                      const TextStyle(fontSize: 13, color: AppTheme.neonCyan)),
             ),
           ),
-
           const SizedBox(height: 16),
           _gradientButton(
             label: ref.lang('auth.login_btn'),
@@ -576,7 +587,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
             onChanged: (_) => setState(() => _regError = null),
           ),
           const SizedBox(height: 16),
-
           _inputLabel('Email'),
           const SizedBox(height: 8),
           TextField(
@@ -591,7 +601,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
             onChanged: (_) => setState(() => _regError = null),
           ),
           const SizedBox(height: 16),
-
           _inputLabel(ref.lang('auth.password')),
           const SizedBox(height: 8),
           TextField(
@@ -613,7 +622,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
             ),
             onSubmitted: (_) => _register(),
           ),
-
           AnimatedSize(
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeInOut,
@@ -622,19 +630,23 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                 ? Padding(
                     padding: const EdgeInsets.only(top: 12),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
                         color: AppTheme.error.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: AppTheme.error.withValues(alpha: 0.2)),
+                        border: Border.all(
+                            color: AppTheme.error.withValues(alpha: 0.2)),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.error_outline, color: AppTheme.error, size: 16),
+                          const Icon(Icons.error_outline,
+                              color: AppTheme.error, size: 16),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(_regError!,
-                                style: const TextStyle(color: AppTheme.error, fontSize: 13)),
+                                style: const TextStyle(
+                                    color: AppTheme.error, fontSize: 13)),
                           ),
                         ],
                       ),
@@ -642,14 +654,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                   )
                 : const SizedBox.shrink(),
           ),
-
           const SizedBox(height: 24),
           _gradientButton(
             label: ref.lang('auth.register_btn'),
             loading: _regLoading,
             onTap: _register,
           ),
-
           const SizedBox(height: 16),
           Center(
             child: Text(
@@ -665,11 +675,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
   }
 
   Widget _inputLabel(String text) {
-    return Text(text, style: TextStyle(
-      color: context.text3,
-      fontSize: 13,
-      fontWeight: FontWeight.w600,
-      letterSpacing: 0.3,
-    ));
+    return Text(text,
+        style: TextStyle(
+          color: context.text3,
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.3,
+        ));
   }
 }

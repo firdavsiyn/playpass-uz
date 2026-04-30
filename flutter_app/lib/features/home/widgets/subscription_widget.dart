@@ -15,7 +15,8 @@ class SubscriptionWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (subscription == null || (!subscription!.isActive && !subscription!.isFrozen)) {
+    if (subscription == null ||
+        (!subscription!.isActive && !subscription!.isFrozen)) {
       return _buildNoSubscription(context, ref);
     }
     return _ActiveSubscription(subscription: subscription!);
@@ -79,8 +80,7 @@ class SubscriptionWidget extends ConsumerWidget {
                             fontSize: 15)),
                     const SizedBox(height: 4),
                     Text(ref.lang('sub_widget.buy_cta'),
-                        style:
-                            TextStyle(color: context.text2, fontSize: 13)),
+                        style: TextStyle(color: context.text2, fontSize: 13)),
                   ],
                 ),
               ),
@@ -133,7 +133,10 @@ class _ActiveSubscription extends ConsumerWidget {
         gradient: isFrozen
             ? null
             : LinearGradient(
-                colors: [color.withValues(alpha: 0.7), color.withValues(alpha: 0.2)],
+                colors: [
+                  color.withValues(alpha: 0.7),
+                  color.withValues(alpha: 0.2)
+                ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -142,282 +145,308 @@ class _ActiveSubscription extends ConsumerWidget {
         boxShadow: isFrozen
             ? []
             : [
-                BoxShadow(color: color.withValues(alpha: 0.2), blurRadius: 24, offset: const Offset(0, 4)),
-                BoxShadow(color: color.withValues(alpha: 0.08), blurRadius: 40, spreadRadius: -4),
+                BoxShadow(
+                    color: color.withValues(alpha: 0.2),
+                    blurRadius: 24,
+                    offset: const Offset(0, 4)),
+                BoxShadow(
+                    color: color.withValues(alpha: 0.08),
+                    blurRadius: 40,
+                    spreadRadius: -4),
               ],
       ),
       padding: const EdgeInsets.all(1.5),
       child: Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: context.card,
-        borderRadius: BorderRadius.circular(19),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(19),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Expiration warning banner
-              if (!isFrozen && subscription.daysRemaining <= 3) ...[
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.orange.withValues(alpha: 0.25)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.warning_amber_rounded,
-                          color: Colors.orange, size: 18),
-                      const SizedBox(width: 8),
-                      Text(
-                        '${ref.lang('sub_widget.expires_in')} ${subscription.daysRemaining} ${ref.lang('sub_widget.days_short')}',
-                        style: const TextStyle(
-                          color: Colors.orange,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 14),
-              ],
-
-              // Plan badge + days remaining
-              Row(
-                children: [
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: context.card,
+          borderRadius: BorderRadius.circular(19),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(19),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Expiration warning banner
+                if (!isFrozen && subscription.daysRemaining <= 3) ...[
                   Container(
+                    width: double.infinity,
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          color.withValues(alpha: 0.25),
-                          color.withValues(alpha: 0.1),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: color.withValues(alpha: 0.3)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: color.withValues(alpha: 0.15),
-                          blurRadius: 8,
-                          spreadRadius: -2,
+                      color: Colors.orange.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                          color: Colors.orange.withValues(alpha: 0.25)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.warning_amber_rounded,
+                            color: Colors.orange, size: 18),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${ref.lang('sub_widget.expires_in')} ${subscription.daysRemaining} ${ref.lang('sub_widget.days_short')}',
+                          style: const TextStyle(
+                            color: Colors.orange,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ],
                     ),
-                    child: Text(
-                      subscription.localizedPlanName(ref),
-                      style: TextStyle(
-                        color: color,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
+                  ),
+                  const SizedBox(height: 14),
+                ],
+
+                // Plan badge + days remaining
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 5),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            color.withValues(alpha: 0.25),
+                            color.withValues(alpha: 0.1),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: color.withValues(alpha: 0.3)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: color.withValues(alpha: 0.15),
+                            blurRadius: 8,
+                            spreadRadius: -2,
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        subscription.localizedPlanName(ref),
+                        style: TextStyle(
+                          color: color,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
-                  ),
-                  if (isFrozen) ...[
-                    const SizedBox(width: 8),
-                    Container(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: Colors.blueGrey.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.blueGrey.withValues(alpha: 0.3)),
+                    if (isFrozen) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: Colors.blueGrey.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                              color: Colors.blueGrey.withValues(alpha: 0.3)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.ac_unit_rounded,
+                                color: Colors.blueGrey, size: 14),
+                            const SizedBox(width: 4),
+                            Text(
+                              ref.lang('sub_widget.frozen'),
+                              style: const TextStyle(
+                                color: Colors.blueGrey,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
+                    ],
+                    const Spacer(),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          '${subscription.daysRemaining} ${ref.lang('sub_widget.days_short')}',
+                          style: TextStyle(
+                            color: context.text1,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 1),
+                        Text(
+                          ref.lang('sub_widget.remaining'),
+                          style: TextStyle(
+                            color: context.text3,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // Circular progress + hours
+                Row(
+                  children: [
+                    // Circular progress indicator with glow
+                    SizedBox(
+                      width: 90,
+                      height: 90,
+                      child: Stack(
+                        alignment: Alignment.center,
                         children: [
-                          const Icon(Icons.ac_unit_rounded,
-                              color: Colors.blueGrey, size: 14),
-                          const SizedBox(width: 4),
-                          Text(
-                            ref.lang('sub_widget.frozen'),
-                            style: const TextStyle(
-                              color: Colors.blueGrey,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
+                          // Progress ring
+                          CustomPaint(
+                            size: const Size(90, 90),
+                            painter: _NeonProgressPainter(
+                              progress: subscription.isUnlimited
+                                  ? 1.0
+                                  : subscription.hoursProgress,
+                              color: isFrozen ? Colors.blueGrey : color,
+                              secondaryColor: isFrozen
+                                  ? Colors.blueGrey
+                                  : AppTheme.neonCyan,
+                              bgColor: context.surface,
+                              glowEnabled: !isFrozen,
                             ),
                           ),
+                          // Center text
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                subscription.isUnlimited
+                                    ? '∞'
+                                    : subscription.hoursText,
+                                style: TextStyle(
+                                  color: isFrozen
+                                      ? Colors.blueGrey
+                                      : context.text1,
+                                  fontSize: subscription.isUnlimited ? 28 : 22,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                              if (!subscription.isUnlimited)
+                                Text(
+                                  ref.lang('sub_widget.hours_short'),
+                                  style: TextStyle(
+                                    color: isFrozen
+                                        ? Colors.blueGrey.withValues(alpha: 0.6)
+                                        : context.text3,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 22),
+                    // Info
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            subscription.isUnlimited
+                                ? ref.lang('sub_widget.unlimited')
+                                : subscription.localizedHoursSubtext(ref),
+                            style: TextStyle(
+                              color: isFrozen
+                                  ? Colors.blueGrey.withValues(alpha: 0.7)
+                                  : context.text2,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          if (subscription.isUnlimited)
+                            Text(
+                              ref.lang('sub_widget.visit_per_day'),
+                              style: TextStyle(
+                                color: isFrozen
+                                    ? Colors.blueGrey.withValues(alpha: 0.5)
+                                    : context.text3,
+                                fontSize: 12,
+                              ),
+                            ),
+                          if (!subscription.isUnlimited) ...[
+                            // Mini progress bar with glow
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: Container(
+                                height: 7,
+                                decoration: BoxDecoration(
+                                  color: context.surface,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    final filledWidth = constraints.maxWidth *
+                                        subscription.hoursProgress;
+                                    return Stack(
+                                      children: [
+                                        // Filled portion with glow
+                                        Positioned(
+                                          left: 0,
+                                          top: 0,
+                                          bottom: 0,
+                                          width: filledWidth,
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: isFrozen
+                                                  ? Colors.blueGrey
+                                                  : color,
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                              boxShadow: isFrozen
+                                                  ? []
+                                                  : [
+                                                      BoxShadow(
+                                                        color: color.withValues(
+                                                            alpha: 0.5),
+                                                        blurRadius: 6,
+                                                        spreadRadius: -1,
+                                                      ),
+                                                    ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
+                          // ── Rollover bonus ─────────────────
+                          if (subscription.hoursRolledOver > 0) ...[
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                const Text('', style: TextStyle(fontSize: 12)),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '+${subscription.hoursRolledOver} ${ref.lang('sub_widget.rolled_over')}',
+                                  style: const TextStyle(
+                                    color: AppTheme.success,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ],
                       ),
                     ),
                   ],
-                  const Spacer(),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        '${subscription.daysRemaining} ${ref.lang('sub_widget.days_short')}',
-                        style: TextStyle(
-                          color: context.text1,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 1),
-                      Text(
-                        ref.lang('sub_widget.remaining'),
-                        style: TextStyle(
-                          color: context.text3,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-
-              // Circular progress + hours
-              Row(
-                children: [
-                  // Circular progress indicator with glow
-                  SizedBox(
-                    width: 90,
-                    height: 90,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        // Progress ring
-                        CustomPaint(
-                          size: const Size(90, 90),
-                          painter: _NeonProgressPainter(
-                            progress: subscription.isUnlimited ? 1.0 : subscription.hoursProgress,
-                            color: isFrozen ? Colors.blueGrey : color,
-                            secondaryColor: isFrozen ? Colors.blueGrey : AppTheme.neonCyan,
-                            bgColor: context.surface,
-                            glowEnabled: !isFrozen,
-                          ),
-                        ),
-                        // Center text
-                        Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              subscription.isUnlimited ? '∞' : subscription.hoursText,
-                              style: TextStyle(
-                                color: isFrozen ? Colors.blueGrey : context.text1,
-                                fontSize: subscription.isUnlimited ? 28 : 22,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                            if (!subscription.isUnlimited)
-                              Text(
-                                ref.lang('sub_widget.hours_short'),
-                                style: TextStyle(
-                                  color: isFrozen ? Colors.blueGrey.withValues(alpha: 0.6) : context.text3,
-                                  fontSize: 12,
-                                ),
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 22),
-                  // Info
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          subscription.isUnlimited ? ref.lang('sub_widget.unlimited') : subscription.localizedHoursSubtext(ref),
-                          style: TextStyle(
-                            color: isFrozen
-                                ? Colors.blueGrey.withValues(alpha: 0.7)
-                                : context.text2,
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        if (subscription.isUnlimited)
-                          Text(
-                            ref.lang('sub_widget.visit_per_day'),
-                            style: TextStyle(
-                              color: isFrozen
-                                  ? Colors.blueGrey.withValues(alpha: 0.5)
-                                  : context.text3,
-                              fontSize: 12,
-                            ),
-                          ),
-                        if (!subscription.isUnlimited) ...[
-                          // Mini progress bar with glow
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: Container(
-                              height: 7,
-                              decoration: BoxDecoration(
-                                color: context.surface,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: LayoutBuilder(
-                                builder: (context, constraints) {
-                                  final filledWidth = constraints.maxWidth * subscription.hoursProgress;
-                                  return Stack(
-                                    children: [
-                                      // Filled portion with glow
-                                      Positioned(
-                                        left: 0,
-                                        top: 0,
-                                        bottom: 0,
-                                        width: filledWidth,
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            color: isFrozen ? Colors.blueGrey : color,
-                                            borderRadius: BorderRadius.circular(4),
-                                            boxShadow: isFrozen
-                                                ? []
-                                                : [
-                                                    BoxShadow(
-                                                      color: color.withValues(alpha: 0.5),
-                                                      blurRadius: 6,
-                                                      spreadRadius: -1,
-                                                    ),
-                                                  ],
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                        ],
-                        // ── Rollover bonus ─────────────────
-                        if (subscription.hoursRolledOver > 0) ...[
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              const Text('🎁', style: TextStyle(fontSize: 12)),
-                              const SizedBox(width: 4),
-                              Text(
-                                '+${subscription.hoursRolledOver} ${ref.lang('sub_widget.rolled_over')}',
-                                style: const TextStyle(
-                                  color: AppTheme.success,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }

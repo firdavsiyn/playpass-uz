@@ -21,13 +21,13 @@ class Review {
   });
 
   factory Review.fromJson(Map<String, dynamic> json) => Review(
-    id: json['id'] as String,
-    clubId: json['club_id'] as String,
-    userId: json['user_id'] as String,
-    userName: (json['users'] as Map<String, dynamic>?)?['name'] as String?,
-    rating: json['rating'] as int? ?? 5,
-    text: json['comment'] as String?,
-    photoUrls: (json['photo_urls'] as List<dynamic>?)?.cast<String>() ?? [],
-    createdAt: DateTime.parse(json['created_at'] as String),
-  );
+        id: json['id'] as String,
+        clubId: json['club_id'] as String,
+        userId: json['user_id'] as String,
+        userName: (json['users'] as Map<String, dynamic>?)?['name'] as String?,
+        rating: json['rating'] as int? ?? 5,
+        text: json['comment'] as String?,
+        photoUrls: (json['photo_urls'] as List<dynamic>?)?.cast<String>() ?? [],
+        createdAt: DateTime.parse(json['created_at'] as String),
+      );
 }

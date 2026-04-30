@@ -33,7 +33,10 @@ class SmartHintCard extends ConsumerWidget {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [colors.$1.withValues(alpha: 0.15), colors.$2.withValues(alpha: 0.06)],
+            colors: [
+              colors.$1.withValues(alpha: 0.15),
+              colors.$2.withValues(alpha: 0.06)
+            ],
           ),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: colors.$1.withValues(alpha: 0.25)),
@@ -46,7 +49,8 @@ class SmartHintCard extends ConsumerWidget {
                 gradient: LinearGradient(colors: [colors.$1, colors.$2]),
                 shape: BoxShape.circle,
                 boxShadow: [
-                  BoxShadow(color: colors.$1.withValues(alpha: 0.4), blurRadius: 10),
+                  BoxShadow(
+                      color: colors.$1.withValues(alpha: 0.4), blurRadius: 10),
                 ],
               ),
               child: Icon(iconData, color: Colors.white, size: 18),

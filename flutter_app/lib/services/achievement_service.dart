@@ -29,9 +29,11 @@ class AchievementService {
     final nightVisits = visits.where((v) => v.createdAt.hour < 8).length;
 
     // Count weekend visits
-    final weekendVisits = visits.where((v) =>
-        v.createdAt.weekday == DateTime.saturday ||
-        v.createdAt.weekday == DateTime.sunday).length;
+    final weekendVisits = visits
+        .where((v) =>
+            v.createdAt.weekday == DateTime.saturday ||
+            v.createdAt.weekday == DateTime.sunday)
+        .length;
 
     // Favorites count
     final favIds = await _svc.getFavoriteClubIds();
@@ -88,13 +90,15 @@ class AchievementService {
   }
 
   /// Show a snackbar for newly unlocked achievements
-  static void showUnlockNotifications(BuildContext context, List<String> names) {
+  static void showUnlockNotifications(
+      BuildContext context, List<String> names) {
     for (final name in names) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.emoji_events_rounded, color: Color(0xFFFBBF24), size: 20),
+              const Icon(Icons.emoji_events_rounded,
+                  color: Color(0xFFFBBF24), size: 20),
               const SizedBox(width: 8),
               Expanded(child: Text('Достижение разблокировано: $name')),
             ],

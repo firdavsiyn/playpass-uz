@@ -255,8 +255,7 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen>
               child: Row(
                 children: [
                   IconButton(
-                    icon:
-                        const Icon(Icons.arrow_back_ios, color: Colors.white),
+                    icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
                     onPressed: () {
                       _stopCamera();
                       context.go('/home');
@@ -405,8 +404,7 @@ class _ResultOverlay extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isSuccess = state == ScanState.success;
     final color = isSuccess ? AppTheme.success : AppTheme.error;
-    final icon =
-        isSuccess ? Icons.check_circle_rounded : Icons.error_rounded;
+    final icon = isSuccess ? Icons.check_circle_rounded : Icons.error_rounded;
 
     return Container(
       color: Colors.black87,
@@ -432,8 +430,7 @@ class _ResultOverlay extends ConsumerWidget {
                 if (result!['hours_left'] != null)
                   Text(
                     '${ref.lang('scan.hours_left')}: ${result!['hours_left']} ${ref.lang('booking.hours_short')}',
-                    style: TextStyle(
-                        color: context.text2, fontSize: 16),
+                    style: TextStyle(color: context.text2, fontSize: 16),
                   ),
               ],
             ],

@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../services/supabase_service.dart';
 
-final playerStatsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+final playerStatsProvider =
+    FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final svc = SupabaseService();
   final userId = svc.currentUser!.id;
   final res = await svc.getPlayerProfiles(userId);
@@ -36,7 +37,8 @@ class PlayerStatsScreen extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.sports_esports_outlined, size: 64, color: context.text3),
+                  Icon(Icons.sports_esports_outlined,
+                      size: 64, color: context.text3),
                   const SizedBox(height: 12),
                   Text('Добавьте свой игровой профиль',
                       style: TextStyle(color: context.text2)),
@@ -55,7 +57,9 @@ class PlayerStatsScreen extends ConsumerWidget {
             onRefresh: () => ref.refresh(playerStatsProvider.future),
             child: ListView(
               padding: const EdgeInsets.all(16),
-              children: profiles.map((p) => _GameProfileCard(profile: p, ref: ref)).toList(),
+              children: profiles
+                  .map((p) => _GameProfileCard(profile: p, ref: ref))
+                  .toList(),
             ),
           );
         },
@@ -64,7 +68,16 @@ class PlayerStatsScreen extends ConsumerWidget {
   }
 
   void _showAddProfileDialog(BuildContext context, WidgetRef ref) {
-    final games = ['CS2', 'Dota 2', 'Valorant', 'PUBG', 'Fortnite', 'Apex Legends', 'League of Legends', 'FIFA'];
+    final games = [
+      'CS2',
+      'Dota 2',
+      'Valorant',
+      'PUBG',
+      'Fortnite',
+      'Apex Legends',
+      'League of Legends',
+      'FIFA'
+    ];
     String selectedGame = 'CS2';
     final nicknameCtrl = TextEditingController();
     final rankCtrl = TextEditingController();
@@ -73,50 +86,73 @@ class PlayerStatsScreen extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: context.cardDark,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setState) => Padding(
-          padding: EdgeInsets.fromLTRB(24, 24, 24, MediaQuery.of(ctx).viewInsets.bottom + 24),
+          padding: EdgeInsets.fromLTRB(
+              24, 24, 24, MediaQuery.of(ctx).viewInsets.bottom + 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Добавить игровой профиль',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: context.text1)),
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: context.text1)),
               const SizedBox(height: 20),
 
               // Game selector
-              Text('Игра', style: TextStyle(fontSize: 13, color: context.text2)),
+              Text('Игра',
+                  style: TextStyle(fontSize: 13, color: context.text2)),
               const SizedBox(height: 8),
               Wrap(
-                spacing: 8, runSpacing: 8,
-                children: games.map((g) => GestureDetector(
-                  onTap: () => setState(() => selectedGame = g),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: selectedGame == g ? AppTheme.primary : context.bg,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: selectedGame == g ? AppTheme.primary : context.border),
-                    ),
-                    child: Text(g, style: TextStyle(
-                      fontSize: 13, color: selectedGame == g ? Colors.white : context.text2,
-                      fontWeight: selectedGame == g ? FontWeight.w600 : FontWeight.normal)),
-                  ),
-                )).toList(),
+                spacing: 8,
+                runSpacing: 8,
+                children: games
+                    .map((g) => GestureDetector(
+                          onTap: () => setState(() => selectedGame = g),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: selectedGame == g
+                                  ? AppTheme.primary
+                                  : context.bg,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                  color: selectedGame == g
+                                      ? AppTheme.primary
+                                      : context.border),
+                            ),
+                            child: Text(g,
+                                style: TextStyle(
+                                    fontSize: 13,
+                                    color: selectedGame == g
+                                        ? Colors.white
+                                        : context.text2,
+                                    fontWeight: selectedGame == g
+                                        ? FontWeight.w600
+                                        : FontWeight.normal)),
+                          ),
+                        ))
+                    .toList(),
               ),
               const SizedBox(height: 16),
 
               TextField(
                 controller: nicknameCtrl,
                 style: TextStyle(color: context.text1),
-                decoration: const InputDecoration(labelText: 'Никнейм', hintText: 'Ваш ник в игре'),
+                decoration: const InputDecoration(
+                    labelText: 'Никнейм', hintText: 'Ваш ник в игре'),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: rankCtrl,
                 style: TextStyle(color: context.text1),
-                decoration: const InputDecoration(labelText: 'Ранг', hintText: 'Global Elite, Immortal...'),
+                decoration: const InputDecoration(
+                    labelText: 'Ранг', hintText: 'Global Elite, Immortal...'),
               ),
               const SizedBox(height: 20),
 
@@ -126,7 +162,9 @@ class PlayerStatsScreen extends ConsumerWidget {
                   await SupabaseService().savePlayerProfile(
                     game: selectedGame,
                     nickname: nicknameCtrl.text.trim(),
-                    rank: rankCtrl.text.trim().isEmpty ? null : rankCtrl.text.trim(),
+                    rank: rankCtrl.text.trim().isEmpty
+                        ? null
+                        : rankCtrl.text.trim(),
                   );
                   ref.invalidate(playerStatsProvider);
                   if (ctx.mounted) Navigator.pop(ctx);
@@ -158,14 +196,14 @@ class _GameProfileCard extends StatelessWidget {
   };
 
   static const _gameIcons = {
-    'CS2': '🎯',
-    'Dota 2': '⚔️',
-    'Valorant': '🔫',
-    'PUBG': '🪖',
-    'Fortnite': '🏗️',
-    'Apex Legends': '🎮',
-    'League of Legends': '🏰',
-    'FIFA': '⚽',
+    'CS2': '',
+    'Dota 2': '',
+    'Valorant': '',
+    'PUBG': '',
+    'Fortnite': '',
+    'Apex Legends': '',
+    'League of Legends': '',
+    'FIFA': '',
   };
 
   @override
@@ -188,33 +226,44 @@ class _GameProfileCard extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [color.withValues(alpha: 0.2), Colors.transparent],
-                begin: Alignment.topLeft, end: Alignment.bottomRight,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(16)),
             ),
             child: Row(
               children: [
-                Text(_gameIcons[game] ?? '🎮', style: const TextStyle(fontSize: 28)),
+                Text(_gameIcons[game] ?? '',
+                    style: const TextStyle(fontSize: 28)),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(game, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: color)),
-                      Text(profile['nickname'] as String? ?? '', style: TextStyle(
-                        fontSize: 14, color: context.text2)),
+                      Text(game,
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: color)),
+                      Text(profile['nickname'] as String? ?? '',
+                          style: TextStyle(fontSize: 14, color: context.text2)),
                     ],
                   ),
                 ),
                 if (profile['rank'] != null)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
                       color: color.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(profile['rank'] as String,
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: color)),
+                        style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: color)),
                   ),
               ],
             ),
@@ -225,9 +274,14 @@ class _GameProfileCard extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                _StatItem('Часов', '${profile['hours_played'] ?? 0}', Icons.timer),
-                _StatItem('K/D', profile['kd_ratio']?.toString() ?? '—', Icons.track_changes),
-                _StatItem('Winrate', profile['winrate'] != null ? '${profile['winrate']}%' : '—', Icons.emoji_events),
+                _StatItem(
+                    'Часов', '${profile['hours_played'] ?? 0}', Icons.timer),
+                _StatItem('K/D', profile['kd_ratio']?.toString() ?? '—',
+                    Icons.track_changes),
+                _StatItem(
+                    'Winrate',
+                    profile['winrate'] != null ? '${profile['winrate']}%' : '—',
+                    Icons.emoji_events),
               ],
             ),
           ),
@@ -237,10 +291,12 @@ class _GameProfileCard extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
             child: GestureDetector(
               onTap: () async {
-                await SupabaseService().deletePlayerProfile(profile['id'] as String);
+                await SupabaseService()
+                    .deletePlayerProfile(profile['id'] as String);
                 ref.invalidate(playerStatsProvider);
               },
-              child: const Text('Удалить профиль', style: TextStyle(fontSize: 12, color: AppTheme.error)),
+              child: const Text('Удалить профиль',
+                  style: TextStyle(fontSize: 12, color: AppTheme.error)),
             ),
           ),
         ],
@@ -262,7 +318,11 @@ class _StatItem extends StatelessWidget {
         children: [
           Icon(icon, size: 16, color: context.text3),
           const SizedBox(height: 4),
-          Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: context.text1)),
+          Text(value,
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: context.text1)),
           Text(label, style: TextStyle(fontSize: 11, color: context.text3)),
         ],
       ),

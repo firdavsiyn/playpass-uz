@@ -16,14 +16,16 @@ import '../../../core/widgets/app_avatar.dart';
 import '../../../core/widgets/neon_shimmer.dart';
 import '../../../models/subscription.dart';
 
-final profileProvider = FutureProvider.autoDispose<Map<String, dynamic>?>((ref) async {
+final profileProvider =
+    FutureProvider.autoDispose<Map<String, dynamic>?>((ref) async {
   final userId = Supabase.instance.client.auth.currentUser?.id;
   if (userId == null) return null;
   return SupabaseService().getUserProfile(userId);
 });
 
 // Re-use activeSubscriptionProvider from home_screen to avoid duplicate queries
-final subscriptionProvider = FutureProvider.autoDispose<Subscription?>((ref) async {
+final subscriptionProvider =
+    FutureProvider.autoDispose<Subscription?>((ref) async {
   return SupabaseService().getActiveSubscription();
 });
 
@@ -45,10 +47,12 @@ class ProfileScreen extends ConsumerWidget {
         child: Column(children: [
           const NeonSkeletonCard(height: 200, borderRadius: 20),
           const SizedBox(height: 16),
-          ...List.generate(6, (_) => const Padding(
-            padding: EdgeInsets.only(bottom: 8),
-            child: NeonSkeletonCard(height: 56, borderRadius: 14),
-          )),
+          ...List.generate(
+              6,
+              (_) => const Padding(
+                    padding: EdgeInsets.only(bottom: 8),
+                    child: NeonSkeletonCard(height: 56, borderRadius: 14),
+                  )),
         ]),
       );
     } else if (profileAsync.hasError && !profileAsync.hasValue) {
@@ -56,7 +60,9 @@ class ProfileScreen extends ConsumerWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         child: SizedBox(
           height: MediaQuery.of(context).size.height - 100,
-          child: Center(child: Text('${ref.lang('common.error')}: ${profileAsync.error}')),
+          child: Center(
+              child:
+                  Text('${ref.lang('common.error')}: ${profileAsync.error}')),
         ),
       );
     } else {
@@ -102,7 +108,13 @@ class _ProfileContent extends ConsumerWidget {
     final streakDays = profile?['streak_days'] as int? ?? 0;
 
     // XP progress to next level
-    final xpThresholds = {'novice': 100, 'regular': 500, 'pro': 1500, 'veteran': 5000, 'legend': 99999};
+    final xpThresholds = {
+      'novice': 100,
+      'regular': 500,
+      'pro': 1500,
+      'veteran': 5000,
+      'legend': 99999
+    };
     final currentThreshold = xpThresholds[level] ?? 100;
     final xpProgress = (xp / currentThreshold).clamp(0.0, 1.0);
     final xpPercent = (xpProgress * 100).round();
@@ -157,7 +169,8 @@ class _ProfileContent extends ConsumerWidget {
                               ),
                             ],
                           ),
-                          child: AppAvatar.large(imageUrl: avatarUrl, name: name),
+                          child:
+                              AppAvatar.large(imageUrl: avatarUrl, name: name),
                         ),
                         Positioned(
                           bottom: 0,
@@ -172,9 +185,11 @@ class _ProfileContent extends ConsumerWidget {
                                   colors: [AppTheme.primary, AppTheme.neonCyan],
                                 ),
                                 shape: BoxShape.circle,
-                                border: Border.all(color: context.card, width: 2),
+                                border:
+                                    Border.all(color: context.card, width: 2),
                               ),
-                              child: const Icon(Icons.camera_alt_rounded, size: 12, color: Colors.white),
+                              child: const Icon(Icons.camera_alt_rounded,
+                                  size: 12, color: Colors.white),
                             ),
                           ),
                         ),
@@ -186,19 +201,22 @@ class _ProfileContent extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(name, style: TextStyle(
-                            color: context.text1,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.3,
-                          )),
+                          Text(name,
+                              style: TextStyle(
+                                color: context.text1,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -0.3,
+                              )),
                           const SizedBox(height: 2),
                           Text(email,
-                              style: TextStyle(color: context.text3, fontSize: 12)),
+                              style: TextStyle(
+                                  color: context.text3, fontSize: 12)),
                           const SizedBox(height: 6),
                           // Level badge — compact with gradient bg, no border
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 3),
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
@@ -211,7 +229,8 @@ class _ProfileContent extends ConsumerWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(AppConstants.levelIcon(level), style: const TextStyle(fontSize: 14)),
+                                Text(AppConstants.levelIcon(level),
+                                    style: const TextStyle(fontSize: 14)),
                                 const SizedBox(width: 4),
                                 Text(
                                   AppConstants.localizedLevelLabel(level, ref),
@@ -239,15 +258,17 @@ class _ProfileContent extends ConsumerWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('$xp XP ($xpPercent%)', style: TextStyle(
-                          color: AppTheme.neonCyan,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                        )),
-                        Text('$currentThreshold XP', style: TextStyle(
-                          color: context.text3,
-                          fontSize: 11,
-                        )),
+                        Text('$xp XP ($xpPercent%)',
+                            style: TextStyle(
+                              color: AppTheme.neonCyan,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                            )),
+                        Text('$currentThreshold XP',
+                            style: TextStyle(
+                              color: context.text3,
+                              fontSize: 11,
+                            )),
                       ],
                     ),
                     const SizedBox(height: 6),
@@ -290,13 +311,19 @@ class _ProfileContent extends ConsumerWidget {
                 // Stats row — glass containers with gaps
                 Row(
                   children: [
-                    _StatItem(value: '$totalVisits', label: ref.lang('profile.visits_total'),
+                    _StatItem(
+                        value: '$totalVisits',
+                        label: ref.lang('profile.visits_total'),
                         color: AppTheme.neonCyan),
                     const SizedBox(width: 8),
-                    _StatItem(value: '${totalHours}h', label: ref.lang('profile.hours_label'),
+                    _StatItem(
+                        value: '${totalHours}h',
+                        label: ref.lang('profile.hours_label'),
                         color: AppTheme.neonPurple),
                     const SizedBox(width: 8),
-                    _StatItem(value: '$streakDays', label: ref.lang('profile.streak_label'),
+                    _StatItem(
+                        value: '$streakDays',
+                        label: ref.lang('profile.streak_label'),
                         color: AppTheme.warning),
                   ],
                 ),
@@ -314,7 +341,8 @@ class _ProfileContent extends ConsumerWidget {
             decoration: BoxDecoration(
               color: context.card,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppTheme.primary.withValues(alpha: 0.2)),
+              border:
+                  Border.all(color: AppTheme.primary.withValues(alpha: 0.2)),
               boxShadow: AppTheme.cardGlow(),
             ),
             child: Row(
@@ -322,10 +350,10 @@ class _ProfileContent extends ConsumerWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('${ref.lang('profile.sub_label')}: ${subscription!.localizedPlanName(ref)}',
+                    Text(
+                        '${ref.lang('profile.sub_label')}: ${subscription!.localizedPlanName(ref)}',
                         style: TextStyle(
-                            color: context.text1,
-                            fontWeight: FontWeight.w600)),
+                            color: context.text1, fontWeight: FontWeight.w600)),
                     const SizedBox(height: 4),
                     Text(
                       '${ref.lang('profile.until')} ${subscription!.endDate.day}.${subscription!.endDate.month.toString().padLeft(2, '0')}.${subscription!.endDate.year}',
@@ -437,7 +465,8 @@ class _ProfileContent extends ConsumerWidget {
           _MenuItem(
             icon: Icons.ac_unit_rounded,
             title: ref.lang('profile.freeze'),
-            subtitle: '${subscription!.freezeDaysLeft} ${ref.lang('profile.freeze_days')}',
+            subtitle:
+                '${subscription!.freezeDaysLeft} ${ref.lang('profile.freeze_days')}',
             onTap: () => context.push('/profile/freeze', extra: subscription),
           ),
         if (subscription != null && subscription!.isFrozen)
@@ -516,7 +545,8 @@ class _ProfileContent extends ConsumerWidget {
     }
   }
 
-  void _showChangeNameDialog(BuildContext context, WidgetRef ref, String currentName) {
+  void _showChangeNameDialog(
+      BuildContext context, WidgetRef ref, String currentName) {
     final controller = TextEditingController(text: currentName);
     // Cache translated strings before async gap
     final changeName = ref.lang('profile.change_name');
@@ -537,8 +567,7 @@ class _ProfileContent extends ConsumerWidget {
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(color: AppTheme.primary.withValues(alpha: 0.15)),
         ),
-        title: Text(changeName,
-            style: TextStyle(color: context.text1)),
+        title: Text(changeName, style: TextStyle(color: context.text1)),
         content: TextField(
           controller: controller,
           autofocus: true,
@@ -607,7 +636,8 @@ class _ProfileContent extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 40, height: 4,
+              width: 40,
+              height: 4,
               margin: const EdgeInsets.only(bottom: 20),
               decoration: BoxDecoration(
                 color: context.text3.withValues(alpha: 0.3),
@@ -748,12 +778,12 @@ class _SupportOption extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                           fontSize: 15)),
                   Text(subtitle,
-                      style: TextStyle(
-                          color: context.text3, fontSize: 13)),
+                      style: TextStyle(color: context.text3, fontSize: 13)),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right_rounded, color: color.withValues(alpha: 0.5)),
+            Icon(Icons.chevron_right_rounded,
+                color: color.withValues(alpha: 0.5)),
           ],
         ),
       ),
@@ -786,7 +816,8 @@ class _LanguageToggle extends ConsumerWidget {
             Icon(Icons.language_rounded, color: context.text1, size: 22),
             const SizedBox(width: 14),
             Expanded(
-              child: Text(ref.lang('profile.language'), style: TextStyle(color: context.text1, fontSize: 15)),
+              child: Text(ref.lang('profile.language'),
+                  style: TextStyle(color: context.text1, fontSize: 15)),
             ),
             Container(
               padding: const EdgeInsets.all(2),
@@ -842,7 +873,9 @@ class _ThemeToggle extends ConsumerWidget {
           const SizedBox(width: 14),
           Expanded(
             child: Text(label,
-                style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color, fontSize: 15)),
+                style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                    fontSize: 15)),
           ),
           Container(
             padding: const EdgeInsets.all(2),
@@ -853,8 +886,10 @@ class _ThemeToggle extends ConsumerWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _ThemeChip(label: '\u2600\uFE0F', value: 'light', current: themeMode),
-                _ThemeChip(label: '\uD83C\uDF19', value: 'dark', current: themeMode),
+                _ThemeChip(
+                    label: '\u2600\uFE0F', value: 'light', current: themeMode),
+                _ThemeChip(
+                    label: '\uD83C\uDF19', value: 'dark', current: themeMode),
                 _ThemeChip(label: '\u23F0', value: 'auto', current: themeMode),
               ],
             ),
@@ -869,7 +904,8 @@ class _ThemeChip extends ConsumerWidget {
   final String label;
   final String value;
   final String current;
-  const _ThemeChip({required this.label, required this.value, required this.current});
+  const _ThemeChip(
+      {required this.label, required this.value, required this.current});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -880,7 +916,10 @@ class _ThemeChip extends ConsumerWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          gradient: selected ? const LinearGradient(colors: [AppTheme.primary, Color(0xFF6366F1)]) : null,
+          gradient: selected
+              ? const LinearGradient(
+                  colors: [AppTheme.primary, Color(0xFF6366F1)])
+              : null,
           color: selected ? null : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
@@ -897,7 +936,8 @@ class _StatItem extends StatelessWidget {
   final String value;
   final String label;
   final Color color;
-  const _StatItem({required this.value, required this.label, required this.color});
+  const _StatItem(
+      {required this.value, required this.label, required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -910,17 +950,19 @@ class _StatItem extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Text(value, style: TextStyle(
-              color: color,
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-            )),
+            Text(value,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                )),
             const SizedBox(height: 2),
-            Text(label, style: TextStyle(
-              color: context.text3,
-              fontSize: 10,
-              fontWeight: FontWeight.w500,
-            )),
+            Text(label,
+                style: TextStyle(
+                  color: context.text3,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                )),
           ],
         ),
       ),
@@ -940,7 +982,8 @@ class _LangChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         gradient: selected
-            ? const LinearGradient(colors: [AppTheme.primary, Color(0xFF6366F1)])
+            ? const LinearGradient(
+                colors: [AppTheme.primary, Color(0xFF6366F1)])
             : null,
         color: selected ? null : Colors.transparent,
         borderRadius: BorderRadius.circular(10),
@@ -987,7 +1030,8 @@ class _MenuItem extends StatelessWidget {
         decoration: BoxDecoration(
           color: context.card,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: (color ?? AppTheme.primary).withValues(alpha: 0.1)),
+          border: Border.all(
+              color: (color ?? AppTheme.primary).withValues(alpha: 0.1)),
         ),
         child: Row(
           children: [
@@ -1005,17 +1049,17 @@ class _MenuItem extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: TextStyle(color: c, fontSize: 15, fontWeight: FontWeight.w500)),
+                  Text(title,
+                      style: TextStyle(
+                          color: c, fontSize: 15, fontWeight: FontWeight.w500)),
                   if (subtitle != null)
                     Text(subtitle!,
-                        style: TextStyle(
-                            color: context.text3, fontSize: 12)),
+                        style: TextStyle(color: context.text3, fontSize: 12)),
                 ],
               ),
             ),
             if (color == null)
-              Icon(Icons.chevron_right_rounded,
-                  color: context.text3, size: 20),
+              Icon(Icons.chevron_right_rounded, color: context.text3, size: 20),
           ],
         ),
       ),

@@ -26,7 +26,8 @@ class HappyHoursScreen extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.local_offer_outlined, size: 64, color: context.text3),
+                  Icon(Icons.local_offer_outlined,
+                      size: 64, color: context.text3),
                   const SizedBox(height: 12),
                   Text('Сейчас нет активных акций',
                       style: TextStyle(color: context.text2, fontSize: 16)),
@@ -74,10 +75,12 @@ class _HappyHourCard extends StatelessWidget {
     final now = TimeOfDay.now();
     final startParts = startTime.split(':');
     final endParts = endTime.split(':');
-    final startMinutes = int.parse(startParts[0]) * 60 + int.parse(startParts[1]);
+    final startMinutes =
+        int.parse(startParts[0]) * 60 + int.parse(startParts[1]);
     final endMinutes = int.parse(endParts[0]) * 60 + int.parse(endParts[1]);
     final nowMinutes = now.hour * 60 + now.minute;
-    final isNowActive = nowMinutes >= startMinutes && nowMinutes <= endMinutes &&
+    final isNowActive = nowMinutes >= startMinutes &&
+        nowMinutes <= endMinutes &&
         (dayOfWeek == null || dayOfWeek == DateTime.now().weekday);
 
     return Container(
@@ -91,7 +94,11 @@ class _HappyHourCard extends StatelessWidget {
               : context.border,
         ),
         boxShadow: isNowActive
-            ? [BoxShadow(color: AppTheme.success.withValues(alpha: 0.15), blurRadius: 12)]
+            ? [
+                BoxShadow(
+                    color: AppTheme.success.withValues(alpha: 0.15),
+                    blurRadius: 12)
+              ]
             : [],
       ),
       child: Column(
@@ -106,7 +113,8 @@ class _HappyHourCard extends StatelessWidget {
                   AppTheme.primary.withValues(alpha: 0.1),
                 ],
               ),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(16)),
             ),
             child: Row(
               children: [
@@ -156,7 +164,8 @@ class _HappyHourCard extends StatelessWidget {
                           if (isNowActive) ...[
                             const SizedBox(width: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 3),
                               decoration: BoxDecoration(
                                 color: AppTheme.success.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(8),
@@ -165,7 +174,8 @@ class _HappyHourCard extends StatelessWidget {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Container(
-                                    width: 6, height: 6,
+                                    width: 6,
+                                    height: 6,
                                     decoration: const BoxDecoration(
                                       color: AppTheme.success,
                                       shape: BoxShape.circle,
@@ -214,7 +224,8 @@ class _HappyHourCard extends StatelessWidget {
                     if (clubId != null) context.push('/clubs/$clubId');
                   },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: AppTheme.primary.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),

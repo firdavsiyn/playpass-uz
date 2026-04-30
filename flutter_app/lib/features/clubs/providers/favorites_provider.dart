@@ -35,7 +35,6 @@ class FavoritesNotifier extends StateNotifier<Set<String>> {
   }
 }
 
-final favoritesProvider =
-    StateNotifierProvider<FavoritesNotifier, Set<String>>(
+final favoritesProvider = StateNotifierProvider<FavoritesNotifier, Set<String>>(
   (_) => FavoritesNotifier(),
 );
