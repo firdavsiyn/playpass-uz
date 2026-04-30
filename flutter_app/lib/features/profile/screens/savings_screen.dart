@@ -8,6 +8,8 @@ import '../../../services/supabase_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_locale.dart';
 import '../../../core/utils/savings_calculator.dart';
+import '../../../core/widgets/branded_loader.dart';
+import '../../../core/widgets/empty_state.dart';
 
 /// All visits of the user (no month filter) for savings computation
 final _allVisitsProvider = FutureProvider.autoDispose<List<Visit>>((ref) async {
@@ -41,10 +43,23 @@ class SavingsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: Text(ref.lang('savings.title'))),
       body: visitsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const BrandedLoader(),
         error: (e, _) =>
             Center(child: Text('${ref.lang('common.error_prefix')}: $e')),
         data: (visits) {
+          // Empty state — user has no visits yet
+          if (visits.isEmpty) {
+            return EmptyState(
+              icon: Icons.savings_rounded,
+              title: 'Экономия пока нулевая',
+              subtitle: 'Сходи в клуб по подписке — здесь появится сумма, которую ты сэкономил',
+              accentColor: AppTheme.success,
+              actionLabel: 'Найти клуб',
+              actionIcon: Icons.search_rounded,
+              onAction: () => Navigator.of(context).pop(),
+            );
+          }
+
           final sub = subAsync.valueOrNull;
           final plan = sub?.plan ?? 'standard';
           final rate = SavingsCalculator.rateForPlan(plan);

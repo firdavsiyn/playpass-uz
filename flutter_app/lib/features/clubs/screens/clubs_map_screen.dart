@@ -9,6 +9,7 @@ import '../../../core/l10n/app_locale.dart';
 import '../widgets/yandex_map_widget.dart';
 import '../widgets/club_map_bottom_sheet.dart';
 import '../services/yandex_map_service.dart';
+import '../../../core/widgets/branded_loader.dart';
 
 // Own providers so data is independent from clubs_list filters
 final _mapClubsProvider = FutureProvider<List<Club>>((ref) {
@@ -51,8 +52,7 @@ class _ClubsMapScreenState extends ConsumerState<ClubsMapScreen> {
       body: clubsAsync.when(
         loading: () => Container(
           color: context.bg,
-          child: const Center(
-              child: CircularProgressIndicator(color: AppTheme.primary)),
+          child: const BrandedLoader(label: 'Загружаем клубы...'),
         ),
         error: (e, _) => Scaffold(
           appBar: AppBar(

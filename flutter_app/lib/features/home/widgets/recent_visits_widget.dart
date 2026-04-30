@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../models/visit.dart';
@@ -13,22 +15,7 @@ class RecentVisitsWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return visitsAsync.when(
       data: (visits) {
-        if (visits.isEmpty) {
-          return Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: context.card,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Center(
-              child: Text(
-                'Визитов ещё нет. Сканируйте QR в клубе!',
-                style: TextStyle(color: context.text3),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          );
-        }
+        if (visits.isEmpty) return const _NoVisitsCard();
         return Column(
           children: visits
               .map((v) => _VisitTile(key: ValueKey(v.id), visit: v))
@@ -39,6 +26,76 @@ class RecentVisitsWidget extends StatelessWidget {
         children: List.generate(3, (_) => const _VisitTileSkeleton()),
       ),
       error: (_, __) => const SizedBox.shrink(),
+    );
+  }
+}
+
+/// Friendly empty state with QR-scan CTA — only shown when user has 0 visits
+class _NoVisitsCard extends StatelessWidget {
+  const _NoVisitsCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        context.go('/scanner');
+      },
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              AppTheme.primary.withValues(alpha: 0.10),
+              AppTheme.neonCyan.withValues(alpha: 0.05),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(14),
+          border:
+              Border.all(color: AppTheme.primary.withValues(alpha: 0.20)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppTheme.primary, AppTheme.neonCyan],
+                ),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primary.withValues(alpha: 0.35),
+                    blurRadius: 12,
+                  ),
+                ],
+              ),
+              child: const Icon(Icons.qr_code_scanner_rounded,
+                  color: Colors.white, size: 22),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Визитов ещё нет',
+                      style: TextStyle(
+                        color: context.text1,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                      )),
+                  const SizedBox(height: 2),
+                  Text('Отсканируй QR в клубе и получи 1-й визит',
+                      style:
+                          TextStyle(color: context.text3, fontSize: 12)),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded,
+                color: AppTheme.primary.withValues(alpha: 0.7)),
+          ],
+        ),
+      ),
     );
   }
 }

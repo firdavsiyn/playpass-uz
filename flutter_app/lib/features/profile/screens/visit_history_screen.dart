@@ -6,6 +6,7 @@ import '../../../models/visit.dart';
 import '../../../services/supabase_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_locale.dart';
+import '../../../core/widgets/empty_state.dart';
 
 final selectedMonthProvider = StateProvider<DateTime>((ref) {
   final now = DateTime.now();
@@ -217,13 +218,13 @@ class _VisitHistoryScreenState extends ConsumerState<VisitHistoryScreen> {
               _MonthlySummary(visits: historyState.visits),
               const SizedBox(height: 12),
               if (historyState.visits.isEmpty)
-                Container(
-                  padding: const EdgeInsets.all(32),
-                  child: Center(
-                    child: Text(
-                      ref.lang('visits.empty_month'),
-                      style: TextStyle(color: context.text3),
-                    ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: EmptyState(
+                    icon: Icons.event_busy_rounded,
+                    title: ref.lang('visits.empty_month'),
+                    subtitle: 'Отсканируй QR в любом клубе из 276 — визит появится здесь',
+                    accentColor: AppTheme.neonCyan,
                   ),
                 )
               else
