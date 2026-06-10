@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../models/subscription.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_locale.dart';
+import '../../../core/utils/plural.dart';
 
 class SubscriptionWidget extends ConsumerWidget {
   final Subscription? subscription;
@@ -202,7 +203,7 @@ class _ActiveSubscription extends ConsumerWidget {
                 Text(
                   subscription.isUnlimited
                       ? ref.lang('home.unlimited_short')
-                      : '${subscription.hoursText} ${ref.lang('sub_widget.hours_short')}',
+                      : pluralVisits(subscription.hoursBalance ?? 0),
                   style: TextStyle(
                     color: context.text1,
                     fontSize: subscription.isUnlimited ? 18 : 15,

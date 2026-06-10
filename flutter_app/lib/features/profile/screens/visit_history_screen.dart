@@ -287,7 +287,7 @@ class _AllTimeStats extends ConsumerWidget {
             Expanded(
               child: _StatCard(
                 icon: Icons.timer_rounded,
-                value: '$totalHours ч',
+                value: '$totalHours',
                 label: ref.lang('visits.total_hours'),
                 color: AppTheme.neonPurple,
               ),
@@ -560,7 +560,7 @@ class _VisitRow extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
-              '${visit.hoursSpent} ч',
+              'Визит',
               style: const TextStyle(
                 color: AppTheme.success,
                 fontWeight: FontWeight.w600,

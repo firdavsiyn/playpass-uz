@@ -63,7 +63,7 @@ const Map<String, String> stringsRu = {
   'profile.gifts': 'Подарочные сертификаты',
   'profile.gifts_sub': 'Подарить подписку другу',
   'profile.referral': 'Реферальная программа',
-  'profile.referral_sub': '+3 часа за друга',
+  'profile.referral_sub': '+3 визита за друга',
   'profile.freeze': 'Заморозить подписку',
   'profile.frozen': 'Подписка заморожена',
   'profile.frozen_sub': 'Нажмите для разморозки',
@@ -81,7 +81,7 @@ const Map<String, String> stringsRu = {
   'sub.my': 'Мой абонемент',
   'sub.buy': 'Купить абонемент',
   'sub.daypass_title': 'Day Pass',
-  'sub.daypass_subtitle': 'Попробуй на 1 день · 4 часа',
+  'sub.daypass_subtitle': 'Попробуй на 1 день · 4 визита',
   'sub.annual_toggle_monthly': 'Месячно',
   'sub.annual_toggle_annual': 'На год -30%',
   'sub.annual_savings': 'Экономия {n} сум за год',
@@ -108,7 +108,7 @@ const Map<String, String> stringsRu = {
   'promo.invalid': 'Промокод недействителен или истёк',
   'promo.already_used': 'Вы уже использовали этот промокод',
   'promo.activated': 'Промокод активирован!',
-  'promo.hours': 'часов',
+  'promo.hours': 'визитов',
   'promo.days': 'дней',
   'promo.discount': 'скидка',
 
@@ -381,12 +381,12 @@ const Map<String, String> stringsRu = {
   'plans.select': 'Оформить',
   'plans.popular': 'Популярный',
   'plans.visit_day': '1 визит/день',
-  'plans.hours_month': 'ч/мес',
+  'plans.hours_month': 'виз/мес',
   'plans.per_month': 'в месяц',
   'plans.per_year': 'в год',
   'plans.per_month_short': '/ мес',
   'plans.unlimited_desc': 'Безлимит (1 визит в день)',
-  'plans.hours_monthly': 'часов в месяц',
+  'plans.hours_monthly': 'визитов в месяц',
   'plans.zone_basic': 'Базовая зона',
   'plans.zone_pro': 'Про зона',
   'plans.zone_vip': 'VIP зона',
@@ -409,7 +409,7 @@ const Map<String, String> stringsRu = {
   'pay.send_error': 'Ошибка отправки. Попробуйте снова.',
   'pay.plan_label': 'Тариф: ',
   'pay.unlimited_desc': 'Безлимит · 1 визит/день / 30 дней',
-  'pay.hours_desc': '{n} часов / 30 дней',
+  'pay.hours_desc': '{n} визитов / 30 дней',
   'pay.how_to_pay': 'Как оплатить',
   'pay.via_payme': 'Через Payme',
   'pay.transfer_to_phone': 'Переведите {amount} UZS на номер:',
@@ -444,14 +444,14 @@ const Map<String, String> stringsRu = {
 
   // ── Referral screen ──────────────────────
   'ref.title': 'Реферальная программа',
-  'ref.invite_desc': 'Пригласи друга — вы оба получите +3 часа к подписке',
+  'ref.invite_desc': 'Пригласи друга — вы оба получите +3 визита к подписке',
   'ref.share_desc':
-      'Поделитесь кодом с другом. После его первой подписки вы оба получите бонусные часы.',
+      'Поделитесь кодом с другом. После его первой подписки вы оба получите бонусные визиты.',
   'ref.friends_invited': 'Приглашено друзей',
-  'ref.hours_earned': 'Заработано часов',
+  'ref.hours_earned': 'Заработано визитов',
   'ref.recent_invites': 'Последние приглашения',
   'ref.friend_default': 'Друг',
-  'ref.hours_suffix': 'ч',
+  'ref.hours_suffix': 'виз',
   'ref.code_not_assigned': 'Реферальный код пока не назначен',
   'ref.your_code': 'Ваш реферальный код',
   'ref.code_copied': 'Код скопирован',
@@ -491,7 +491,7 @@ const Map<String, String> stringsRu = {
   'visits.empty_month': 'В этом месяце визитов нет',
   'visits.all_loaded': 'Все визиты загружены',
   'visits.total_visits': 'Всего визитов',
-  'visits.total_hours': 'Всего часов',
+  'visits.total_hours': 'Всего визитов',
   'visits.fav_club': 'Любимый клуб',
   'visits.visits_word': 'визитов',
 
@@ -579,9 +579,9 @@ const Map<String, String> stringsRu = {
   'savings.title': 'Моя экономия',
   'savings.all_time': 'Всего сэкономлено',
   'savings.by_months': 'По месяцам',
-  'savings.hint': '{hours} ч × {rate} сум/час',
+  'savings.hint': '{hours} визитов × {rate} сум/визит',
   'savings.calc_info':
-      'Расчёт основан на тарифе {plan}: {rate} сум/час — средняя цена в клубах для вашего тарифа',
+      'Расчёт основан на тарифе {plan}: {rate} сум/визит — средняя цена сессии в клубах',
   'savings.empty_title': 'Экономия пока нулевая',
   'savings.empty_sub':
       'Сходи в клуб по подписке — здесь появится сумма, которую ты сэкономил',
@@ -622,7 +622,8 @@ const Map<String, String> stringsRu = {
 
   // ── Subscription model ─────────────────────────
   'sub.unlimited_label': 'Безлимит · 1 визит/день',
-  'sub.of_hours': 'из {n} часов',
+  'sub.of_hours': 'из {n} визитов',
+  'sub.of_visits': 'из {n} визитов',
 
   // ── Time slot labels ───────────────────────────
   'slot.day': 'День (08–20)',

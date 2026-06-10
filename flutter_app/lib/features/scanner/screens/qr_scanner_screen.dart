@@ -11,6 +11,7 @@ import '../../../services/supabase_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_locale.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/utils/plural.dart';
 
 enum ScanState { scanning, processing, success, error }
 
@@ -177,8 +178,9 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen>
       setState(() {
         _state = ScanState.success;
         _result = result;
+        final visitsLeft = result['visits_remaining'] ?? result['hours_left'];
         _message = result['message'] as String? ??
-            '${ref.lang('scan.welcome')} ${ref.lang('scan.hours_left')}: ${result['hours_left'] ?? "?"} ${ref.lang('booking.hours_short')}';
+            '${ref.lang('scan.welcome')} ${ref.lang('scan.hours_left')}: ${visitsLeft != null ? pluralVisits((visitsLeft as num).toInt()) : "?"}';
       });
 
       // Camera already released above. Just navigate after the result animation.
@@ -444,7 +446,9 @@ class _ResultOverlayState extends ConsumerState<_ResultOverlay>
     final color = isSuccess ? AppTheme.success : AppTheme.error;
     final icon = isSuccess ? Icons.check_circle_rounded : Icons.error_rounded;
 
-    final hoursLeft = (widget.result?['hours_left'] as num?)?.toInt();
+    final hoursLeft = ((widget.result?['visits_remaining'] ??
+            widget.result?['hours_left']) as num?)
+        ?.toInt();
     final clubName = (widget.result?['club_name'] as String?) ??
         (widget.result?['clubs']?['name'] as String?);
 
@@ -561,7 +565,7 @@ class _ResultOverlayState extends ConsumerState<_ResultOverlay>
                                   color: AppTheme.success, size: 22),
                               const SizedBox(width: 10),
                               Text(
-                                '$value ${ref.lang('booking.hours_short')}',
+                                pluralVisits(value),
                                 style: const TextStyle(
                                   color: AppTheme.success,
                                   fontSize: 22,

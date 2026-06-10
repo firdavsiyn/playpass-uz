@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -7,17 +6,19 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_locale.dart';
 
-/// Plan billing period: monthly or annual (-30% discount).
-final _annualToggleProvider = StateProvider<bool>((ref) => false);
-
-/// Экран выбора тарифа v2.1 — 4 плана + переключатель Месяц/Год -30%
+/// Экран выбора тарифа — покупаемые планы (Day-Pass / Day / Anytime),
+/// помесячно. Годовая оплата отложена (BM v1.2).
 class PlansScreen extends ConsumerWidget {
   const PlansScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final plans = AppConstants.plans.values.toList();
-    final isAnnual = ref.watch(_annualToggleProvider);
+    // Only purchasable tariffs (daily/day/anytime). Legacy codes stay in the
+    // map for rendering existing subs but are not offered for sale.
+    final plans = AppConstants.purchasablePlanCodes
+        .map((c) => AppConstants.plans[c]!)
+        .toList();
+    // Annual billing is deferred (BM v1.2) — monthly only, no toggle.
 
     return Scaffold(
       appBar: AppBar(
@@ -52,31 +53,13 @@ class PlansScreen extends ConsumerWidget {
               ),
             ),
             // Monthly / Annual toggle
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 20),
-                child: _BillingToggle(isAnnual: isAnnual),
-              ),
-            ),
+            // Annual billing deferred — toggle hidden.
+            const SliverToBoxAdapter(child: SizedBox(height: 8)),
             SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
                   final plan = plans[index];
-                  final isPopular = plan.id == 'standard';
-
-                  // For annual mode, only show standard and vip (no basic/pro yet)
-                  if (isAnnual && plan.id != 'standard' && plan.id != 'vip') {
-                    return const SizedBox.shrink();
-                  }
-
-                  // For annual mode: replace plan id with _annual variant on tap
-                  final planCode = isAnnual ? '${plan.id}_annual' : plan.id;
-                  // Annual price = monthly × 12 × 0.7
-                  final displayPrice = isAnnual
-                      ? (plan.priceUzs * 12 * 0.7).round()
-                      : plan.priceUzs;
-                  final monthlyEquivalent =
-                      isAnnual ? (displayPrice / 12).round() : null;
+                  final isPopular = plan.id == 'day';
 
                   return Padding(
                     padding: EdgeInsets.only(
@@ -85,10 +68,11 @@ class PlansScreen extends ConsumerWidget {
                     child: _PlanCard(
                       plan: plan,
                       isPopular: isPopular,
-                      isAnnual: isAnnual,
-                      displayPrice: displayPrice,
-                      monthlyEquivalent: monthlyEquivalent,
-                      onSelect: () => context.push('/payment', extra: planCode),
+                      isAnnual: false,
+                      displayPrice: plan.priceUzs,
+                      monthlyEquivalent: null,
+                      onSelect: () =>
+                          context.push('/payment', extra: plan.id),
                     ),
                   );
                 },
@@ -103,109 +87,6 @@ class PlansScreen extends ConsumerWidget {
 }
 
 /// Toggle between Monthly and Annual (-30%) pricing
-class _BillingToggle extends ConsumerWidget {
-  final bool isAnnual;
-  const _BillingToggle({required this.isAnnual});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: context.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: context.border),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _toggleOption(
-              context: context,
-              label: ref.lang('sub.annual_toggle_monthly'),
-              active: !isAnnual,
-              onTap: () {
-                HapticFeedback.lightImpact();
-                ref.read(_annualToggleProvider.notifier).state = false;
-              },
-            ),
-          ),
-          Expanded(
-            child: _toggleOption(
-              context: context,
-              label: ref.lang('sub.annual_toggle_annual'),
-              active: isAnnual,
-              showBadge: true,
-              onTap: () {
-                HapticFeedback.lightImpact();
-                ref.read(_annualToggleProvider.notifier).state = true;
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _toggleOption({
-    required BuildContext context,
-    required String label,
-    required bool active,
-    required VoidCallback onTap,
-    bool showBadge = false,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          gradient: active
-              ? const LinearGradient(
-                  colors: [AppTheme.primary, AppTheme.neonCyan])
-              : null,
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: active
-              ? [
-                  BoxShadow(
-                      color: AppTheme.primary.withValues(alpha: 0.3),
-                      blurRadius: 12)
-                ]
-              : null,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                color: active ? Colors.white : context.text2,
-                fontSize: 13,
-                fontWeight: active ? FontWeight.w800 : FontWeight.w600,
-              ),
-            ),
-            if (showBadge && !active) ...[
-              const SizedBox(width: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                decoration: BoxDecoration(
-                  color: AppTheme.success.withValues(alpha: 0.18),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: const Text('-30%',
-                    style: TextStyle(
-                      color: AppTheme.success,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                    )),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _PlanCard extends ConsumerWidget {
   final PlanConfig plan;
   final bool isPopular;

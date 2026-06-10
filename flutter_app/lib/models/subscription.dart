@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/constants/app_constants.dart';
 import '../core/l10n/app_locale.dart';
+import '../core/utils/plural.dart';
 
 class Subscription {
   final String id;
@@ -51,6 +52,9 @@ class Subscription {
   bool get canFreeze => isActive && freezeDaysLeft > 0;
 
   String get planName => switch (plan) {
+        'daily' => 'Day Pass',
+        'day' => 'Day',
+        'anytime' => 'Anytime',
         'basic' => 'Базовый',
         'standard' => 'Стандарт',
         'pro' => 'Про',
@@ -58,24 +62,31 @@ class Subscription {
         _ => plan,
       };
 
+  /// Balance shown on the card: number of visits left, or ∞ for unlimited.
   String get hoursText {
     if (isUnlimited) return '∞';
     return '${hoursBalance ?? 0}';
   }
 
+  /// Alias with the correct unit name (preferred going forward).
+  String get visitsDisplay => hoursText;
+
   String get hoursSubtext {
     if (isUnlimited) return 'Безлимит · 1 визит/день';
-    return 'из ${hoursTotal ?? 0} часов';
+    return 'из ${pluralVisits(hoursTotal ?? 0)}';
   }
 
   /// Localized version of hoursSubtext using ref.lang()
   String localizedHoursSubtext(WidgetRef ref) {
     if (isUnlimited) return ref.lang('sub.unlimited_label');
-    return ref.lang('sub.of_hours').replaceAll('{n}', '${hoursTotal ?? 0}');
+    return ref.lang('sub.of_visits').replaceAll('{n}', '${hoursTotal ?? 0}');
   }
 
   /// Localized plan name using ref.lang()
   String localizedPlanName(WidgetRef ref) => switch (plan) {
+        'daily' => 'Day Pass',
+        'day' => 'Day',
+        'anytime' => 'Anytime',
         'basic' => ref.lang('plan.basic'),
         'standard' => ref.lang('plan.standard'),
         'pro' => ref.lang('plan.pro'),

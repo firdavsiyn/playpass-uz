@@ -115,7 +115,7 @@ class FriendsScreen extends ConsumerWidget {
           icon: Icons.group_add_rounded,
           title: 'Список друзей пуст',
           subtitle:
-              'Добавь друзей по их реферальному коду — оба получите по 10 часов бонусом',
+              'Добавь друзей по их реферальному коду — оба получите по 10 визитов бонусом',
           actionLabel: 'Добавить друга',
           actionIcon: Icons.person_add_alt_1_rounded,
           onAction: () => _showAddFriendDialog(context, ref),

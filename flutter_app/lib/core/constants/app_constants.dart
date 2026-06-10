@@ -76,19 +76,48 @@ class AppConstants {
         _ => type,
       };
 
+  /// Коды тарифов, доступных к ПОКУПКЕ (показываются в продаже).
+  /// Остальные коды в [plans] — legacy, нужны только чтобы корректно
+  /// отрисовать уже существующие подписки (например plan='vip').
+  static const List<String> purchasablePlanCodes = ['daily', 'day', 'anytime'];
+
   // ── Тарифы ─────────────────────────────────────────────────
+  // ВАЖНО: поле hours теперь трактуется как ВИЗИТЫ/мес (BM v1.2).
   static const Map<String, PlanConfig> plans = {
-    // Day-Pass — пробный вход: 4 часа, действует 1 день
+    // Day-Pass — пробный вход: 4 визита, действует 1 день
     'daily': PlanConfig(
       id: 'daily',
       name: 'Day Pass',
       hours: 4,
       isUnlimited: false,
       priceUzs: 25000,
-      description: '4 часа на 1 день, Базовая зона',
+      description: '4 визита на 1 день, Базовая зона',
       allowedZones: ['basic'],
       allowedSlots: ['day', 'evening', 'night'],
     ),
+    // Day — основной off-peak тариф: 12 визитов, только день 08–18
+    'day': PlanConfig(
+      id: 'day',
+      name: 'Day',
+      hours: 12,
+      isUnlimited: false,
+      priceUzs: 149000,
+      description: '12 визитов/мес, день 08–18, Базовая + Про зона',
+      allowedZones: ['basic', 'pro'],
+      allowedSlots: ['day'],
+    ),
+    // Anytime — круглосуточный: 12 визитов в любое время
+    'anytime': PlanConfig(
+      id: 'anytime',
+      name: 'Anytime',
+      hours: 12,
+      isUnlimited: false,
+      priceUzs: 249000,
+      description: '12 визитов/мес, круглосуточно, Базовая + Про зона',
+      allowedZones: ['basic', 'pro'],
+      allowedSlots: ['day', 'evening', 'night'],
+    ),
+    // ── LEGACY (не продаются, оставлены для отрисовки старых подписок) ──
     'basic': PlanConfig(
       id: 'basic',
       name: 'Базовый',

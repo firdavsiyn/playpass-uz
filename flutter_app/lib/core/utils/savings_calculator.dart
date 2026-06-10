@@ -1,27 +1,35 @@
-/// Calculates subscription savings based on plan-specific hourly rates.
+/// Calculates subscription savings in the VISITS-based model.
 ///
-/// Rates are approximations of average club prices per zone:
-/// - VIP zones: ~45,000 UZS/hr
-/// - Pro (premium PC): ~35,000 UZS/hr
-/// - Standard (regular PC): ~25,000 UZS/hr
-/// - Basic (budget): ~18,000 UZS/hr
+/// A "visit" is one club session. The saving is the cash a member would
+/// have paid per session at the door, minus what the subscription cost.
+/// Per-visit cash values approximate an average paid session by zone:
+/// - VIP zones: ~45,000 UZS/visit
+/// - Pro (premium PC): ~35,000 UZS/visit
+/// - Standard / Day / Anytime: ~30,000 UZS/visit
+/// - Basic / Day-Pass: ~25,000 UZS/visit
 class SavingsCalculator {
-  static const Map<String, int> hourlyRatesByPlan = {
+  /// Cash value of one club visit (session) by plan.
+  static const Map<String, int> sessionValueByPlan = {
     'vip': 45000,
     'pro': 35000,
-    'standard': 25000,
-    'basic': 18000,
+    'anytime': 30000,
+    'day': 30000,
+    'standard': 30000,
+    'daily': 25000,
+    'basic': 25000,
   };
 
-  /// Default rate when plan is unknown
-  static const int defaultHourlyRate = 25000;
+  /// Average cash value of a single visit when the plan is unknown.
+  static const int avgCashSession = 30000;
 
-  /// Returns hourly rate for a given plan name
+  /// Returns the per-visit cash value for a given plan.
+  /// (Method name kept for backward compatibility with callers.)
   static int rateForPlan(String plan) =>
-      hourlyRatesByPlan[plan] ?? defaultHourlyRate;
+      sessionValueByPlan[plan] ?? avgCashSession;
 
-  /// Calculates savings: (hours × rate) − subscriptionCost
+  /// Calculates savings: (visits × per-visit cash value) − subscriptionCost.
   /// Returns 0 if savings are negative.
+  /// NOTE: [hoursUsed] now means VISITS used (the balance counts visits).
   static int calculate({
     required int hoursUsed,
     required String plan,

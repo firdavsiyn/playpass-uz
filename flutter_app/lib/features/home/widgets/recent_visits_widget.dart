@@ -171,7 +171,7 @@ class _VisitTile extends ConsumerWidget {
                   Border.all(color: AppTheme.success.withValues(alpha: 0.2)),
             ),
             child: Text(
-              '${visit.hoursSpent}ч',
+              'Визит',
               style: const TextStyle(
                 color: AppTheme.success,
                 fontSize: 12,

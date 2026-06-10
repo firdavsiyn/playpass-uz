@@ -102,6 +102,17 @@ serve(async (req) => {
       }
     }
 
+    // ── 6b. Off-peak gate for the Day tariff ──────────────────
+    // Plan 'day' only works 08:00–18:00 (local Tashkent = UTC+5).
+    if (subscription.plan === "day") {
+      const tashkentHour = (new Date().getUTCHours() + 5) % 24;
+      if (tashkentHour < 8 || tashkentHour >= 18) {
+        return json({
+          error: "Дневной тариф действует с 08:00 до 18:00. Для вечера нужен тариф Anytime.",
+        }, 403);
+      }
+    }
+
     // ── 7. Tier access ────────────────────────────────────────
     // VIP-tier clubs require VIP-tier plan.
     if (club.tier === "vip" && !planIsInfinite) {
@@ -210,7 +221,7 @@ serve(async (req) => {
     }
 
     // ── 12. Return success response ───────────────────────────
-    const remainingHours = subscription.plan === "unlimited"
+    const remainingVisits = planIsInfinite
       ? null
       : subscription.hours_balance - 1;
 
@@ -219,8 +230,9 @@ serve(async (req) => {
       message: `Добро пожаловать в ${club.name}!`,
       visit_id: visit.id,
       club_name: club.name,
-      hours_spent: 1,
-      hours_remaining: remainingHours,
+      visits_remaining: remainingVisits,
+      // legacy alias for older app builds still reading hours_*
+      hours_remaining: remainingVisits,
       subscription_plan: subscription.plan,
     });
 

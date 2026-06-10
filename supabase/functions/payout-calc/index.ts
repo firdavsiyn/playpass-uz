@@ -12,7 +12,17 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const RAHMAT_API_URL = Deno.env.get("RAHMAT_API_URL")!;
 const RAHMAT_API_KEY = Deno.env.get("RAHMAT_API_KEY")!;
-const RATE_PER_VISIT_UZS = 8000;
+// Time-aware per-visit payout (BM v1.2): off-peak day visits are "found
+// money" for clubs and paid less; peak (evening/night) pays a premium.
+const RATE_OFFPEAK_UZS = 10000; // 08:00–18:00 Tashkent
+const RATE_PEAK_UZS = 18000; // otherwise
+const TASHKENT_UTC_OFFSET = 5;
+
+function rateForVisit(createdAtIso: string): number {
+  const utcHour = new Date(createdAtIso).getUTCHours();
+  const localHour = (utcHour + TASHKENT_UTC_OFFSET) % 24;
+  return localHour >= 8 && localHour < 18 ? RATE_OFFPEAK_UZS : RATE_PEAK_UZS;
+}
 
 serve(async (req) => {
   if (req.method !== "POST") {
@@ -37,9 +47,11 @@ serve(async (req) => {
 
   try {
     // ── 1. Aggregate visits per club for the period ───────────
+    // We need each visit's timestamp to apply the time-aware rate, so we
+    // pull club_id + created_at (not a server-side count).
     const { data: visitStats, error: statsError } = await supabase
       .from("visits")
-      .select("club_id, count:id")
+      .select("club_id, created_at")
       .gte("created_at", periodStart.toISOString())
       .lte("created_at", periodEnd.toISOString() + "T23:59:59Z");
 
@@ -48,11 +60,14 @@ serve(async (req) => {
       return new Response("DB Error", { status: 500 });
     }
 
-    // Group by club_id
+    // Per club: visit count + accumulated time-aware payout amount.
     const clubVisits: Record<string, number> = {};
+    const clubAmount: Record<string, number> = {};
     for (const row of visitStats ?? []) {
       const clubId = row.club_id as string;
       clubVisits[clubId] = (clubVisits[clubId] ?? 0) + 1;
+      clubAmount[clubId] =
+        (clubAmount[clubId] ?? 0) + rateForVisit(row.created_at as string);
     }
 
     // ── 2. Get active clubs with payout details ───────────────
@@ -68,7 +83,7 @@ serve(async (req) => {
       const visitCount = clubVisits[club.id] ?? 0;
       if (visitCount === 0) continue;
 
-      const amountUzs = visitCount * RATE_PER_VISIT_UZS;
+      const amountUzs = clubAmount[club.id] ?? 0;
 
       payoutRows.push({
         club_id: club.id,

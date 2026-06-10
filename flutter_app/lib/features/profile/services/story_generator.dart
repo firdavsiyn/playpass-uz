@@ -289,7 +289,7 @@ class StoryGenerator {
         XFile.fromData(bytes, name: 'playpass-share.png', mimeType: 'image/png')
       ],
       text:
-          'Я в PlayPass! Используй мой код $referralCode и получи 10 бонусных часов $referralUrl',
+          'Я в PlayPass! Используй мой код $referralCode и получи 10 бонусных визитов $referralUrl',
     );
   }
 

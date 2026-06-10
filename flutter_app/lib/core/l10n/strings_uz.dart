@@ -63,7 +63,7 @@ const Map<String, String> stringsUz = {
   'profile.gifts': 'Sovg\'a sertifikatlari',
   'profile.gifts_sub': 'Do\'stga obuna sovg\'a qilish',
   'profile.referral': 'Referal dasturi',
-  'profile.referral_sub': 'Do\'st uchun +3 soat',
+  'profile.referral_sub': 'Do\'st uchun +3 tashrif',
   'profile.freeze': 'Obunani muzlatish',
   'profile.frozen': 'Obuna muzlatilgan',
   'profile.frozen_sub': 'Eritish uchun bosing',
@@ -81,7 +81,7 @@ const Map<String, String> stringsUz = {
   'sub.my': 'Mening obunalarim',
   'sub.buy': 'Obuna sotib olish',
   'sub.daypass_title': 'Day Pass',
-  'sub.daypass_subtitle': '1 kunga sinab ko\'r · 4 soat',
+  'sub.daypass_subtitle': '1 kunga sinab ko\'r · 4 tashrif',
   'sub.annual_toggle_monthly': 'Oyiga',
   'sub.annual_toggle_annual': 'Yiliga -30%',
   'sub.annual_savings': 'Yilga {n} so\'m tejash',
@@ -108,7 +108,7 @@ const Map<String, String> stringsUz = {
   'promo.invalid': 'Promokod yaroqsiz yoki muddati tugagan',
   'promo.already_used': 'Siz bu promokodni allaqachon ishlatgansiz',
   'promo.activated': 'Promokod faollashtirildi!',
-  'promo.hours': 'soat',
+  'promo.hours': 'tashrif',
   'promo.days': 'kun',
   'promo.discount': 'chegirma',
 
@@ -382,12 +382,12 @@ const Map<String, String> stringsUz = {
   'plans.select': 'Buyurtma berish',
   'plans.popular': 'Ommabop',
   'plans.visit_day': '1 tashrif/kun',
-  'plans.hours_month': 'soat/oy',
+  'plans.hours_month': 'tashrif/oy',
   'plans.per_month': 'oyiga',
   'plans.per_year': 'yiliga',
   'plans.per_month_short': '/ oy',
   'plans.unlimited_desc': 'Cheksiz (kuniga 1 tashrif)',
-  'plans.hours_monthly': 'soat oyiga',
+  'plans.hours_monthly': 'tashrif oyiga',
   'plans.zone_basic': 'Oddiy zona',
   'plans.zone_pro': 'Pro zona',
   'plans.zone_vip': 'VIP zona',
@@ -410,7 +410,7 @@ const Map<String, String> stringsUz = {
   'pay.send_error': 'Yuborishda xatolik. Qayta urinib ko\'ring.',
   'pay.plan_label': 'Tarif: ',
   'pay.unlimited_desc': 'Cheksiz · kuniga 1 tashrif / 30 kun',
-  'pay.hours_desc': '{n} soat / 30 kun',
+  'pay.hours_desc': '{n} tashrif / 30 kun',
   'pay.how_to_pay': 'Qanday to\'lash mumkin',
   'pay.via_payme': 'Payme orqali',
   'pay.transfer_to_phone': '{amount} UZS ni ushbu raqamga o\'tkazing:',
@@ -445,14 +445,14 @@ const Map<String, String> stringsUz = {
 
   // ── Referral screen ──────────────────────
   'ref.title': 'Referal dasturi',
-  'ref.invite_desc': 'Do\'stingizni taklif qiling — ikkalangiz +3 soat olasiz',
+  'ref.invite_desc': 'Do\'stingizni taklif qiling — ikkalangiz +3 tashrif olasiz',
   'ref.share_desc':
-      'Do\'stingiz bilan kodni ulashing. Uning birinchi obunasidan keyin ikkalangiz bonus soatlar olasiz.',
+      'Do\'stingiz bilan kodni ulashing. Uning birinchi obunasidan keyin ikkalangiz bonus tashriflar olasiz.',
   'ref.friends_invited': 'Taklif qilingan do\'stlar',
-  'ref.hours_earned': 'Ishlangan soatlar',
+  'ref.hours_earned': 'Ishlangan tashriflar',
   'ref.recent_invites': 'So\'nggi takliflar',
   'ref.friend_default': 'Do\'st',
-  'ref.hours_suffix': 'soat',
+  'ref.hours_suffix': 'tashrif',
   'ref.code_not_assigned': 'Referal kod hali tayinlanmagan',
   'ref.your_code': 'Sizning referal kodingiz',
   'ref.code_copied': 'Kod nusxalandi',
@@ -492,7 +492,7 @@ const Map<String, String> stringsUz = {
   'visits.empty_month': 'Bu oyda tashriflar yo\'q',
   'visits.all_loaded': 'Barcha tashriflar yuklandi',
   'visits.total_visits': 'Jami tashriflar',
-  'visits.total_hours': 'Jami soat',
+  'visits.total_hours': 'Jami tashriflar',
   'visits.fav_club': 'Sevimli klub',
   'visits.visits_word': 'ta tashrif',
 
@@ -580,9 +580,9 @@ const Map<String, String> stringsUz = {
   'savings.title': 'Mening tejashim',
   'savings.all_time': 'Jami tejangan',
   'savings.by_months': 'Oylar bo\'yicha',
-  'savings.hint': '{hours} soat × {rate} so\'m/soat',
+  'savings.hint': '{hours} tashrif × {rate} so\'m/tashrif',
   'savings.calc_info':
-      'Hisoblash {plan} tarifi asosida: {rate} so\'m/soat — klublarda sizning tarifingiz uchun o\'rtacha narx',
+      'Hisoblash {plan} tarifi asosida: {rate} so\'m/tashrif — klublarda o\'rtacha sessiya narxi',
   'savings.empty_title': 'Tejamkorlik hozircha nol',
   'savings.empty_sub':
       'Obuna bo\'yicha klubga boring — bu yerda tejagan summangiz paydo bo\'ladi',
@@ -623,7 +623,8 @@ const Map<String, String> stringsUz = {
 
   // ── Subscription model ─────────────────────────
   'sub.unlimited_label': 'Cheksiz · kuniga 1 tashrif',
-  'sub.of_hours': '{n} soatdan',
+  'sub.of_hours': '{n} tashrifdan',
+  'sub.of_visits': '{n} tashrifdan',
 
   // ── Time slot labels ───────────────────────────
   'slot.day': 'Kunduz (08–20)',
