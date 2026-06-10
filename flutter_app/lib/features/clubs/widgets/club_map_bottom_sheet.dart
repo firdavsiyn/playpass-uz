@@ -101,13 +101,12 @@ class ClubMapBottomSheet extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFFBBF24)
-                                  .withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(6),
+                              color: AppTheme.tierVip.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Text('VIP',
                                 style: TextStyle(
-                                    color: Color(0xFFFBBF24),
+                                    color: AppTheme.tierVip,
                                     fontSize: 10,
                                     fontWeight: FontWeight.w700)),
                           ),
@@ -145,7 +144,7 @@ class ClubMapBottomSheet extends StatelessWidget {
                     Row(
                       children: [
                         const Icon(Icons.star_rounded,
-                            size: 14, color: Color(0xFFFBBF24)),
+                            size: 14, color: AppTheme.tierVip),
                         const SizedBox(width: 2),
                         Text(club.rating.toStringAsFixed(1),
                             style:
@@ -209,7 +208,7 @@ class ClubMapBottomSheet extends StatelessWidget {
                         foregroundColor: Colors.white,
                         padding: EdgeInsets.zero,
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
+                            borderRadius: BorderRadius.circular(14)),
                       ),
                       child: const Icon(Icons.phone_rounded, size: 22),
                     ),
@@ -226,7 +225,7 @@ class ClubMapBottomSheet extends StatelessWidget {
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(14)),
                   ),
                 ),
               ),
@@ -245,7 +244,7 @@ class ClubMapBottomSheet extends StatelessWidget {
                     side: const BorderSide(color: AppTheme.primary),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(14)),
                   ),
                 ),
               ),

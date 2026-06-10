@@ -88,7 +88,7 @@ class _GiftPurchaseScreenState extends ConsumerState<GiftPurchaseScreen> {
                       ? color.withValues(alpha: 0.15)
                       : context.surface,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: selected ? color : context.surface),
+                  border: Border.all(color: selected ? color : context.border),
                   boxShadow: selected
                       ? [
                           BoxShadow(
@@ -142,7 +142,7 @@ class _GiftPurchaseScreenState extends ConsumerState<GiftPurchaseScreen> {
 
         Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
             boxShadow: [
               BoxShadow(
                   color: AppTheme.primary.withValues(alpha: 0.3),
@@ -212,7 +212,7 @@ class _GiftPurchaseScreenState extends ConsumerState<GiftPurchaseScreen> {
                   Text(
                     _giftCode!,
                     style: const TextStyle(
-                        color: AppTheme.primaryLight,
+                        color: AppTheme.primary,
                         fontSize: 32,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 4),
@@ -265,12 +265,7 @@ class _GiftPurchaseScreenState extends ConsumerState<GiftPurchaseScreen> {
     );
   }
 
-  Color _planColor(String id) => switch (id) {
-        'vip' => const Color(0xFFFBBF24),
-        'pro' => const Color(0xFF8B5CF6),
-        'standard' => AppTheme.primary,
-        _ => const Color(0xFF6B7280),
-      };
+  Color _planColor(String id) => AppTheme.planColor(id);
 
   String _formatPrice(int p) {
     final s = p.toString();

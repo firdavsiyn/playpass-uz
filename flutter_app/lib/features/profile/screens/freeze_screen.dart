@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../models/subscription.dart';
 import '../../../services/supabase_service.dart';
@@ -189,7 +188,7 @@ class _FreezeScreenState extends ConsumerState<FreezeScreen> {
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   decoration: BoxDecoration(
                     color: context.card,
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                         color: AppTheme.primary.withValues(alpha: 0.06)),
                   ),
@@ -273,7 +272,8 @@ class _FreezeScreenState extends ConsumerState<FreezeScreen> {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: context.card,
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: context.border),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -333,6 +333,7 @@ class _FreezeScreenState extends ConsumerState<FreezeScreen> {
       decoration: BoxDecoration(
         color: context.card,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: context.border),
       ),
       child: Column(
         children: [

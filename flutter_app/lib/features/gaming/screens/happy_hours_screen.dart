@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/branded_loader.dart';
 import '../../../services/supabase_service.dart';
 
 final happyHoursProvider = FutureProvider<List<Map<String, dynamic>>>((ref) {
@@ -18,7 +19,7 @@ class HappyHoursScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Скидки и акции')),
       body: data.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const BrandedLoader(),
         error: (e, _) => Center(child: Text('$e')),
         data: (items) {
           if (items.isEmpty) {

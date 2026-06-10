@@ -16,6 +16,17 @@ const Map<String, String> stringsRu = {
   'home.frozen': 'Подписка заморожена',
   'home.active_session': 'Активная сессия',
   'home.end_session': 'Завершить',
+  'home.state_active': 'Активна',
+  'home.state_expired': 'Истекла',
+  'home.unlimited_short': '∞',
+  'home.no_visits_title': 'Визитов ещё нет',
+  'home.no_visits_sub': 'Отсканируй QR в клубе и получи 1-й визит',
+  'home.friends_in_club': 'в клубе',
+  'home.friends_join': 'Присоединяйся',
+  'home.friends_none_playing': 'Никто сейчас не играет',
+  'home.friend_one': 'друг',
+  'home.friend_few': 'друга',
+  'home.friend_many': 'друзей',
 
   // ── Clubs ─────────────────────────────────
   'clubs.search': 'Поиск клуба...',
@@ -126,6 +137,12 @@ const Map<String, String> stringsRu = {
   'gift.home': 'На главную',
   'gift.redeem_title': 'Активировать сертификат',
   'gift.enter_code': 'Введите код подарочного сертификата',
+  'gift.redeem_subtitle':
+      'Код можно получить от друга или приобрести в разделе "Подарить подписку"',
+  'gift.enter_prompt': 'Введите код сертификата',
+  'gift.not_found': 'Сертификат не найден',
+  'gift.invalid_used': 'Сертификат уже использован или недействителен',
+  'gift.plan_label': 'Тариф: ',
   'gift.check': 'Проверить код',
   'gift.activate': 'Активировать',
   'gift.activated': 'Сертификат активирован!',
@@ -366,6 +383,8 @@ const Map<String, String> stringsRu = {
   'plans.visit_day': '1 визит/день',
   'plans.hours_month': 'ч/мес',
   'plans.per_month': 'в месяц',
+  'plans.per_year': 'в год',
+  'plans.per_month_short': '/ мес',
   'plans.unlimited_desc': 'Безлимит (1 визит в день)',
   'plans.hours_monthly': 'часов в месяц',
   'plans.zone_basic': 'Базовая зона',
@@ -464,6 +483,8 @@ const Map<String, String> stringsRu = {
   'notif.title': 'Уведомления',
   'notif.mark_all_read': 'Прочитать все',
   'notif.empty': 'Нет уведомлений',
+  'notif.empty_sub':
+      'Здесь появятся уведомления о подписке, акциях и достижениях',
 
   // ── Visit history screen ─────────────────
   'visits.title': 'История визитов',
@@ -477,6 +498,7 @@ const Map<String, String> stringsRu = {
   // ── Favorites screen extras ──────────────
   'fav.empty_title': 'Нет избранных клубов',
   'fav.empty_sub': 'Нажмите на сердечко в карточке клуба',
+  'fav.empty_action': 'Найти клубы',
 
   // ── Subscription widget (home) ─────────────────
   'sub_widget.no_active': 'Нет активной подписки',
@@ -560,6 +582,10 @@ const Map<String, String> stringsRu = {
   'savings.hint': '{hours} ч × {rate} сум/час',
   'savings.calc_info':
       'Расчёт основан на тарифе {plan}: {rate} сум/час — средняя цена в клубах для вашего тарифа',
+  'savings.empty_title': 'Экономия пока нулевая',
+  'savings.empty_sub':
+      'Сходи в клуб по подписке — здесь появится сумма, которую ты сэкономил',
+  'savings.empty_action': 'Найти клуб',
   'month.jan': 'Янв',
   'month.feb': 'Фев',
   'month.mar': 'Мар',

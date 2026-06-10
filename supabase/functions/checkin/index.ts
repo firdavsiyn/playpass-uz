@@ -88,18 +88,26 @@ serve(async (req) => {
       return json({ error: "Нет активной подписки. Купите тариф в приложении." }, 403);
     }
 
-    // ── 6. Check hours balance (for non-unlimited) ────────────
-    if (subscription.plan !== "unlimited") {
+    // ── 6. Check hours balance ────────────────────────────────
+    // Both old ('unlimited') and new ('vip') unlimited plan codes pass,
+    // plus the new hours_balance = -1 sentinel.
+    const planIsInfinite = subscription.plan === "unlimited"
+      || subscription.plan === "vip"
+      || subscription.plan === "vip_annual"
+      || subscription.hours_balance === -1;
+
+    if (!planIsInfinite) {
       if (!subscription.hours_balance || subscription.hours_balance <= 0) {
         return json({ error: "Закончились часы. Купите новую подписку или обновите тариф." }, 403);
       }
     }
 
-    // ── 7. Check tier access ──────────────────────────────────
-    if (club.tier === "vip" && subscription.plan !== "unlimited") {
-      return json({ error: "VIP-зона доступна только на тарифе Безлимит." }, 403);
+    // ── 7. Tier access ────────────────────────────────────────
+    // VIP-tier clubs require VIP-tier plan.
+    if (club.tier === "vip" && !planIsInfinite) {
+      return json({ error: "VIP-зона доступна только на тарифе VIP." }, 403);
     }
-    if (club.tier === "standard" && subscription.plan === "start") {
+    if (club.tier === "standard" && (subscription.plan === "start" || subscription.plan === "basic")) {
       return json({ error: "Этот клуб доступен с тарифа Стандарт и выше." }, 403);
     }
 
@@ -141,7 +149,41 @@ serve(async (req) => {
       }
     }
 
-    // ── 11. Create visit & update subscription (transaction) ──
+    // ── 11. Create visit & decrement hours_balance atomically ─────
+    //
+    // SECURITY: previous code did `select hours_balance → insert visit
+    // → update hours_balance - 1` which is racy: N concurrent checkin
+    // requests could insert N visits but only decrement balance by 1.
+    // We now do the decrement in a single conditional UPDATE that only
+    // succeeds while balance > 0, then insert the visit only if the
+    // decrement claimed the hour.
+    //
+    // 'unlimited' here is legacy; new infinite plans use
+    // hours_balance = -1 sentinel which we treat as "skip decrement".
+    const isUnlimited = subscription.plan === "unlimited"
+      || subscription.plan === "vip"
+      || subscription.hours_balance === -1;
+
+    if (!isUnlimited) {
+      const { data: claimed, error: claimErr } = await supabase
+        .from("subscriptions")
+        .update({ hours_balance: subscription.hours_balance - 1 })
+        .eq("id", subscription.id)
+        .eq("hours_balance", subscription.hours_balance) // CAS — only if value still matches
+        .gt("hours_balance", 0)
+        .select("id");
+
+      if (claimErr) {
+        console.error("Hours claim failed:", claimErr);
+        return json({ error: "Не удалось списать час. Попробуйте снова." }, 500);
+      }
+
+      if (!claimed || claimed.length === 0) {
+        // Another concurrent checkin won the race or balance dropped to 0.
+        return json({ error: "Час уже списан другим устройством или баланс пуст." }, 409);
+      }
+    }
+
     const { data: visit, error: visitError } = await supabase
       .from("visits")
       .insert({
@@ -157,15 +199,14 @@ serve(async (req) => {
 
     if (visitError) {
       console.error("Visit insert error:", visitError);
+      // Rollback the hour we just claimed (best-effort)
+      if (!isUnlimited) {
+        await supabase
+          .from("subscriptions")
+          .update({ hours_balance: subscription.hours_balance })
+          .eq("id", subscription.id);
+      }
       return json({ error: "Не удалось зафиксировать визит. Попробуйте снова." }, 500);
-    }
-
-    // Deduct 1 hour from balance (for non-unlimited plans)
-    if (subscription.plan !== "unlimited") {
-      await supabase
-        .from("subscriptions")
-        .update({ hours_balance: subscription.hours_balance - 1 })
-        .eq("id", subscription.id);
     }
 
     // ── 12. Return success response ───────────────────────────

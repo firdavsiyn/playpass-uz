@@ -65,7 +65,14 @@ Deno.serve(async (req) => {
     }
 
     if (action === 1) {
-      // Complete: mark paid, activate subscription
+      // Complete: mark paid + activate subscription.
+      //
+      // IDEMPOTENCY GUARD: two concurrent webhooks (Click retry, attacker
+      // replay) must NOT cause double activation. We rely on a conditional
+      // UPDATE with .eq('status', 'pending') as an atomic compare-and-swap:
+      // only the first caller flips pending → completed. Everyone else sees
+      // zero rows affected and returns idempotent success without
+      // re-running activation.
       if (payment.status === 'completed') {
         return clickOk({
           click_trans_id: clickTransId,
@@ -74,17 +81,33 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Update payment
-      await admin
+      const { data: claimed, error: claimErr } = await admin
         .from('payments')
         .update({
           status: 'completed',
           provider_transaction_id: clickTransId,
           completed_at: new Date().toISOString(),
         })
-        .eq('id', orderId);
+        .eq('id', orderId)
+        .eq('status', 'pending') // ← optimistic lock; race-safe
+        .select('id');
 
-      // Activate subscription: call a DB function that handles activation atomically
+      if (claimErr) {
+        console.error('Payment claim failed:', claimErr);
+        return clickError(-9, 'Internal error');
+      }
+
+      if (!claimed || claimed.length === 0) {
+        // Someone else (or the previous attempt) already completed it.
+        // Don't re-activate — return success per Click protocol.
+        return clickOk({
+          click_trans_id: clickTransId,
+          merchant_trans_id: orderId,
+          merchant_confirm_id: payment.id,
+        });
+      }
+
+      // We are the unique winner — activate now.
       const { error: activateErr } = await admin.rpc('activate_subscription_from_payment', {
         payment_id: orderId,
       });

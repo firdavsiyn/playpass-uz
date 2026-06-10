@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_locale.dart';
+import '../../../core/widgets/branded_loader.dart';
 import '../../../services/supabase_service.dart';
 
 final loyaltyProvider = FutureProvider<Map<String, dynamic>>((ref) {
@@ -19,7 +20,7 @@ class LoyaltyScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: Text(t['loyalty_title'] ?? 'Программа лояльности')),
       body: data.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const BrandedLoader(),
         error: (e, _) => Center(child: Text('$e')),
         data: (info) {
           final xp = info['xp'] as int? ?? 0;
@@ -83,26 +84,26 @@ class _LevelCard extends StatelessWidget {
     'bronze': (
       icon: '',
       name: 'Bronze',
-      color: Color(0xFFCD7F32),
-      gradient: [Color(0xFF8B4513), Color(0xFFCD7F32)]
+      color: AppTheme.medalBronze,
+      gradient: [Color(0xFF8B4513), AppTheme.medalBronze]
     ),
     'silver': (
       icon: '',
       name: 'Silver',
-      color: Color(0xFFC0C0C0),
-      gradient: [Color(0xFF808080), Color(0xFFC0C0C0)]
+      color: AppTheme.medalSilver,
+      gradient: [Color(0xFF808080), AppTheme.medalSilver]
     ),
     'gold': (
       icon: '',
       name: 'Gold',
-      color: Color(0xFFFFD700),
-      gradient: [Color(0xFFB8860B), Color(0xFFFFD700)]
+      color: AppTheme.medalGold,
+      gradient: [Color(0xFFB8860B), AppTheme.medalGold]
     ),
     'diamond': (
       icon: '',
       name: 'Diamond',
-      color: Color(0xFF00CED1),
-      gradient: [Color(0xFF0066CC), Color(0xFF00CED1)]
+      color: AppTheme.tierDiamond,
+      gradient: [Color(0xFF0066CC), AppTheme.tierDiamond]
     ),
   };
 
@@ -345,7 +346,8 @@ class _PerksSection extends StatelessWidget {
               children: [
                 Text(p.icon,
                     style: TextStyle(
-                        fontSize: 24, color: unlocked ? null : Colors.grey)),
+                        fontSize: 24,
+                        color: unlocked ? null : context.text3)),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(

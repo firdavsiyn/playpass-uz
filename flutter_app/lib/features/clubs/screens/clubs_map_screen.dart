@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../models/club.dart';
 import '../../../services/supabase_service.dart';
@@ -10,6 +9,7 @@ import '../widgets/yandex_map_widget.dart';
 import '../widgets/club_map_bottom_sheet.dart';
 import '../services/yandex_map_service.dart';
 import '../../../core/widgets/branded_loader.dart';
+import '../../../core/widgets/error_retry.dart';
 
 // Own providers so data is independent from clubs_list filters
 final _mapClubsProvider = FutureProvider<List<Club>>((ref) {
@@ -59,7 +59,10 @@ class _ClubsMapScreenState extends ConsumerState<ClubsMapScreen> {
             backgroundColor: context.bg,
             title: Text(ref.lang('clubs_map_title')),
           ),
-          body: Center(child: Text('$e')),
+          body: ErrorRetry(
+            error: e,
+            onRetry: () => ref.invalidate(_mapClubsProvider),
+          ),
         ),
         data: (clubs) {
           if (clubs.isEmpty) {

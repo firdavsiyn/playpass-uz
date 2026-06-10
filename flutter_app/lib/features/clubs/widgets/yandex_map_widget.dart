@@ -33,7 +33,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
 
   @override
   void dispose() {
-    YandexMapService.stopPolling();
+    YandexMapService.unregisterMarkerClick();
     super.dispose();
   }
 
@@ -55,7 +55,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       await YandexMapService.initMap(containerId);
       if (!mounted) return;
       if (widget.onMarkerTapped != null) {
-        YandexMapService.startMarkerClickPolling(widget.onMarkerTapped!);
+        YandexMapService.registerMarkerClick(widget.onMarkerTapped!);
       }
       YandexMapService.setMarkers(widget.clubs, occupancy: widget.occupancy);
       if (mounted) setState(() => _mapReady = true);
@@ -99,8 +99,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         HtmlElementView(
           viewType: 'yandex-map-view',
           onPlatformViewCreated: (int viewId) {
-            // Delay to let the DOM element render
-            Future.delayed(const Duration(milliseconds: 500), () {
+            // Tiny defer so the <div> is in the DOM before initMap reads it.
+            // 50ms is enough on every browser; was 500ms as a paranoia margin.
+            Future.delayed(const Duration(milliseconds: 50), () {
               if (mounted) _initMap(viewId);
             });
           },

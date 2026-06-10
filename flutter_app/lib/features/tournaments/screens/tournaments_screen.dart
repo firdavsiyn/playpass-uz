@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_locale.dart';
+import '../../../core/widgets/branded_loader.dart';
 import '../../../models/tournament.dart';
 import '../../../services/supabase_service.dart';
 
@@ -21,7 +22,7 @@ class TournamentsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: Text(t['tournaments_title'] ?? 'Турниры')),
       body: data.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const BrandedLoader(),
         error: (e, _) => Center(child: Text('$e')),
         data: (tournaments) {
           if (tournaments.isEmpty) {

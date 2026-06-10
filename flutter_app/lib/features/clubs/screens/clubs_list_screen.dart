@@ -8,6 +8,7 @@ import '../../../models/club.dart';
 import '../../../services/supabase_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/neon_shimmer.dart';
+import '../../../core/widgets/error_retry.dart';
 import '../../../core/l10n/app_locale.dart';
 import '../providers/favorites_provider.dart';
 import '../widgets/yandex_map_widget.dart';
@@ -224,7 +225,7 @@ class ClubsListScreen extends ConsumerWidget {
                   _QuickChip(
                     icon: Icons.star_rounded,
                     label: 'VIP',
-                    color: const Color(0xFFFBBF24),
+                    color: AppTheme.tierVip,
                     selected: ref.watch(selectedTierProvider) == 'vip',
                     onTap: () {
                       final t = ref.read(selectedTierProvider);
@@ -248,7 +249,7 @@ class ClubsListScreen extends ConsumerWidget {
                   _QuickChip(
                     icon: Icons.videogame_asset_rounded,
                     label: 'PlayStation',
-                    color: const Color(0xFF3B82F6),
+                    color: AppTheme.info,
                     selected: ref.watch(filterPsProvider),
                     onTap: () {
                       ref.read(filterPsProvider.notifier).state =
@@ -378,9 +379,9 @@ class ClubsListScreen extends ConsumerWidget {
                     itemBuilder: (_, __) =>
                         const NeonSkeletonCard(height: 200, borderRadius: 16),
                   ),
-                  error: (e, _) => Center(
-                    child: Text('${ref.lang('common.error')}: $e',
-                        style: const TextStyle(color: AppTheme.error)),
+                  error: (e, _) => ErrorRetry(
+                    error: e,
+                    onRetry: () => ref.invalidate(_allClubsProvider),
                   ),
                 ),
               ),
@@ -668,7 +669,7 @@ class _FullscreenMapScreenState extends ConsumerState<FullscreenMapScreen> {
                           ),
                           _MapFilterChip(
                             label: 'VIP',
-                            color: const Color(0xFFFBBF24),
+                            color: AppTheme.tierVip,
                             selected: _tierFilter == 'vip',
                             onTap: () => setState(() {
                               _tierFilter = _tierFilter == 'vip' ? null : 'vip';
@@ -694,7 +695,7 @@ class _FullscreenMapScreenState extends ConsumerState<FullscreenMapScreen> {
                           ),
                           _MapFilterChip(
                             label: 'PS',
-                            color: const Color(0xFF3B82F6),
+                            color: AppTheme.info,
                             selected: _psFilter,
                             onTap: () => setState(() => _psFilter = !_psFilter),
                           ),
@@ -709,9 +710,10 @@ class _FullscreenMapScreenState extends ConsumerState<FullscreenMapScreen> {
         },
         loading: () => const Center(
             child: CircularProgressIndicator(color: AppTheme.primary)),
-        error: (e, _) => Center(
-            child: Text('${ref.lang('common.error')}: $e',
-                style: const TextStyle(color: AppTheme.error))),
+        error: (e, _) => ErrorRetry(
+          error: e,
+          onRetry: () => ref.invalidate(_allClubsProvider),
+        ),
       ),
     );
   }
@@ -731,7 +733,7 @@ class _MapOverlayButton extends StatelessWidget {
         height: 42,
         decoration: BoxDecoration(
           color: context.card.withValues(alpha: 0.92),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
                 color: Colors.black.withValues(alpha: 0.15),
@@ -819,8 +821,7 @@ class _FavoritesView extends ConsumerWidget {
                 style: TextStyle(color: context.text3, fontSize: 15)),
             const SizedBox(height: 6),
             Text(ref.lang('clubs.no_favorites_hint'),
-                style: TextStyle(
-                    color: context.text3.withValues(alpha: 0.6), fontSize: 12)),
+                style: TextStyle(color: context.text3, fontSize: 12)),
           ],
         ),
       );
@@ -1004,14 +1005,14 @@ class _NearbyClubChip extends ConsumerWidget {
                           style: TextStyle(
                             color:
                                 club.isOpen ? AppTheme.success : AppTheme.error,
-                            fontSize: 10,
+                            fontSize: 11,
                             fontWeight: FontWeight.w600,
                           )),
                       if (club.distanceMeters != null) ...[
                         const Spacer(),
                         Text(club.distanceText,
                             style:
-                                TextStyle(color: context.text3, fontSize: 9)),
+                                TextStyle(color: context.text3, fontSize: 11)),
                       ],
                     ],
                   ),
@@ -1088,7 +1089,7 @@ class _ClubListCard extends ConsumerWidget {
                           ),
                         ),
                         if (club.tier == 'vip')
-                          _Badge(label: 'VIP', color: const Color(0xFFFBBF24)),
+                          _Badge(label: 'VIP', color: AppTheme.tierVip),
                         const SizedBox(width: 4),
                         GestureDetector(
                           onTap: () => ref
@@ -1143,14 +1144,14 @@ class _ClubListCard extends ConsumerWidget {
                         child: Wrap(
                           spacing: 4,
                           children: [
-                            _Badge(label: 'PS', color: const Color(0xFF3B82F6)),
+                            _Badge(label: 'PS', color: AppTheme.info),
                           ],
                         ),
                       ),
                     Row(
                       children: [
                         const Icon(Icons.star_rounded,
-                            size: 14, color: Color(0xFFFBBF24)),
+                            size: 14, color: AppTheme.tierVip),
                         const SizedBox(width: 2),
                         Text(
                           club.rating.toStringAsFixed(1),
@@ -1247,7 +1248,7 @@ class _ZonesView extends ConsumerWidget {
             label: 'VIP',
             count: vip.length,
             countSuffix: ref.lang('clubs.count_suffix'),
-            color: const Color(0xFFFBBF24),
+            color: AppTheme.tierVip,
             icon: Icons.star_rounded,
           ),
           const SizedBox(height: 8),
@@ -1353,9 +1354,7 @@ class _NearbyView extends ConsumerWidget {
                     style: TextStyle(color: context.text3, fontSize: 15)),
                 const SizedBox(height: 6),
                 Text(ref.lang('clubs.allow_location'),
-                    style: TextStyle(
-                        color: context.text3.withValues(alpha: 0.6),
-                        fontSize: 12)),
+                    style: TextStyle(color: context.text3, fontSize: 12)),
               ],
             ),
           );

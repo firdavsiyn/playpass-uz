@@ -10,6 +10,7 @@ import '../../../core/l10n/app_locale.dart';
 import '../../../core/utils/savings_calculator.dart';
 import '../../../core/widgets/branded_loader.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/error_retry.dart';
 
 /// All visits of the user (no month filter) for savings computation
 final _allVisitsProvider = FutureProvider.autoDispose<List<Visit>>((ref) async {
@@ -44,17 +45,19 @@ class SavingsScreen extends ConsumerWidget {
       appBar: AppBar(title: Text(ref.lang('savings.title'))),
       body: visitsAsync.when(
         loading: () => const BrandedLoader(),
-        error: (e, _) =>
-            Center(child: Text('${ref.lang('common.error_prefix')}: $e')),
+        error: (e, _) => ErrorRetry(
+          error: e,
+          onRetry: () => ref.invalidate(_allVisitsProvider),
+        ),
         data: (visits) {
           // Empty state — user has no visits yet
           if (visits.isEmpty) {
             return EmptyState(
               icon: Icons.savings_rounded,
-              title: 'Экономия пока нулевая',
-              subtitle: 'Сходи в клуб по подписке — здесь появится сумма, которую ты сэкономил',
+              title: ref.lang('savings.empty_title'),
+              subtitle: ref.lang('savings.empty_sub'),
               accentColor: AppTheme.success,
-              actionLabel: 'Найти клуб',
+              actionLabel: ref.lang('savings.empty_action'),
               actionIcon: Icons.search_rounded,
               onAction: () => Navigator.of(context).pop(),
             );
@@ -185,8 +188,7 @@ class SavingsScreen extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: context.card,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                        color: context.border.withValues(alpha: 0.3)),
+                    border: Border.all(color: context.border),
                   ),
                   child: Column(
                     children: [
@@ -236,9 +238,8 @@ class SavingsScreen extends ConsumerWidget {
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: context.card,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                        color: context.border.withValues(alpha: 0.3)),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: context.border),
                   ),
                   child: Row(
                     children: [

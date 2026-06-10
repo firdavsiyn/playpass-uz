@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/branded_loader.dart';
 import '../../../services/supabase_service.dart';
 
 final playerStatsProvider =
@@ -29,7 +30,7 @@ class PlayerStatsScreen extends ConsumerWidget {
         ],
       ),
       body: data.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const BrandedLoader(),
         error: (e, _) => Center(child: Text('$e')),
         data: (profiles) {
           if (profiles.isEmpty) {
@@ -87,7 +88,7 @@ class PlayerStatsScreen extends ConsumerWidget {
       isScrollControlled: true,
       backgroundColor: context.cardDark,
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setState) => Padding(
           padding: EdgeInsets.fromLTRB(

@@ -58,13 +58,13 @@ class StreakWidget extends ConsumerWidget {
                   AppTheme.warning.withValues(alpha: 0.04),
                 ]
               : [
-                  const Color(0xFFFF6B35).withValues(alpha: 0.12),
+                  AppTheme.streakFlame.withValues(alpha: 0.12),
                   AppTheme.warning.withValues(alpha: 0.06),
                 ],
         ),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: (atRisk ? AppTheme.warning : const Color(0xFFFF6B35))
+          color: (atRisk ? AppTheme.warning : AppTheme.streakFlame)
               .withValues(alpha: 0.25),
         ),
       ),
@@ -78,13 +78,13 @@ class StreakWidget extends ConsumerWidget {
               gradient: LinearGradient(
                 colors: atRisk
                     ? [Colors.grey.shade600, Colors.grey.shade700]
-                    : const [Color(0xFFFF6B35), Color(0xFFFFB627)],
+                    : const [AppTheme.streakFlame, AppTheme.streakFlameLight],
               ),
               boxShadow: atRisk
                   ? null
                   : [
                       BoxShadow(
-                        color: const Color(0xFFFF6B35).withValues(alpha: 0.4),
+                        color: AppTheme.streakFlame.withValues(alpha: 0.4),
                         blurRadius: 12,
                         spreadRadius: -2,
                       ),
@@ -106,7 +106,7 @@ class StreakWidget extends ConsumerWidget {
                       '$streakDays',
                       style: TextStyle(
                         color:
-                            atRisk ? AppTheme.warning : const Color(0xFFFF6B35),
+                            atRisk ? AppTheme.warning : AppTheme.streakFlame,
                         fontSize: 22,
                         fontWeight: FontWeight.w900,
                         letterSpacing: -0.5,
@@ -132,7 +132,7 @@ class StreakWidget extends ConsumerWidget {
                     minHeight: 5,
                     backgroundColor: context.surface,
                     valueColor: AlwaysStoppedAnimation(
-                      atRisk ? AppTheme.warning : const Color(0xFFFF6B35),
+                      atRisk ? AppTheme.warning : AppTheme.streakFlame,
                     ),
                   ),
                 ),

@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_locale.dart';
+import '../../../core/widgets/branded_loader.dart';
 import '../../../models/story.dart';
 import '../../../services/supabase_service.dart';
 
@@ -22,7 +23,7 @@ class StoriesScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: Text(t['stories_title'] ?? 'Новости')),
       body: data.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const BrandedLoader(),
         error: (e, _) => Center(child: Text('$e')),
         data: (stories) {
           if (stories.isEmpty) {
@@ -353,7 +354,7 @@ class _StoryViewerDialogState extends State<_StoryViewerDialog> {
                             decoration: BoxDecoration(
                               color: _current == j
                                   ? AppTheme.primary
-                                  : context.text3,
+                                  : Colors.white24,
                               borderRadius: BorderRadius.circular(2),
                             ),
                           )),

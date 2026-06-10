@@ -32,8 +32,10 @@
   <title>PlayPass</title>
   <link rel="manifest" href="manifest.json">
 
-  <!-- Yandex Maps JS API v2.1 (free, no key needed for dev) -->
-  <script src="https://api-maps.yandex.ru/2.1/?apikey=&lang=ru_RU" type="text/javascript"></script>
+  <!-- Yandex Maps JS API v2.1 — async so First Paint isn't blocked.
+       Map widget polls window._ymapReady (set in initYandexMap callback)
+       before drawing markers, so race conditions are handled. -->
+  <script src="https://api-maps.yandex.ru/2.1/?apikey=&lang=ru_RU" type="text/javascript" defer></script>
 
   <style>
     body {
@@ -199,8 +201,10 @@
     window.initYandexMap = function(containerId) {
       console.log('[YMap] initYandexMap called for:', containerId);
 
+      // Yandex API is loaded with defer — may not be ready on first call.
+      // Retry instead of failing.
       if (typeof ymaps === 'undefined') {
-        console.error('[YMap] ymaps not loaded');
+        setTimeout(function() { window.initYandexMap(containerId); }, 100);
         return;
       }
 
@@ -426,6 +430,16 @@
 
     window.setMarkerClickCallback = function(cb) {
       window._ymapMarkerClickCb = cb;
+      // Flush any clicks that landed before Dart registered the callback.
+      // (Dart used to poll _ymapClickQueue every 500ms — we now push them
+      //  out synchronously the moment a real callback is hooked up.)
+      if (cb && window._ymapClickQueue && window._ymapClickQueue.length) {
+        var q = window._ymapClickQueue;
+        window._ymapClickQueue = [];
+        for (var i = 0; i < q.length; i++) {
+          try { cb(q[i]); } catch (e) { console.warn('[YMap] click cb threw:', e); }
+        }
+      }
     };
 
     window.panToClub = function(lat, lon) {

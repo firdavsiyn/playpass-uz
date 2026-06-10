@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/branded_loader.dart';
 import '../../../services/supabase_service.dart';
 
 final leaderboardProvider = FutureProvider<List<Map<String, dynamic>>>((ref) {
@@ -17,7 +18,7 @@ class LeaderboardScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Рейтинг игроков')),
       body: data.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const BrandedLoader(),
         error: (e, _) => Center(child: Text('$e')),
         data: (players) {
           if (players.isEmpty) {
@@ -76,7 +77,7 @@ class _Podium extends StatelessWidget {
                     player: players[1],
                     rank: 2,
                     height: 150,
-                    color: const Color(0xFFC0C0C0),
+                    color: AppTheme.medalSilver,
                     emoji: '')),
             const SizedBox(width: 6),
             Expanded(
@@ -84,7 +85,7 @@ class _Podium extends StatelessWidget {
                     player: players[0],
                     rank: 1,
                     height: 190,
-                    color: const Color(0xFFFFD700),
+                    color: AppTheme.medalGold,
                     emoji: '')),
             const SizedBox(width: 6),
             Expanded(
@@ -92,7 +93,7 @@ class _Podium extends StatelessWidget {
                     player: players[2],
                     rank: 3,
                     height: 120,
-                    color: const Color(0xFFCD7F32),
+                    color: AppTheme.medalBronze,
                     emoji: '')),
           ],
         ),

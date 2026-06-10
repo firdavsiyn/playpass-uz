@@ -29,6 +29,10 @@ extension ThemeColors on BuildContext {
 
   // Nav bar bg
   Color get navBg => isDark ? const Color(0xFF06060F) : Colors.white;
+
+  // Frozen subscription state (replaces Colors.blueGrey literals)
+  Color get frozen => isDark ? const Color(0xFF78909C) : const Color(0xFF546E7A);
+  Color get frozenBg => frozen.withValues(alpha: 0.15);
 }
 
 class AppTheme {
@@ -76,6 +80,29 @@ class AppTheme {
   static const Color tierVip = Color(0xFFFBBF24);
   static const Color tierPro = Color(0xFF8B5CF6);
   static const Color tierStandard = Color(0xFF06B6D4);
+
+  // ── Medal / Loyalty Tier Colors ─────────────────────────
+  static const Color medalGold = Color(0xFFFFD700);
+  static const Color medalSilver = Color(0xFFC0C0C0);
+  static const Color medalBronze = Color(0xFFCD7F32);
+  static const Color tierDiamond = Color(0xFF00CED1);
+
+  // Indigo mid-stop used in buttonGradient / premiumGradient / neonGradient
+  static const Color indigo = Color(0xFF6366F1);
+
+  // ── Brand One-offs ──────────────────────────────────────
+  static const Color telegram = Color(0xFF2AABEE); // Telegram brand (club_detail, profile)
+  static const Color streakFlame = Color(0xFFFF6B35); // streak widget flame
+  static const Color streakFlameLight = Color(0xFFFFB627); // streak flame gradient end
+
+  /// Canonical plan → tier color mapping (single source of truth).
+  /// Replaces the duplicated switch in my_subscription / plans / gift_purchase.
+  static Color planColor(String id) => switch (id) {
+        'vip' => tierVip,
+        'pro' => tierPro,
+        'standard' => tierStandard,
+        _ => const Color(0xFF6B7280),
+      };
 
   // ── Neon Glow Utilities ─────────────────────────────────
 

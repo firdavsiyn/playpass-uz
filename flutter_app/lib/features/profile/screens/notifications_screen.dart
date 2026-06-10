@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../services/supabase_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_locale.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/neon_shimmer.dart';
+import '../../../core/widgets/error_retry.dart';
 
 final notificationsProvider =
     FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
@@ -50,7 +50,7 @@ class NotificationsScreen extends ConsumerWidget {
                   EmptyState(
                     icon: Icons.notifications_active_rounded,
                     title: ref.lang('notif.empty'),
-                    subtitle: 'Здесь появятся уведомления о подписке, акциях и достижениях',
+                    subtitle: ref.lang('notif.empty_sub'),
                   ),
                 ],
               );
@@ -81,8 +81,10 @@ class NotificationsScreen extends ConsumerWidget {
                       )),
             ),
           ),
-          error: (e, _) =>
-              Center(child: Text('${ref.lang('common.error_prefix')}: $e')),
+          error: (e, _) => ErrorRetry(
+            error: e,
+            onRetry: () => ref.invalidate(notificationsProvider),
+          ),
         ),
       ),
     );
@@ -134,11 +136,11 @@ class _NotificationTile extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: isRead ? context.card : context.card,
+          color: isRead ? context.cardDark : context.card,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: isRead
-                ? context.border.withValues(alpha: 0.2)
+                ? context.borderSubtle
                 : AppTheme.primary.withValues(alpha: 0.2),
           ),
           boxShadow: isRead ? [] : AppTheme.cardGlow(),

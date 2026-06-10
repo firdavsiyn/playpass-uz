@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 
 import '../../../models/visit.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_locale.dart';
 
 class RecentVisitsWidget extends StatelessWidget {
   final AsyncValue<List<Visit>> visitsAsync;
@@ -22,20 +23,20 @@ class RecentVisitsWidget extends StatelessWidget {
               .toList(),
         );
       },
-      loading: () => Column(
-        children: List.generate(3, (_) => const _VisitTileSkeleton()),
-      ),
+      // No skeleton placeholders — empty space during loading, real tiles
+      // pop in when data arrives. Less visual noise on cold start.
+      loading: () => const SizedBox.shrink(),
       error: (_, __) => const SizedBox.shrink(),
     );
   }
 }
 
 /// Friendly empty state with QR-scan CTA — only shown when user has 0 visits
-class _NoVisitsCard extends StatelessWidget {
+class _NoVisitsCard extends ConsumerWidget {
   const _NoVisitsCard();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
       onTap: () {
         HapticFeedback.lightImpact();
@@ -78,14 +79,14 @@ class _NoVisitsCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Визитов ещё нет',
+                  Text(ref.lang('home.no_visits_title'),
                       style: TextStyle(
                         color: context.text1,
                         fontSize: 14,
                         fontWeight: FontWeight.w800,
                       )),
                   const SizedBox(height: 2),
-                  Text('Отсканируй QR в клубе и получи 1-й визит',
+                  Text(ref.lang('home.no_visits_sub'),
                       style:
                           TextStyle(color: context.text3, fontSize: 12)),
                 ],
@@ -100,13 +101,18 @@ class _NoVisitsCard extends StatelessWidget {
   }
 }
 
-class _VisitTile extends StatelessWidget {
+class _VisitTile extends ConsumerWidget {
   final Visit visit;
   const _VisitTile({super.key, required this.visit});
 
   @override
-  Widget build(BuildContext context) {
-    final dateStr = DateFormat('d MMM, HH:mm', 'ru').format(visit.createdAt);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final locale = ref.watch(localeProvider);
+    // Only 'ru' date-format data is initialized in main.dart; fall back to it
+    // for other locales so DateFormat never throws a LocaleDataException.
+    final dateLocale = DateFormat.localeExists(locale) ? locale : 'ru';
+    final dateStr =
+        DateFormat('d MMM, HH:mm', dateLocale).format(visit.createdAt);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -114,7 +120,7 @@ class _VisitTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.card,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: context.border.withValues(alpha: 0.3)),
+        border: Border.all(color: context.borderSubtle),
         boxShadow: AppTheme.cardGlow(),
       ),
       child: Row(
@@ -179,18 +185,5 @@ class _VisitTile extends StatelessWidget {
   }
 }
 
-class _VisitTileSkeleton extends StatelessWidget {
-  const _VisitTileSkeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      height: 64,
-      decoration: BoxDecoration(
-        color: context.card,
-        borderRadius: BorderRadius.circular(14),
-      ),
-    );
-  }
-}
+// _VisitTileSkeleton removed — empty SizedBox is used during loading
+// so the section appears only when there is real data.

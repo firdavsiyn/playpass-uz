@@ -8,7 +8,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_locale.dart';
-import '../../../services/supabase_service.dart';
 
 /// Dramatic gaming-style auth screen
 class AuthScreen extends ConsumerStatefulWidget {
@@ -136,18 +135,24 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
         return;
       }
 
-      try {
-        await SupabaseService().updateUserProfile(name: name);
-      } catch (_) {}
-
-      // Grant the 1-hour welcome bonus (one-time, 24h validity).
-      // Failure here doesn't block registration — bonus can be claimed later.
-      try {
-        await SupabaseService().grantWelcomeBonus();
-      } catch (_) {}
+      // NOTE: don't call updateUserProfile / grantWelcomeBonus here.
+      // When email confirmation is required, signUp returns a user but NOT a
+      // session — so currentUser is null and any RLS-protected write throws
+      // "Not authenticated". The DB trigger `handle_new_user` already copies
+      // {data: {name: ...}} into public.users.name. Welcome bonus is granted
+      // on first authenticated home-screen visit.
 
       if (mounted) {
-        context.go('/auth/onboarding');
+        // If Supabase returned a session (email confirmation disabled),
+        // route to onboarding/home. Otherwise show check-email guidance.
+        final hasSession = response.session != null;
+        if (hasSession) {
+          context.go('/auth/onboarding');
+        } else {
+          setState(() => _regError = ref.lang('auth.confirm_email'));
+          // Stay on the auth screen so user can switch to login tab once
+          // they've confirmed via email.
+        }
       }
     } on AuthException catch (e) {
       setState(() => _regError = _mapAuthError(e.message));
@@ -233,8 +238,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                         shape: BoxShape.circle,
                         gradient: RadialGradient(
                           colors: [
-                            const Color(0xFFF472B6).withValues(alpha: 0.06),
-                            const Color(0xFFF472B6).withValues(alpha: 0.0),
+                            AppTheme.neonPink.withValues(alpha: 0.06),
+                            AppTheme.neonPink.withValues(alpha: 0.0),
                           ],
                         ),
                       ),
@@ -292,11 +297,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                       shaderCallback: (bounds) => const LinearGradient(
                         colors: [
                           AppTheme.primaryLight,
-                          Color(0xFFA78BFA),
+                          AppTheme.neonLavender,
                           AppTheme.neonCyan,
                         ],
                       ).createShader(bounds),
-                      child: Text(
+                      child: const Text(
                         'PLAYPASS',
                         style: TextStyle(
                           color: Colors.white,
@@ -332,9 +337,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                       controller: _tabController,
                       indicator: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [AppTheme.primary, Color(0xFF6366F1)],
+                          colors: [AppTheme.primary, AppTheme.indigo],
                         ),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(10),
                         boxShadow: [
                           BoxShadow(
                             color: AppTheme.primary.withValues(alpha: 0.4),
@@ -395,21 +400,21 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
         builder: (_, __) {
           final glow = loading ? 0.0 : 0.2 + _glowController.value * 0.3;
           return Container(
-            height: 54,
+            height: 52,
             decoration: BoxDecoration(
               gradient: loading
                   ? null
                   : const LinearGradient(
                       colors: [
-                        Color(0xFF7C3AED),
-                        Color(0xFF6366F1),
-                        Color(0xFF06B6D4)
+                        AppTheme.primary,
+                        AppTheme.indigo,
+                        AppTheme.neonCyan,
                       ],
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
                     ),
               color: loading ? context.surface : null,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(14),
               boxShadow: loading
                   ? []
                   : [
@@ -421,7 +426,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                     ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(14),
               child: Stack(
                 children: [
                   // Glossy inner highlight overlay
@@ -526,7 +531,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                           horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
                         color: AppTheme.error.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(14),
                         border: Border.all(
                             color: AppTheme.error.withValues(alpha: 0.2)),
                       ),
@@ -552,11 +557,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
             child: TextButton(
               onPressed: () => context.push('/auth/forgot-password'),
               child: Text(ref.lang('auth.forgot'),
-                  style:
-                      const TextStyle(fontSize: 13, color: AppTheme.neonCyan)),
+                  style: const TextStyle(
+                      fontSize: 13, color: AppTheme.primaryLight)),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
           _gradientButton(
             label: ref.lang('auth.login_btn'),
             loading: _loginLoading,
@@ -634,7 +639,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                           horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
                         color: AppTheme.error.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(14),
                         border: Border.all(
                             color: AppTheme.error.withValues(alpha: 0.2)),
                       ),

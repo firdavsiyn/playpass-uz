@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../services/supabase_service.dart';
 
 /// Compact "Friends in clubs right now" widget. Shows up to 3 avatar
@@ -58,8 +59,8 @@ class FriendsOnlineWidget extends ConsumerWidget {
                     children: [
                       Text(
                         online.isNotEmpty
-                            ? '${online.length} ${_friendsWord(online.length)} в клубе'
-                            : '${accepted.length} ${_friendsWord(accepted.length)}',
+                            ? '${online.length} ${_friendsWord(online.length, ref)} ${ref.lang('home.friends_in_club')}'
+                            : '${accepted.length} ${_friendsWord(accepted.length, ref)}',
                         style: TextStyle(
                           color: context.text1,
                           fontSize: 13,
@@ -68,8 +69,8 @@ class FriendsOnlineWidget extends ConsumerWidget {
                       ),
                       Text(
                         online.isNotEmpty
-                            ? 'Присоединяйся '
-                            : 'Никто сейчас не играет',
+                            ? ref.lang('home.friends_join')
+                            : ref.lang('home.friends_none_playing'),
                         style: TextStyle(color: context.text3, fontSize: 11),
                       ),
                     ],
@@ -87,13 +88,14 @@ class FriendsOnlineWidget extends ConsumerWidget {
     );
   }
 
-  String _friendsWord(int n) {
+  String _friendsWord(int n, WidgetRef ref) {
     final mod10 = n % 10;
     final mod100 = n % 100;
-    if (mod10 == 1 && mod100 != 11) return 'друг';
-    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14))
-      return 'друга';
-    return 'друзей';
+    if (mod10 == 1 && mod100 != 11) return ref.lang('home.friend_one');
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
+      return ref.lang('home.friend_few');
+    }
+    return ref.lang('home.friend_many');
   }
 }
 

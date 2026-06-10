@@ -91,7 +91,7 @@ class SmartHintCard extends ConsumerWidget {
   (Color, Color) _gradientFor(String type) {
     switch (type) {
       case 'favorite_club':
-        return (const Color(0xFFEC4899), AppTheme.primary);
+        return (AppTheme.neonPink, AppTheme.primary);
       case 'comeback':
         return (AppTheme.warning, AppTheme.neonCyan);
       case 'time_suggest':

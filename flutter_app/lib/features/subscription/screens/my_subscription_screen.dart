@@ -28,7 +28,8 @@ class MySubscriptionScreen extends ConsumerWidget {
         color: AppTheme.primary,
         onRefresh: () async {
           ref.invalidate(_mySubProvider);
-          await ref.read(_mySubProvider.future).catchError((_) {});
+          // ignore: avoid_returning_null_for_void
+          await ref.read(_mySubProvider.future).catchError((_) => null);
         },
         child: CustomScrollView(
           slivers: [
@@ -113,21 +114,21 @@ class MySubscriptionScreen extends ConsumerWidget {
                       const _Divider(),
                       _ActionTile(
                         icon: Icons.confirmation_number_outlined,
-                        iconColor: const Color(0xFF22C55E),
+                        iconColor: AppTheme.success,
                         title: ref.lang('sub.promo'),
                         onTap: () => _showPromoDialog(context, ref),
                       ),
                       const _Divider(),
                       _ActionTile(
                         icon: Icons.card_giftcard_rounded,
-                        iconColor: const Color(0xFFEF4444),
+                        iconColor: AppTheme.error,
                         title: ref.lang('sub.gift_buy'),
                         onTap: () => _showGiftInfo(context),
                       ),
                       const _Divider(),
                       _ActionTile(
                         icon: Icons.redeem_rounded,
-                        iconColor: const Color(0xFF8B5CF6),
+                        iconColor: AppTheme.neonPurple,
                         title: ref.lang('sub.gift_redeem'),
                         onTap: () => context.push('/gift/redeem'),
                       ),
@@ -300,7 +301,7 @@ class _SubscriptionCard extends ConsumerWidget {
     final sub = subscription;
     final hasActive = sub != null && (sub.isActive || sub.isFrozen);
 
-    final glowColor = hasActive ? _glowForPlan(sub!.plan) : context.text3;
+    final glowColor = hasActive ? _glowForPlan(sub.plan) : context.text3;
 
     return Container(
       width: double.infinity,
@@ -309,7 +310,7 @@ class _SubscriptionCard extends ConsumerWidget {
         borderRadius: BorderRadius.circular(20),
         gradient: hasActive
             ? LinearGradient(
-                colors: sub!.isFrozen
+                colors: sub.isFrozen
                     ? [const Color(0xFF37474F), const Color(0xFF455A64)]
                     : _gradientForPlan(sub.plan),
                 begin: Alignment.topLeft,
@@ -321,12 +322,12 @@ class _SubscriptionCard extends ConsumerWidget {
                 end: Alignment.bottomRight,
               ),
         border: Border.all(color: glowColor.withValues(alpha: 0.2)),
-        boxShadow: hasActive && !sub!.isFrozen
+        boxShadow: hasActive && !sub.isFrozen
             ? AppTheme.neonGlow(color: glowColor, radius: 20)
             : [],
       ),
       child: hasActive
-          ? _activeContent(context, ref, sub!)
+          ? _activeContent(context, ref, sub)
           : _expiredContent(context, ref),
     );
   }
@@ -339,7 +340,7 @@ class _SubscriptionCard extends ConsumerWidget {
       };
 
   Color _glowForPlan(String plan) => switch (plan) {
-        'vip' => const Color(0xFFD4A017),
+        'vip' => AppTheme.tierVip,
         'pro' => AppTheme.neonPurple,
         'standard' => AppTheme.primary,
         _ => AppTheme.neonBlue,
@@ -457,12 +458,12 @@ class _SubscriptionCard extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: Colors.orange.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(10),
+                  color: AppTheme.warning.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(ref.lang('sub.expires'),
                     style: const TextStyle(
-                        color: Colors.orange,
+                        color: AppTheme.warning,
                         fontSize: 11,
                         fontWeight: FontWeight.w700)),
               ),
@@ -528,8 +529,6 @@ class _SubscriptionCard extends ConsumerWidget {
               backgroundColor: AppTheme.primary,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
             ),
             child: Text(ref.lang('sub.buy'),
                 style:
@@ -544,12 +543,12 @@ class _SubscriptionCard extends ConsumerWidget {
 class _SubscriptionCardSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Column(children: [
-      const NeonSkeletonCard(height: 180, borderRadius: 20),
-      const SizedBox(height: 16),
-      const NeonSkeletonCard(height: 80, borderRadius: 16),
-      const SizedBox(height: 8),
-      const NeonSkeletonCard(height: 80, borderRadius: 16),
+    return const Column(children: [
+      NeonSkeletonCard(height: 180, borderRadius: 20),
+      SizedBox(height: 16),
+      NeonSkeletonCard(height: 80, borderRadius: 16),
+      SizedBox(height: 8),
+      NeonSkeletonCard(height: 80, borderRadius: 16),
     ]);
   }
 }
@@ -693,18 +692,18 @@ class _PromoDialogState extends ConsumerState<_PromoDialog> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFF22C55E).withValues(alpha: 0.12),
+                color: AppTheme.success.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Row(
                 children: [
                   const Icon(Icons.check_circle_rounded,
-                      color: Color(0xFF22C55E), size: 20),
+                      color: AppTheme.success, size: 20),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(_success!,
                         style: const TextStyle(
-                            color: Color(0xFF22C55E), fontSize: 13)),
+                            color: AppTheme.success, fontSize: 13)),
                   ),
                 ],
               ),
@@ -743,12 +742,7 @@ class _MiniPlanCard extends ConsumerWidget {
 
   const _MiniPlanCard({required this.plan, required this.onTap});
 
-  Color get _color => switch (plan.id) {
-        'vip' => const Color(0xFFFBBF24),
-        'pro' => const Color(0xFF8B5CF6),
-        'standard' => AppTheme.primary,
-        _ => const Color(0xFF6B7280),
-      };
+  Color get _color => AppTheme.planColor(plan.id);
 
   String _formatPrice(int priceUzs) {
     final str = priceUzs.toString();
@@ -819,7 +813,7 @@ class _MiniPlanCard extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
                 color: _color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 ref.lang('sub.order_btn'),
@@ -905,12 +899,12 @@ class _DayPassCard extends ConsumerWidget {
                             horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: AppTheme.success.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Text('NEW',
                             style: TextStyle(
                               color: AppTheme.success,
-                              fontSize: 9,
+                              fontSize: 11,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 0.5,
                             )),

@@ -7,12 +7,12 @@ import 'package:go_router/go_router.dart';
 import '../../../models/subscription.dart';
 import '../../../models/club.dart';
 import '../../../models/visit.dart';
+import '../../../core/cache/subscription_cache.dart';
 import '../../../services/supabase_service.dart';
 import '../../../core/constants/feature_flags.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_locale.dart';
 import '../../../core/utils/savings_calculator.dart';
-import '../../../core/widgets/neon_shimmer.dart';
 import '../widgets/subscription_widget.dart';
 import '../widgets/nearby_clubs_row.dart';
 import '../widgets/recent_visits_widget.dart';
@@ -32,10 +32,27 @@ void _keepAliveFor(Ref ref, Duration duration) {
   Timer(duration, link.close);
 }
 
+/// Stale-while-revalidate provider for the active subscription.
+/// On cold start we first yield the disk-cached value (instant paint),
+/// then fetch fresh from Supabase and yield that. The home widget
+/// `.when(data: …)` sees both as `data` so the card renders immediately
+/// without any visible loading state.
 final activeSubscriptionProvider =
-    FutureProvider.autoDispose<Subscription?>((ref) async {
+    StreamProvider.autoDispose<Subscription?>((ref) async* {
   _keepAliveFor(ref, _kHomeCacheDuration);
-  return SupabaseService().getActiveSubscription();
+  // 1) Disk cache (fast path) — no network, ~5–15 ms.
+  final cached = await SubscriptionCache.read();
+  if (cached != null) yield cached;
+  // 2) Fresh fetch — overwrites cache via SupabaseService.
+  try {
+    final fresh = await SupabaseService().getActiveSubscription();
+    yield fresh;
+  } catch (e) {
+    // If we already showed a cached value, swallow the error — user sees
+    // last-known plan; the next reload will retry. Only rethrow when we
+    // have nothing to show.
+    if (cached == null) rethrow;
+  }
 });
 
 // Home screen only shows 4 nearby club cards — no need to fetch all 276.
@@ -89,68 +106,10 @@ class HomeScreen extends ConsumerWidget {
     final subscriptionAsync = ref.watch(activeSubscriptionProvider);
 
     return Scaffold(
-      body: Stack(
-        children: [
-          // ── Floating Gradient Orbs (atmospheric background) ──
-          Positioned(
-            top: -60,
-            right: -80,
-            child: Container(
-              width: 260,
-              height: 260,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    AppTheme.primary.withValues(alpha: 0.10),
-                    AppTheme.primary.withValues(alpha: 0.04),
-                    Colors.transparent,
-                  ],
-                  stops: const [0.0, 0.5, 1.0],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 80,
-            left: -100,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    AppTheme.neonCyan.withValues(alpha: 0.08),
-                    AppTheme.neonCyan.withValues(alpha: 0.03),
-                    Colors.transparent,
-                  ],
-                  stops: const [0.0, 0.5, 1.0],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            top: 340,
-            left: 60,
-            child: Container(
-              width: 180,
-              height: 180,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    AppTheme.primary.withValues(alpha: 0.06),
-                    Colors.transparent,
-                  ],
-                  stops: const [0.0, 1.0],
-                ),
-              ),
-            ),
-          ),
-
-          // ── Main Content ────────────────────────────────────
-          RefreshIndicator(
+      // ── Main Content ────────────────────────────────────
+      // Utility-first: no atmospheric orbs (removed — pure decoration that
+      // reads as dirty blotches on the light background).
+      body: RefreshIndicator(
             color: AppTheme.primary,
             onRefresh: () async {
               await Future.wait([
@@ -258,7 +217,12 @@ class HomeScreen extends ConsumerWidget {
                     delegate: SliverChildListDelegate([
                       const SizedBox(height: 8),
 
-                      // ── Active session widget ─────────────────
+                      // ════════════════════════════════════════════
+                      // ABOVE THE FOLD — utility-first
+                      // ════════════════════════════════════════════
+
+                      // ── 1. Active session widget (genuine utility) ──
+                      // Only renders when a session is live.
                       ref.watch(activeSessionProvider).when(
                             data: (session) => session != null
                                 ? Padding(
@@ -288,16 +252,72 @@ class HomeScreen extends ConsumerWidget {
                             error: (_, __) => const SizedBox.shrink(),
                           ),
 
-                      // ── Subscription widget ────────────────────
+                      // ── 2. Compact subscription STATUS strip ────
+                      // No skeleton on loading — emit nothing so the layout
+                      // stays calm and the real strip slides in when ready.
                       subscriptionAsync.when(
                         data: (sub) => SubscriptionWidget(subscription: sub),
-                        loading: () => const _SubscriptionSkeleton(),
+                        loading: () => const SizedBox.shrink(),
                         error: (_, __) => const _SubscriptionError(),
                       ),
 
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
 
-                      // ── Streak widget ──────────────────────────
+                      // ── 3. LARGE scan hero button (visual hero) ──
+                      subscriptionAsync.when(
+                        data: (sub) => _ScanButton(
+                          hasActiveSubscription: sub?.isActive == true,
+                          isFrozen: sub?.isFrozen == true,
+                        ),
+                        loading: () => const SizedBox.shrink(),
+                        error: (_, __) => const SizedBox.shrink(),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // ════════════════════════════════════════════
+                      // BELOW THE FOLD
+                      // ════════════════════════════════════════════
+
+                      // ── 4. Nearby Clubs Section (gated) ─────────
+                      // Render the whole section only when clubs exist;
+                      // otherwise emit nothing (no header, no "all →").
+                      ref.watch(nearbyClubsProvider).when(
+                            data: (clubs) => clubs.isEmpty
+                                ? const SizedBox.shrink()
+                                : Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      _SectionHeader(
+                                        title: ref.lang('home.nearby'),
+                                        action: ref.lang('home.all'),
+                                        onAction: () => context.go('/clubs'),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      NearbyClubsRow(
+                                          clubsAsync: ref
+                                              .watch(nearbyClubsProvider)),
+                                      const SizedBox(height: 24),
+                                    ],
+                                  ),
+                            loading: () => const SizedBox.shrink(),
+                            error: (_, __) => const SizedBox.shrink(),
+                          ),
+
+                      // ── 5. Recent Visits Section ───────────────
+                      _SectionHeader(
+                        title: ref.lang('home.recent'),
+                        action: ref.lang('home.history'),
+                        onAction: () => context.push('/profile/history'),
+                      ),
+                      const SizedBox(height: 12),
+                      RecentVisitsWidget(
+                          visitsAsync: ref.watch(recentVisitsProvider)),
+
+                      const SizedBox(height: 24),
+
+                      // ── 6. Streak widget (engagement — demoted) ──
                       Consumer(
                         builder: (context, ref, _) {
                           final streakAsync = ref.watch(streakProvider);
@@ -306,7 +326,7 @@ class HomeScreen extends ConsumerWidget {
                               final days = data['streak_days'] as int? ?? 0;
                               if (days < 1) return const SizedBox.shrink();
                               return Padding(
-                                padding: const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.only(bottom: 16),
                                 child: StreakWidget(
                                   streakDays: days,
                                   lastVisitDate:
@@ -320,7 +340,7 @@ class HomeScreen extends ConsumerWidget {
                         },
                       ),
 
-                      // ── Smart Home Feed (personalized hints) ──
+                      // ── 7. Smart Home Feed (engagement — demoted) ──
                       if (FeatureFlags.smartHomeFeed)
                         Consumer(
                           builder: (context, ref, _) {
@@ -347,13 +367,7 @@ class HomeScreen extends ConsumerWidget {
                           },
                         ),
 
-                      // ── Friends online widget ────────────────
-                      if (FeatureFlags.friends) ...[
-                        const FriendsOnlineWidget(),
-                        const SizedBox(height: 12),
-                      ],
-
-                      // ── Savings indicator ──────────────────────
+                      // ── 8. Savings indicator (duplicates hours) ──
                       subscriptionAsync.when(
                         data: (sub) {
                           if (sub == null || !sub.isActive)
@@ -366,60 +380,37 @@ class HomeScreen extends ConsumerWidget {
                             subscriptionCost: sub.priceUzs,
                           );
                           if (saved <= 0) return const SizedBox.shrink();
-                          return _SavingsWidget(saved: saved);
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: _SavingsWidget(saved: saved),
+                          );
                         },
                         loading: () => const SizedBox.shrink(),
                         error: (_, __) => const SizedBox.shrink(),
                       ),
-                      const SizedBox(height: 12),
 
-                      // ── Scan Button ────────────────────────────
-                      subscriptionAsync.when(
-                        data: (sub) => _ScanButton(
-                          hasActiveSubscription: sub?.isActive == true,
-                          isFrozen: sub?.isFrozen == true,
-                        ),
-                        loading: () => const SizedBox.shrink(),
-                        error: (_, __) => const SizedBox.shrink(),
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      // ── Stories bubbles ────────────────────────
-                      if (FeatureFlags.stories) ...[
-                        const StoryBubbles(),
-                        const SizedBox(height: 20),
+                      // ── 9. Friends online widget (social — demoted) ──
+                      if (FeatureFlags.friends) ...[
+                        const FriendsOnlineWidget(),
+                        const SizedBox(height: 16),
                       ],
 
-                      // ── Quick Actions (hidden until features enabled) ──
+                      // ════════════════════════════════════════════
+                      // MARKETING — very bottom (each self-hides empty)
+                      // ════════════════════════════════════════════
+
+                      // ── 10. Stories bubbles ────────────────────
+                      if (FeatureFlags.stories) ...[
+                        const StoryBubbles(),
+                        const SizedBox(height: 16),
+                      ],
+
+                      // ── 11. Quick Actions ──────────────────────
                       const _QuickActions(),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 16),
 
-                      // ── Banners ────────────────────────────────
+                      // ── 12. Banners ────────────────────────────
                       const BannersCarousel(),
-                      const SizedBox(height: 24),
-
-                      // ── Nearby Clubs Section ───────────────────
-                      _SectionHeader(
-                        title: ref.lang('home.nearby'),
-                        action: ref.lang('home.all'),
-                        onAction: () => context.go('/clubs'),
-                      ),
-                      const SizedBox(height: 12),
-                      NearbyClubsRow(
-                          clubsAsync: ref.watch(nearbyClubsProvider)),
-
-                      const SizedBox(height: 28),
-
-                      // ── Recent Visits Section ──────────────────
-                      _SectionHeader(
-                        title: ref.lang('home.recent'),
-                        action: ref.lang('home.history'),
-                        onAction: () => context.push('/profile/history'),
-                      ),
-                      const SizedBox(height: 12),
-                      RecentVisitsWidget(
-                          visitsAsync: ref.watch(recentVisitsProvider)),
 
                       const SizedBox(height: 100),
                     ]),
@@ -428,8 +419,6 @@ class HomeScreen extends ConsumerWidget {
               ],
             ),
           ),
-        ],
-      ),
     );
   }
 }
@@ -567,53 +556,48 @@ class _ScanButtonState extends ConsumerState<_ScanButton>
   }
 
   Widget _buildButton(bool canScan, double pulse) {
+    // Visual hero: height ≈ half the screen width (large, tappable).
+    final heroHeight =
+        (MediaQuery.of(context).size.width * 0.5).clamp(180.0, 240.0);
+
     return Container(
-      height: 64,
+      height: heroHeight,
       decoration: BoxDecoration(
         gradient: canScan
             ? const LinearGradient(
                 colors: [
-                  Color(0xFF7C3AED),
-                  Color(0xFF6366F1),
-                  Color(0xFF06B6D4)
+                  AppTheme.primary,
+                  AppTheme.indigo,
+                  AppTheme.neonCyan,
                 ],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               )
             : null,
         color: canScan ? null : context.card,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         border: canScan
             ? null
             : Border.all(color: AppTheme.primary.withValues(alpha: 0.15)),
         boxShadow: canScan
-            ? [
-                BoxShadow(
-                  color:
-                      AppTheme.primary.withValues(alpha: 0.35 + pulse * 0.25),
-                  blurRadius: 20 + pulse * 16,
-                  offset: const Offset(0, 6),
-                ),
-                BoxShadow(
-                  color:
-                      AppTheme.neonCyan.withValues(alpha: 0.15 + pulse * 0.15),
-                  blurRadius: 30 + pulse * 20,
-                  offset: const Offset(0, 8),
-                ),
-              ]
+            ? AppTheme.neonGlow(
+                color: AppTheme.primary,
+                radius: 24 + pulse * 16,
+                spread: pulse * 2,
+              )
             : AppTheme.cardGlow(),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         child: Stack(
           children: [
-            // Inner shine highlight when active
+            // Inner shine highlight when active (gradient-relative)
             if (canScan)
               Positioned(
                 top: 0,
                 left: 0,
                 right: 0,
-                height: 28,
+                height: heroHeight * 0.5,
                 child: Container(
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
@@ -627,10 +611,10 @@ class _ScanButtonState extends ConsumerState<_ScanButton>
                   ),
                 ),
               ),
-            // Button content
+            // Button content — large icon + label, vertically centred
             Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
                     widget.isFrozen
@@ -639,27 +623,32 @@ class _ScanButtonState extends ConsumerState<_ScanButton>
                             ? Icons.qr_code_scanner_rounded
                             : Icons.shopping_cart_outlined,
                     color: canScan ? Colors.white : context.text3,
-                    size: 26,
+                    size: 56,
                   ),
-                  const SizedBox(width: 12),
-                  Text(
-                    widget.isFrozen
-                        ? ref.lang('home.frozen')
-                        : widget.hasActiveSubscription
-                            ? ref.lang('home.scan_qr')
-                            : ref.lang('home.buy_sub'),
-                    style: TextStyle(
-                      color: canScan ? Colors.white : context.text3,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.3,
-                    ),
+                  const SizedBox(height: 14),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        widget.isFrozen
+                            ? ref.lang('home.frozen')
+                            : widget.hasActiveSubscription
+                                ? ref.lang('home.scan_qr')
+                                : ref.lang('home.buy_sub'),
+                        style: TextStyle(
+                          color: canScan ? Colors.white : context.text3,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                      if (canScan) ...[
+                        const SizedBox(width: 8),
+                        const Icon(Icons.arrow_forward_rounded,
+                            color: Colors.white, size: 24),
+                      ],
+                    ],
                   ),
-                  if (canScan) ...[
-                    const SizedBox(width: 8),
-                    const Icon(Icons.arrow_forward_rounded,
-                        color: Colors.white, size: 20),
-                  ],
                 ],
               ),
             ),
@@ -883,27 +872,33 @@ class _SavingsWidget extends ConsumerWidget {
   }
 }
 
-// ── Skeleton / Error States ─────────────────────────────────
-
-class _SubscriptionSkeleton extends StatelessWidget {
-  const _SubscriptionSkeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    return const NeonSkeletonCard(height: 140, borderRadius: 20);
-  }
-}
+// ── Error State (skeletons removed in favour of empty space) ─
 
 class _SubscriptionError extends ConsumerWidget {
   const _SubscriptionError();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: AppTheme.gamingCard(glowColor: AppTheme.error),
-      child: Text(ref.lang('common.error'),
-          style: const TextStyle(color: AppTheme.error)),
+    return GestureDetector(
+      onTap: () => ref.invalidate(activeSubscriptionProvider),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: AppTheme.gamingCard(glowColor: AppTheme.error),
+        child: Row(
+          children: [
+            const Icon(Icons.wifi_off_rounded, color: AppTheme.error, size: 22),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Нет связи с сервером. Нажмите, чтобы повторить.',
+                style: TextStyle(color: context.text2, fontSize: 13),
+              ),
+            ),
+            Icon(Icons.refresh_rounded,
+                color: AppTheme.error.withValues(alpha: 0.7), size: 20),
+          ],
+        ),
+      ),
     );
   }
 }

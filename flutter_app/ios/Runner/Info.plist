@@ -45,18 +45,20 @@
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Доступ к фото нужен для выбора аватара профиля</string>
 
-	<!-- Deep link URL scheme: gamepassuz:// -->
+	<!-- Deep link URL schemes: playpassuz:// (current) + gamepassuz:// (legacy) -->
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>uz.playpass.app</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
+				<string>playpassuz</string>
 				<string>gamepassuz</string>
 			</array>
 		</dict>
-	</dict>
 	</array>
 
 	<!-- iOS 14+ push notifications -->

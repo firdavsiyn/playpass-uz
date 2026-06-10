@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/neon_shimmer.dart';
+import '../../../core/widgets/error_retry.dart';
 import '../../../services/supabase_service.dart';
 
 final _friendsProvider =
@@ -96,7 +97,10 @@ class FriendsScreen extends ConsumerWidget {
                       )),
             ),
           ),
-          error: (e, _) => Center(child: Text('Ошибка: $e')),
+          error: (e, _) => ErrorRetry(
+            error: e,
+            onRetry: () => ref.invalidate(_friendsProvider),
+          ),
         ),
       ),
     );
@@ -165,7 +169,7 @@ class FriendsScreen extends ConsumerWidget {
                         if (ctx.mounted) Navigator.pop(ctx);
                         ref.invalidate(_friendsProvider);
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Запрос отправлен ')),
+                          const SnackBar(content: Text('Запрос отправлен')),
                         );
                       } else {
                         setState(() => error = _reasonToText(reason));
@@ -215,7 +219,7 @@ class _FriendTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.card,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: context.border.withValues(alpha: 0.3)),
+        border: Border.all(color: context.border),
       ),
       child: Row(
         children: [
@@ -276,7 +280,7 @@ class _FriendTile extends StatelessWidget {
                         fontWeight: FontWeight.w700)),
                 const SizedBox(height: 2),
                 Text(
-                  isOnline && clubName != null ? ' в $clubName' : 'не в сети',
+                  isOnline && clubName != null ? 'в $clubName' : 'не в сети',
                   style: TextStyle(
                     color: isOnline ? AppTheme.success : context.text3,
                     fontSize: 12,

@@ -184,7 +184,10 @@ class ReferralScreen extends ConsumerWidget {
                             horizontal: 16, vertical: 14),
                         decoration: BoxDecoration(
                           color: context.card,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                              color:
+                                  AppTheme.primary.withValues(alpha: 0.08)),
                         ),
                         child: Row(
                           children: [
@@ -289,6 +292,7 @@ class _ReferralCodeCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: context.card,
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppTheme.primary.withValues(alpha: 0.2)),
         ),
         child: Text(
           codeNotAssigned,
@@ -466,7 +470,7 @@ class _ShareStoryButtonState extends ConsumerState<_ShareStoryButton> {
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [AppTheme.primary, Color(0xFF6366F1), AppTheme.neonCyan],
+            colors: [AppTheme.primary, AppTheme.indigo, AppTheme.neonCyan],
           ),
           borderRadius: BorderRadius.circular(14),
           boxShadow: [

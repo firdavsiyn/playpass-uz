@@ -76,8 +76,19 @@ class AppConstants {
         _ => type,
       };
 
-  // ── 4 тарифа (полная система v1.0) ─────────────────────────
+  // ── Тарифы ─────────────────────────────────────────────────
   static const Map<String, PlanConfig> plans = {
+    // Day-Pass — пробный вход: 4 часа, действует 1 день
+    'daily': PlanConfig(
+      id: 'daily',
+      name: 'Day Pass',
+      hours: 4,
+      isUnlimited: false,
+      priceUzs: 25000,
+      description: '4 часа на 1 день, Базовая зона',
+      allowedZones: ['basic'],
+      allowedSlots: ['day', 'evening', 'night'],
+    ),
     'basic': PlanConfig(
       id: 'basic',
       name: 'Базовый',
@@ -115,6 +126,27 @@ class AppConstants {
       isUnlimited: true,
       priceUzs: 599000,
       description: '1 визит/день, Все зоны включая VIP, круглосуточно',
+      allowedZones: ['basic', 'pro', 'vip'],
+      allowedSlots: ['day', 'evening', 'night'],
+    ),
+    // ── Годовые тарифы (−30% к месячной цене × 12) ──────────
+    'standard_annual': PlanConfig(
+      id: 'standard_annual',
+      name: 'Стандарт · год',
+      hours: 30,
+      isUnlimited: false,
+      priceUzs: 1250000,
+      description: 'Стандарт на 12 месяцев, выгода ~30%',
+      allowedZones: ['basic', 'pro'],
+      allowedSlots: ['day', 'evening', 'night'],
+    ),
+    'vip_annual': PlanConfig(
+      id: 'vip_annual',
+      name: 'VIP · год',
+      hours: 0,
+      isUnlimited: true,
+      priceUzs: 2500000,
+      description: 'VIP-безлимит на 12 месяцев, выгода ~30%',
       allowedZones: ['basic', 'pro', 'vip'],
       allowedSlots: ['day', 'evening', 'night'],
     ),

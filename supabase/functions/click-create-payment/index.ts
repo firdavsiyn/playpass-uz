@@ -27,6 +27,17 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // 0. Reject early if Click isn't configured yet (no merchant creds).
+    if (!CLICK_SERVICE_ID || !CLICK_MERCHANT_ID) {
+      return json(
+        {
+          error: 'click_not_configured',
+          message: 'Платёжный шлюз Click ещё не подключён',
+        },
+        503,
+      );
+    }
+
     // 1. Auth check via JWT
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {

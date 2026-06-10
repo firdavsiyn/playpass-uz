@@ -16,6 +16,17 @@ const Map<String, String> stringsUz = {
   'home.frozen': 'Obuna muzlatilgan',
   'home.active_session': 'Faol sessiya',
   'home.end_session': 'Tugatish',
+  'home.state_active': 'Faol',
+  'home.state_expired': 'Tugagan',
+  'home.unlimited_short': '∞',
+  'home.no_visits_title': 'Hali tashriflar yo\'q',
+  'home.no_visits_sub': 'Klubda QR skanerlang va 1-tashrifni oling',
+  'home.friends_in_club': 'klubda',
+  'home.friends_join': 'Qo\'shiling',
+  'home.friends_none_playing': 'Hozir hech kim o\'ynamayapti',
+  'home.friend_one': 'do\'st',
+  'home.friend_few': 'do\'st',
+  'home.friend_many': 'do\'st',
 
   // ── Clubs ─────────────────────────────────
   'clubs.search': 'Klub qidirish...',
@@ -126,6 +137,12 @@ const Map<String, String> stringsUz = {
   'gift.home': 'Bosh sahifaga',
   'gift.redeem_title': 'Sertifikatni faollashtirish',
   'gift.enter_code': 'Sovg\'a sertifikati kodini kiriting',
+  'gift.redeem_subtitle':
+      'Kodni do\'stdan olishingiz yoki "Obuna sovg\'a qilish" bo\'limida sotib olishingiz mumkin',
+  'gift.enter_prompt': 'Sertifikat kodini kiriting',
+  'gift.not_found': 'Sertifikat topilmadi',
+  'gift.invalid_used': 'Sertifikat allaqachon ishlatilgan yoki yaroqsiz',
+  'gift.plan_label': 'Tarif: ',
   'gift.check': 'Kodni tekshirish',
   'gift.activate': 'Faollashtirish',
   'gift.activated': 'Sertifikat faollashtirildi!',
@@ -367,6 +384,8 @@ const Map<String, String> stringsUz = {
   'plans.visit_day': '1 tashrif/kun',
   'plans.hours_month': 'soat/oy',
   'plans.per_month': 'oyiga',
+  'plans.per_year': 'yiliga',
+  'plans.per_month_short': '/ oy',
   'plans.unlimited_desc': 'Cheksiz (kuniga 1 tashrif)',
   'plans.hours_monthly': 'soat oyiga',
   'plans.zone_basic': 'Oddiy zona',
@@ -465,6 +484,8 @@ const Map<String, String> stringsUz = {
   'notif.title': 'Bildirishnomalar',
   'notif.mark_all_read': 'Hammasini o\'qilgan',
   'notif.empty': 'Bildirishnomalar yo\'q',
+  'notif.empty_sub':
+      'Bu yerda obuna, aksiyalar va yutuqlar haqida bildirishnomalar paydo bo\'ladi',
 
   // ── Visit history screen ─────────────────
   'visits.title': 'Tashriflar tarixi',
@@ -478,6 +499,7 @@ const Map<String, String> stringsUz = {
   // ── Favorites screen extras ──────────────
   'fav.empty_title': 'Sevimli klublar yo\'q',
   'fav.empty_sub': 'Klub kartochkasidagi yurakni bosing',
+  'fav.empty_action': 'Klublarni topish',
 
   // ── Subscription widget (home) ─────────────────
   'sub_widget.no_active': 'Faol obuna yo\'q',
@@ -561,6 +583,10 @@ const Map<String, String> stringsUz = {
   'savings.hint': '{hours} soat × {rate} so\'m/soat',
   'savings.calc_info':
       'Hisoblash {plan} tarifi asosida: {rate} so\'m/soat — klublarda sizning tarifingiz uchun o\'rtacha narx',
+  'savings.empty_title': 'Tejamkorlik hozircha nol',
+  'savings.empty_sub':
+      'Obuna bo\'yicha klubga boring — bu yerda tejagan summangiz paydo bo\'ladi',
+  'savings.empty_action': 'Klub topish',
   'month.jan': 'Yan',
   'month.feb': 'Fev',
   'month.mar': 'Mar',

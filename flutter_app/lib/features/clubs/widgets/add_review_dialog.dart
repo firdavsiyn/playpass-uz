@@ -153,7 +153,7 @@ class _AddReviewDialogState extends State<AddReviewDialog> {
                           : Icons.star_outline_rounded,
                       size: 40,
                       color: starIndex <= _rating
-                          ? const Color(0xFFFBBF24)
+                          ? AppTheme.tierVip
                           : context.text3,
                     ),
                   ),
@@ -174,7 +174,7 @@ class _AddReviewDialogState extends State<AddReviewDialog> {
                 filled: true,
                 fillColor: context.surface,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(14),
                   borderSide: BorderSide(
                       color: AppTheme.primary.withValues(alpha: 0.1)),
                 ),
@@ -196,7 +196,7 @@ class _AddReviewDialogState extends State<AddReviewDialog> {
               width: double.infinity,
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(14),
                   boxShadow: _rating > 0
                       ? [
                           BoxShadow(

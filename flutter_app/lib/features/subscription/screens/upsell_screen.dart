@@ -97,7 +97,7 @@ class UpsellScreen extends ConsumerWidget {
                   const SizedBox(height: 16),
                   Container(
                     height: 1,
-                    color: context.surface,
+                    color: context.border,
                   ),
                   const SizedBox(height: 16),
                   _PlanRow(

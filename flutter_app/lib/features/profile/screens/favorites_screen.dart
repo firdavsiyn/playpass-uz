@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_locale.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/error_retry.dart';
 import '../../../models/club.dart';
 import '../../../services/supabase_service.dart';
 import '../../clubs/providers/favorites_provider.dart';
@@ -30,8 +31,8 @@ class FavoritesScreen extends ConsumerWidget {
               icon: Icons.favorite_border_rounded,
               title: ref.lang('fav.empty_title'),
               subtitle: ref.lang('fav.empty_sub'),
-              accentColor: const Color(0xFFEC4899),
-              actionLabel: 'Найти клубы',
+              accentColor: AppTheme.neonPink,
+              actionLabel: ref.lang('fav.empty_action'),
               actionIcon: Icons.search_rounded,
               onAction: () => context.go('/clubs'),
             );
@@ -43,8 +44,10 @@ class FavoritesScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) =>
-            Center(child: Text('${ref.lang('common.error_prefix')}: $e')),
+        error: (e, _) => ErrorRetry(
+          error: e,
+          onRetry: () => ref.invalidate(_favoriteClubsProvider),
+        ),
       ),
     );
   }

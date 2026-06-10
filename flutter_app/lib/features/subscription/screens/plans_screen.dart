@@ -114,7 +114,7 @@ class _BillingToggle extends ConsumerWidget {
       decoration: BoxDecoration(
         color: context.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: context.border.withValues(alpha: 0.3)),
+        border: Border.all(color: context.border),
       ),
       child: Row(
         children: [
@@ -276,12 +276,7 @@ class _PlanCard extends ConsumerWidget {
     return items;
   }
 
-  Color get _planColor => switch (plan.id) {
-        'vip' => const Color(0xFFFBBF24),
-        'pro' => const Color(0xFF8B5CF6),
-        'standard' => AppTheme.primary,
-        _ => const Color(0xFF6B7280),
-      };
+  Color get _planColor => AppTheme.planColor(plan.id);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -290,7 +285,7 @@ class _PlanCard extends ConsumerWidget {
     final features = _buildFeatures(plan, ref);
     final color = _planColor;
     final monthlyHint = monthlyEquivalent != null
-        ? '${_formatPrice(monthlyEquivalent!)} / мес'
+        ? '${_formatPrice(monthlyEquivalent!)} ${ref.lang('plans.per_month_short')}'
         : null;
     final savings = isAnnual ? plan.priceUzs * 12 - _effectivePrice : 0;
 
@@ -360,7 +355,7 @@ class _PlanCard extends ConsumerWidget {
                 ),
                 Text(
                   isAnnual
-                      ? '${ref.lang('plans.per_year') == 'plans.per_year' ? 'в год' : ref.lang('plans.per_year')} (~\$$usdEquiv)'
+                      ? '${ref.lang('plans.per_year')} (~\$$usdEquiv)'
                       : '${ref.lang('plans.per_month')} (~\$$usdEquiv)',
                   style: TextStyle(
                     color: context.text3,
@@ -418,7 +413,6 @@ class _PlanCard extends ConsumerWidget {
                       side: isPopular
                           ? null
                           : const BorderSide(color: AppTheme.primary),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                     child: Text(
                       ref.lang('plans.select'),

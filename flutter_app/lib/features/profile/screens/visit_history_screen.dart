@@ -289,7 +289,7 @@ class _AllTimeStats extends ConsumerWidget {
                 icon: Icons.timer_rounded,
                 value: '$totalHours ч',
                 label: ref.lang('visits.total_hours'),
-                color: const Color(0xFF8B5CF6),
+                color: AppTheme.neonPurple,
               ),
             ),
           ],
@@ -304,10 +304,10 @@ class _AllTimeStats extends ConsumerWidget {
               color: context.card,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                  color: const Color(0xFFF59E0B).withValues(alpha: 0.25)),
+                  color: AppTheme.warning.withValues(alpha: 0.25)),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
+                  color: AppTheme.warning.withValues(alpha: 0.1),
                   blurRadius: 16,
                 ),
               ],
@@ -318,11 +318,11 @@ class _AllTimeStats extends ConsumerWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                    color: AppTheme.warning.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(Icons.favorite_rounded,
-                      color: Color(0xFFF59E0B), size: 24),
+                      color: AppTheme.warning, size: 24),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -332,7 +332,7 @@ class _AllTimeStats extends ConsumerWidget {
                       Text(
                         ref.lang('visits.fav_club'),
                         style: const TextStyle(
-                            color: Color(0xFFF59E0B),
+                            color: AppTheme.warning,
                             fontSize: 11,
                             fontWeight: FontWeight.w600),
                       ),
@@ -359,7 +359,7 @@ class _AllTimeStats extends ConsumerWidget {
                     Text(
                       '${favoriteClub['count']}',
                       style: const TextStyle(
-                        color: Color(0xFFF59E0B),
+                        color: AppTheme.warning,
                         fontWeight: FontWeight.w700,
                         fontSize: 22,
                       ),

@@ -24,6 +24,23 @@ serve(async (req) => {
   }
 
   try {
+    // ⚠ SECURITY: simulate-payment activates paid subscriptions WITHOUT
+    // taking real money. In production this would let any authenticated
+    // user grant themselves a 349 000 UZS Unlimited plan for free.
+    //
+    // We gate this function in two layers:
+    //  1. The env flag SIMULATE_PAYMENT_ENABLED must equal 'true'.
+    //     Production must keep it unset.
+    //  2. Even if the flag is on, only superadmin accounts may invoke.
+    //
+    // This means even a leaked anon key + a regular user JWT cannot
+    // exploit this endpoint.
+    if (Deno.env.get('SIMULATE_PAYMENT_ENABLED') !== 'true') {
+      return new Response(JSON.stringify({ error: 'Disabled in production' }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // Auth — require valid JWT
     const authHeader = req.headers.get('authorization');
     if (!authHeader) {
@@ -47,6 +64,18 @@ serve(async (req) => {
     if (userErr || !user) {
       return new Response(JSON.stringify({ error: 'Invalid token' }), {
         status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Superadmin-only gate (second layer).
+    const { data: adminRow } = await supabase
+      .from('admin_users')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    if (adminRow?.role !== 'superadmin') {
+      return new Response(JSON.stringify({ error: 'Superadmin only' }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 

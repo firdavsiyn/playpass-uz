@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../services/supabase_service.dart';
 import '../../../core/theme/app_theme.dart';
@@ -17,10 +18,41 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _loading = false;
 
+  @override
+  void initState() {
+    super.initState();
+    // The name was already captured on AuthScreen during registration
+    // (sent via signUp data → DB trigger handle_new_user copies it to
+    // public.users.name). If it's already set, skip this screen entirely.
+    final meta = Supabase.instance.client.auth.currentUser?.userMetadata;
+    final metaName = (meta?['name'] as String?)?.trim() ?? '';
+    if (metaName.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) context.go('/home');
+      });
+      return;
+    }
+    _nameController.text = metaName;
+  }
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() => _loading = true);
 
+    // Guard: user might land here right after signUp, before email is
+    // confirmed. In that case there's no session and updateUserProfile
+    // would throw "Not authenticated".
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              'Подтвердите email из письма, чтобы сохранить профиль'),
+        ),
+      );
+      return;
+    }
+
+    setState(() => _loading = true);
     try {
       await SupabaseService()
           .updateUserProfile(name: _nameController.text.trim());

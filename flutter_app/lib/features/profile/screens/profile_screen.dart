@@ -82,7 +82,7 @@ class ProfileScreen extends ConsumerWidget {
           await Future.wait([
             ref.read(profileProvider.future),
             ref.read(subscriptionProvider.future),
-          ]).catchError((_) {});
+          ]).catchError((_) => <Object?>[]);
         },
         child: body,
       ),
@@ -100,7 +100,6 @@ class _ProfileContent extends ConsumerWidget {
     final name = profile?['name'] as String? ?? ref.lang('level.gamer');
     final avatarUrl = profile?['avatar_url'] as String?;
     final email = Supabase.instance.client.auth.currentUser?.email ?? '';
-    final referralCode = profile?['referral_code'] as String? ?? '';
     final level = profile?['level'] as String? ?? 'novice';
     final totalVisits = profile?['total_visits'] as int? ?? 0;
     final xp = profile?['xp'] as int? ?? 0;
@@ -235,8 +234,8 @@ class _ProfileContent extends ConsumerWidget {
                                 Text(
                                   AppConstants.localizedLevelLabel(level, ref),
                                   style: const TextStyle(
-                                    color: AppTheme.primaryLight,
-                                    fontSize: 10,
+                                    color: AppTheme.primary,
+                                    fontSize: 11,
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
@@ -504,7 +503,7 @@ class _ProfileContent extends ConsumerWidget {
           child: Text(
             'PlayPass v1.0',
             style: TextStyle(
-              color: context.text3.withValues(alpha: 0.3),
+              color: context.text3,
               fontSize: 12,
             ),
           ),
@@ -679,7 +678,7 @@ class _ProfileContent extends ConsumerWidget {
               icon: Icons.send_rounded,
               title: 'Telegram',
               subtitle: '@playpass_support',
-              color: const Color(0xFF2AABEE),
+              color: AppTheme.telegram,
               onTap: () async {
                 Navigator.pop(context);
                 final url = Uri.parse('https://t.me/playpass_support');
@@ -757,7 +756,7 @@ class _SupportOption extends StatelessWidget {
               height: 40,
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
                     color: color.withValues(alpha: 0.2),
@@ -809,7 +808,7 @@ class _LanguageToggle extends ConsumerWidget {
         decoration: BoxDecoration(
           color: context.card,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppTheme.primary.withValues(alpha: 0.05)),
+          border: Border.all(color: AppTheme.primary.withValues(alpha: 0.1)),
         ),
         child: Row(
           children: [
@@ -862,20 +861,17 @@ class _ThemeToggle extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardTheme.color,
+        color: context.card,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppTheme.primary.withValues(alpha: 0.05)),
+        border: Border.all(color: AppTheme.primary.withValues(alpha: 0.1)),
       ),
       child: Row(
         children: [
-          Icon(icon,
-              color: Theme.of(context).textTheme.bodyLarge?.color, size: 22),
+          Icon(icon, color: context.text1, size: 22),
           const SizedBox(width: 14),
           Expanded(
             child: Text(label,
-                style: TextStyle(
-                    color: Theme.of(context).textTheme.bodyLarge?.color,
-                    fontSize: 15)),
+                style: TextStyle(color: context.text1, fontSize: 15)),
           ),
           Container(
             padding: const EdgeInsets.all(2),
@@ -918,7 +914,7 @@ class _ThemeChip extends ConsumerWidget {
         decoration: BoxDecoration(
           gradient: selected
               ? const LinearGradient(
-                  colors: [AppTheme.primary, Color(0xFF6366F1)])
+                  colors: [AppTheme.primary, AppTheme.indigo])
               : null,
           color: selected ? null : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
@@ -983,10 +979,10 @@ class _LangChip extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: selected
             ? const LinearGradient(
-                colors: [AppTheme.primary, Color(0xFF6366F1)])
+                colors: [AppTheme.primary, AppTheme.indigo])
             : null,
         color: selected ? null : Colors.transparent,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
         label,

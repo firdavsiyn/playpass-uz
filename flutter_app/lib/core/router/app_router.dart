@@ -73,7 +73,36 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/',
     refreshListenable: _authNotifier,
+    // Catch-all fallback for malformed deep links (e.g. Supabase email
+    // confirmation callbacks that don't match any declared route). Without
+    // this, GoRouter throws "no routes for location" and shows its default
+    // 404 page with the raw access_token in the URL.
+    errorBuilder: (context, state) {
+      final user = Supabase.instance.client.auth.currentUser;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) {
+          context.go(user != null ? '/home' : '/auth/login');
+        }
+      });
+      return const Scaffold(body: SizedBox.shrink());
+    },
     redirect: (context, state) {
+      // Supabase email-confirmation / password-recovery deep links come back
+      // as URLs like `playpassuz://...?access_token=...&type=signup` or
+      // `playpassuz://...?error=...`. The supabase_flutter SDK consumes the
+      // tokens and sets the session via onAuthStateChange — but go_router
+      // still tries to match the literal path. Detect these and forward.
+      final raw = state.uri.toString();
+      final isAuthCallback = raw.contains('access_token=') ||
+          raw.contains('refresh_token=') ||
+          raw.contains('type=signup') ||
+          raw.contains('type=recovery') ||
+          (raw.contains('error=') && raw.contains('error_description='));
+      if (isAuthCallback) {
+        final user = Supabase.instance.client.auth.currentUser;
+        return user != null ? '/home' : '/auth/login';
+      }
+
       final user = Supabase.instance.client.auth.currentUser;
       final isAuth = user != null;
       final isAuthRoute = state.fullPath?.startsWith('/auth') ?? false;

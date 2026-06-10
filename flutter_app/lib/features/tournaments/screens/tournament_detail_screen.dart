@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/branded_loader.dart';
 import '../../../models/tournament.dart';
 import '../../../services/supabase_service.dart';
 
@@ -73,7 +74,7 @@ class _TournamentDetailScreenState
     if (_loading) {
       return Scaffold(
         appBar: AppBar(),
-        body: const Center(child: CircularProgressIndicator()),
+        body: const BrandedLoader(),
       );
     }
 

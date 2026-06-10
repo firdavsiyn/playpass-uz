@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../core/cache/subscription_cache.dart';
 import '../models/subscription.dart';
 import '../models/subscription_request.dart';
 import '../models/club.dart';
@@ -9,6 +10,14 @@ import '../models/visit.dart';
 import '../models/review.dart';
 import '../models/tournament.dart';
 import '../models/story.dart';
+
+/// User-facing payment error. The message is safe to show in a SnackBar.
+class PaymentException implements Exception {
+  final String message;
+  const PaymentException(this.message);
+  @override
+  String toString() => message;
+}
 
 class SupabaseService {
   static final SupabaseService _instance = SupabaseService._internal();
@@ -149,7 +158,13 @@ class SupabaseService {
         .limit(1)
         .maybeSingle();
 
-    if (res == null) return null;
+    // Persist for the next cold start so the home screen can show the
+    // last-known plan instantly while a fresh fetch is in flight.
+    if (res == null) {
+      await SubscriptionCache.clear();
+      return null;
+    }
+    await SubscriptionCache.writeRaw(res);
     return Subscription.fromJson(res);
   }
 
@@ -281,6 +296,64 @@ class SupabaseService {
         })
         .eq('id', subscriptionId)
         .eq('user_id', userId);
+  }
+
+  // ── Online payments (Click / Rahmat) ──────────────────────
+  /// Creates a payment session via the chosen provider's Edge Function.
+  /// Returns a payment URL the user opens in a browser to actually pay.
+  ///
+  /// [provider] is 'click' or 'rahmat'.
+  /// On success returns {paymentUrl, orderId}.
+  /// Throws PaymentException with a user-friendly message on failure
+  /// (gateway not configured, gateway error, etc.).
+  Future<({String paymentUrl, String orderId})> startOnlinePayment({
+    required String provider,
+    required String plan,
+  }) async {
+    if (provider != 'click' && provider != 'rahmat') {
+      throw const PaymentException('Неизвестный платёжный провайдер');
+    }
+
+    final fnName = provider == 'click'
+        ? 'click-create-payment'
+        : 'rahmat-create-payment';
+
+    try {
+      final res = await _client.functions.invoke(
+        fnName,
+        body: {'plan': plan},
+      );
+
+      // Edge Functions return a Map on success; errors come back with
+      // res.status >= 400 or with an `error` key in the JSON body.
+      final data = res.data;
+      if (data is! Map) {
+        throw const PaymentException('Некорректный ответ платёжного шлюза');
+      }
+      if (data['error'] != null) {
+        // 503 "not configured" is a special case we want to expose verbatim.
+        final code = data['error'].toString();
+        if (code == 'rahmat_not_configured' ||
+            code == 'click_not_configured') {
+          throw const PaymentException(
+              'Этот способ оплаты ещё не подключён. Попробуйте другой.');
+        }
+        throw PaymentException(
+            data['message']?.toString() ?? 'Ошибка платежа: $code');
+      }
+
+      final url = data['payment_url'] as String?;
+      final orderId = data['order_id'] as String?;
+      if (url == null || orderId == null) {
+        throw const PaymentException('Платёжный шлюз вернул неполный ответ');
+      }
+      return (paymentUrl: url, orderId: orderId);
+    } on PaymentException {
+      rethrow;
+    } catch (e) {
+      throw PaymentException(
+          'Не удалось создать платёж: ${e.toString().substring(0, e.toString().length.clamp(0, 80))}');
+    }
   }
 
   // ── Subscription Requests (ручная оплата) ─────────────────

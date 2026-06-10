@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/l10n/app_locale.dart';
@@ -26,7 +27,14 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
   bool _submitting = false;
   String? _error;
 
-  PlanConfig get _plan => AppConstants.plans[widget.plan]!;
+  /// Which provider's button is in-flight ('click' / 'rahmat' / null).
+  /// Used to show a spinner inside the right button and disable the others.
+  String? _payingProvider;
+
+  /// Nullable lookup — an unknown plan code must NOT crash the screen
+  /// (grey screen). `build` guards on this before any `_plan` use.
+  PlanConfig? get _planOrNull => AppConstants.plans[widget.plan];
+  PlanConfig get _plan => _planOrNull!;
 
   @override
   void dispose() {
@@ -62,8 +70,89 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
     }
   }
 
+  /// Open an online payment session in the system browser.
+  /// Edge Function returns a payment URL → we launch it externally.
+  /// When the user finishes paying, the provider posts to our webhook
+  /// which activates the subscription; the user then returns to the app
+  /// and sees the active subscription.
+  Future<void> _startOnlinePayment(String provider) async {
+    if (_payingProvider != null) return;
+    setState(() => _payingProvider = provider);
+    try {
+      final session = await SupabaseService().startOnlinePayment(
+        provider: provider,
+        plan: widget.plan,
+      );
+      final uri = Uri.parse(session.paymentUrl);
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched) throw const PaymentException('Не удалось открыть браузер');
+    } on PaymentException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.message),
+            backgroundColor: AppTheme.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Ошибка платежа: $e'),
+            backgroundColor: AppTheme.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _payingProvider = null);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Backstop: unknown plan code (e.g. a new tariff not yet in the map)
+    // must show a clean message, not a grey crash from `_plan!`.
+    if (_planOrNull == null) {
+      return Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios),
+            onPressed: () => context.pop(),
+          ),
+          title: Text(ref.lang('pay.title')),
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.error_outline_rounded,
+                    color: AppTheme.error, size: 40),
+                const SizedBox(height: 12),
+                Text(
+                  'Тариф «${widget.plan}» временно недоступен',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: context.text2, fontSize: 14),
+                ),
+                const SizedBox(height: 16),
+                OutlinedButton(
+                  onPressed: () => context.pop(),
+                  child: const Text('Назад'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -142,6 +231,46 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           ),
           const SizedBox(height: 24),
 
+          // ── Online payment buttons (Click / Rahmat) ──────────
+          // These call our Edge Functions; if a provider isn't configured
+          // yet (e.g. credentials still in onboarding), the button shows
+          // a friendly error and the user falls through to manual transfer.
+          _OnlinePayButton(
+            provider: 'click',
+            label: 'Оплатить через Click',
+            colors: const [Color(0xFF00A4D8), Color(0xFF006EA8)],
+            icon: Icons.payment_rounded,
+            onPressed: _payingProvider == null
+                ? () => _startOnlinePayment('click')
+                : null,
+            isLoading: _payingProvider == 'click',
+          ),
+          const SizedBox(height: 10),
+          _OnlinePayButton(
+            provider: 'rahmat',
+            label: 'Оплатить через Rahmat',
+            colors: const [Color(0xFFE6533C), Color(0xFFB7341F)],
+            icon: Icons.qr_code_2_rounded,
+            onPressed: _payingProvider == null
+                ? () => _startOnlinePayment('rahmat')
+                : null,
+            isLoading: _payingProvider == 'rahmat',
+          ),
+
+          const SizedBox(height: 28),
+          Row(children: [
+            Expanded(child: Divider(color: context.border)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                'или вручную',
+                style: TextStyle(color: context.text3, fontSize: 12),
+              ),
+            ),
+            Expanded(child: Divider(color: context.border)),
+          ]),
+          const SizedBox(height: 20),
+
           // Payment instructions
           Text(
             ref.lang('pay.how_to_pay'),
@@ -202,16 +331,17 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: const Color(0xFFF59E0B).withValues(alpha: 0.08),
+              color: AppTheme.warning.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                  color: const Color(0xFFF59E0B).withValues(alpha: 0.3)),
+                  color: AppTheme.warning.withValues(alpha: 0.3)),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.info_outline, color: Color(0xFFF59E0B), size: 18),
-                SizedBox(width: 10),
+                const Icon(Icons.info_outline,
+                    color: AppTheme.warning, size: 18),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     ref.lang('pay.after_transfer_note'),
@@ -228,9 +358,6 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () => setState(() => _step = 1),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
               child: Text(ref.lang('pay.i_paid'),
                   style: const TextStyle(
                       fontSize: 16, fontWeight: FontWeight.w600)),
@@ -297,9 +424,6 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: _submitting ? null : _submitRequest,
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
               child: _submitting
                   ? const SizedBox(
                       height: 20,
@@ -437,6 +561,85 @@ class _PaymentOption extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Gradient call-to-action button for an online payment provider.
+/// Shows a centered spinner inside the button while `isLoading` is true.
+class _OnlinePayButton extends StatelessWidget {
+  final String provider;
+  final String label;
+  final List<Color> colors;
+  final IconData icon;
+  final VoidCallback? onPressed;
+  final bool isLoading;
+
+  const _OnlinePayButton({
+    required this.provider,
+    required this.label,
+    required this.colors,
+    required this.icon,
+    required this.onPressed,
+    required this.isLoading,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final disabled = onPressed == null;
+    return Opacity(
+      opacity: disabled && !isLoading ? 0.5 : 1.0,
+      child: InkWell(
+        onTap: disabled ? null : onPressed,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 18),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: colors,
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: [
+              BoxShadow(
+                color: colors.first.withValues(alpha: 0.35),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Icon(icon, color: Colors.white, size: 22),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+              ),
+              if (isLoading)
+                const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation(Colors.white),
+                  ),
+                )
+              else
+                const Icon(Icons.arrow_forward_ios_rounded,
+                    color: Colors.white, size: 14),
+            ],
+          ),
+        ),
       ),
     );
   }

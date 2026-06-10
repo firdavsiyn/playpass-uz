@@ -255,7 +255,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                   zone: 'vip',
                   label: 'VIP',
                   icon: Icons.diamond_rounded,
-                  color: const Color(0xFFFBBF24),
+                  color: AppTheme.tierVip,
                   selected: _selectedZone == 'vip',
                   onTap: () => setState(() => _selectedZone = 'vip')),
             ],
@@ -384,13 +384,13 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: const Color(0xFFFBBF24).withValues(alpha: 0.08),
+              color: AppTheme.warning.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
               children: [
                 const Icon(Icons.timer_outlined,
-                    color: Color(0xFFFBBF24), size: 18),
+                    color: AppTheme.warning, size: 18),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -467,7 +467,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
       backgroundColor: context.card,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (_) => DraggableScrollableSheet(
         initialChildSize: 0.7,
@@ -835,7 +835,7 @@ class _BookingCard extends ConsumerWidget {
     final graceExpires = graceStr != null ? DateTime.tryParse(graceStr) : null;
 
     final zoneColor = zone == 'vip'
-        ? const Color(0xFFFBBF24)
+        ? AppTheme.tierVip
         : zone == 'pro'
             ? AppTheme.neonPurple
             : AppTheme.success;
@@ -853,7 +853,7 @@ class _BookingCard extends ConsumerWidget {
         now.isAfter(time) &&
         now.isBefore(graceExpires);
     final graceMinutesLeft =
-        isGracePeriod ? graceExpires!.difference(now).inMinutes + 1 : 0;
+        isGracePeriod ? graceExpires.difference(now).inMinutes + 1 : 0;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -925,20 +925,20 @@ class _BookingCard extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: AppTheme.error.withValues(alpha: 0.08),
+                color: AppTheme.warning.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Row(
                 children: [
                   const Icon(Icons.timer_outlined,
-                      color: AppTheme.error, size: 16),
+                      color: AppTheme.warning, size: 16),
                   const SizedBox(width: 6),
                   Text(
                     ref
                         .lang('booking.grace_left')
                         .replaceAll('{n}', '$graceMinutesLeft'),
                     style: const TextStyle(
-                        color: AppTheme.error,
+                        color: AppTheme.warning,
                         fontSize: 12,
                         fontWeight: FontWeight.w600),
                   ),

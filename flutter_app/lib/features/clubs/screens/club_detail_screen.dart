@@ -12,6 +12,7 @@ import '../../../models/review.dart';
 import '../../../services/supabase_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/neon_shimmer.dart';
+import '../../../core/widgets/error_retry.dart';
 import '../../../core/constants/app_constants.dart';
 import '../providers/favorites_provider.dart';
 import '../widgets/add_review_dialog.dart';
@@ -57,7 +58,7 @@ class ClubDetailScreen extends ConsumerWidget {
               flexibleSpace: FlexibleSpaceBar(
                 background: NeonShimmer(
                   borderRadius: 0,
-                  child: Container(height: 250, color: AppTheme.bgCard),
+                  child: Container(height: 250, color: context.card),
                 ),
               ),
             ),
@@ -65,17 +66,23 @@ class ClubDetailScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(16),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
-                  const NeonSkeletonCard(height: 24, borderRadius: 8),
+                  NeonSkeletonCard(
+                      height: 24, borderRadius: 8, fillColor: context.card),
                   const SizedBox(height: 12),
-                  const NeonSkeletonCard(height: 100, borderRadius: 16),
+                  NeonSkeletonCard(
+                      height: 100, borderRadius: 16, fillColor: context.card),
                   const SizedBox(height: 12),
-                  const NeonSkeletonCard(height: 60, borderRadius: 16),
+                  NeonSkeletonCard(
+                      height: 60, borderRadius: 16, fillColor: context.card),
                 ]),
               ),
             ),
           ],
         ),
-        error: (e, _) => Center(child: Text('Ошибка: $e')),
+        error: (e, _) => ErrorRetry(
+          error: e,
+          onRetry: () => ref.invalidate(clubDetailProvider(clubId)),
+        ),
       ),
     );
   }
@@ -231,13 +238,13 @@ class _ClubDetail extends ConsumerWidget {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 8, vertical: 3),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFFBBF24)
+                                    color: AppTheme.tierVip
                                         .withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: const Text('VIP',
                                       style: TextStyle(
-                                          color: Color(0xFFFBBF24),
+                                          color: AppTheme.tierVip,
                                           fontSize: 11,
                                           fontWeight: FontWeight.w700)),
                                 ),
@@ -249,7 +256,7 @@ class _ClubDetail extends ConsumerWidget {
                           Row(
                             children: [
                               const Icon(Icons.star_rounded,
-                                  size: 18, color: Color(0xFFFBBF24)),
+                                  size: 18, color: AppTheme.tierVip),
                               const SizedBox(width: 3),
                               Text(club.rating.toStringAsFixed(1),
                                   style: TextStyle(
@@ -271,7 +278,7 @@ class _ClubDetail extends ConsumerWidget {
                       decoration: BoxDecoration(
                         color: (club.isOpen ? AppTheme.success : AppTheme.error)
                             .withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -328,7 +335,7 @@ class _ClubDetail extends ConsumerWidget {
                         _StatItem(
                             icon: Icons.videogame_asset_rounded,
                             label: 'PS5',
-                            color: const Color(0xFF3B82F6)),
+                            color: AppTheme.info),
                       ],
                     ],
                   ),
@@ -367,7 +374,7 @@ class _ClubDetail extends ConsumerWidget {
 
                 // ── Book button ─────────────────────────
                 SizedBox(
-                  height: 48,
+                  height: 52,
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     onPressed: () {
@@ -409,7 +416,7 @@ class _ClubDetail extends ConsumerWidget {
                         child: _ActionButton(
                           icon: Icons.telegram,
                           label: 'Telegram',
-                          color: const Color(0xFF2AABEE),
+                          color: AppTheme.telegram,
                           onTap: _openTelegram,
                         ),
                       ),
@@ -540,7 +547,7 @@ class _ClubDetail extends ConsumerWidget {
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 color: context.card,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(14),
                 border:
                     Border.all(color: AppTheme.success.withValues(alpha: 0.3)),
               ),
@@ -551,7 +558,7 @@ class _ClubDetail extends ConsumerWidget {
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: AppTheme.success.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Text('Базовая',
                         style: TextStyle(
@@ -662,44 +669,107 @@ class _PhotoGalleryState extends State<_PhotoGallery> {
 
   void _showFullPhoto(
       BuildContext context, List<String> urls, int initialIndex) {
-    showDialog(
-      context: context,
-      builder: (_) => Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.all(8),
-        child: Stack(
-          children: [
-            PageView.builder(
-              controller: PageController(initialPage: initialIndex),
-              itemCount: urls.length,
-              itemBuilder: (_, i) => InteractiveViewer(
-                child: Center(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: CachedNetworkImage(
-                        imageUrl: urls[i], fit: BoxFit.contain),
+    // Use a full-screen page route on the ROOT navigator instead of showDialog.
+    // showDialog inside a StatefulShellRoute can mis-route both the close-tap
+    // (popping the wrong navigator) and the system back button (the dialog
+    // isn't a go_router route, so back can skip it). A PageRouteBuilder on
+    // the root navigator gives us a real route — close & back both work.
+    Navigator.of(context, rootNavigator: true).push(
+      PageRouteBuilder(
+        opaque: false,
+        barrierColor: Colors.black,
+        fullscreenDialog: true,
+        transitionDuration: const Duration(milliseconds: 200),
+        pageBuilder: (_, __, ___) =>
+            _FullPhotoViewer(urls: urls, initialIndex: initialIndex),
+        transitionsBuilder: (_, anim, __, child) =>
+            FadeTransition(opacity: anim, child: child),
+      ),
+    );
+  }
+}
+
+/// Full-screen photo viewer with pinch-zoom, swipe between photos and a
+/// reliable close button. Uses its own Navigator pop, so the back button
+/// and the X always close just this overlay.
+class _FullPhotoViewer extends StatelessWidget {
+  final List<String> urls;
+  final int initialIndex;
+  const _FullPhotoViewer({required this.urls, required this.initialIndex});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          PageView.builder(
+            controller: PageController(initialPage: initialIndex),
+            itemCount: urls.length,
+            itemBuilder: (_, i) => InteractiveViewer(
+              minScale: 1,
+              maxScale: 4,
+              child: Center(
+                child: CachedNetworkImage(
+                  imageUrl: urls[i],
+                  fit: BoxFit.contain,
+                  placeholder: (_, __) => const Center(
+                    child: CircularProgressIndicator(color: Colors.white),
+                  ),
+                  errorWidget: (_, __, ___) => const Icon(
+                    Icons.broken_image_outlined,
+                    color: Colors.white54,
+                    size: 64,
                   ),
                 ),
               ),
             ),
-            Positioned(
-              top: 8,
-              right: 8,
-              child: GestureDetector(
-                onTap: () => Navigator.pop(context),
+          ),
+          // Close button — sits above the page view and uses its own context,
+          // so Navigator.of(context).pop() targets THIS route deterministically.
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 8,
+            right: 12,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                onTap: () => Navigator.of(context).pop(),
                 child: Container(
-                  width: 36,
-                  height: 36,
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.6),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.close, color: Colors.white, size: 20),
+                  child: const Icon(Icons.close,
+                      color: Colors.white, size: 22),
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+          // Page indicator (only if multiple photos)
+          if (urls.length > 1)
+            Positioned(
+              bottom: MediaQuery.of(context).padding.bottom + 16,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.55),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '${initialIndex + 1} / ${urls.length}',
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -752,7 +822,7 @@ class _ActionButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
         ),
         child: Column(
           children: [
@@ -760,7 +830,7 @@ class _ActionButton extends StatelessWidget {
             const SizedBox(height: 4),
             Text(label,
                 style: TextStyle(
-                    color: color, fontSize: 10, fontWeight: FontWeight.w600)),
+                    color: color, fontSize: 11, fontWeight: FontWeight.w600)),
           ],
         ),
       ),
@@ -847,8 +917,7 @@ class _EmptyReviewsPlaceholder extends StatelessWidget {
               style: TextStyle(color: context.text3, fontSize: 14)),
           const SizedBox(height: 4),
           Text('Будьте первым, кто оставит отзыв!',
-              style: TextStyle(
-                  color: context.text3.withValues(alpha: 0.6), fontSize: 12)),
+              style: TextStyle(color: context.text3, fontSize: 12)),
         ],
       ),
     );
@@ -912,7 +981,7 @@ class _ZoneCard extends StatelessWidget {
   const _ZoneCard({required this.zone, required this.currentSlot});
 
   Color get _zoneColor => switch (zone.type) {
-        'vip' => const Color(0xFFFBBF24),
+        'vip' => AppTheme.tierVip,
         'pro' => AppTheme.primary,
         _ => AppTheme.success,
       };
@@ -934,7 +1003,7 @@ class _ZoneCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
               color: _zoneColor.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(8),
             ),
             child: Text(zone.typeLabel,
                 style: TextStyle(
@@ -1057,12 +1126,12 @@ class _WorkingHoursTable extends StatelessWidget {
                         const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                     decoration: BoxDecoration(
                       color: AppTheme.primary.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Text('сегодня',
                         style: TextStyle(
                             color: AppTheme.primary,
-                            fontSize: 10,
+                            fontSize: 11,
                             fontWeight: FontWeight.w600)),
                   ),
                 ],
@@ -1131,7 +1200,7 @@ class _ReviewCard extends StatelessWidget {
                               ? Icons.star_rounded
                               : Icons.star_outline_rounded,
                           size: 14,
-                          color: const Color(0xFFFBBF24),
+                          color: AppTheme.tierVip,
                         )),
               ),
             ],

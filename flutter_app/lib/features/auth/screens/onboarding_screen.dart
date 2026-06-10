@@ -2,7 +2,19 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/theme/app_theme.dart';
+
+/// Pick the next route after the slide walkthrough:
+/// - `/home` if the user is already authenticated AND has a name (DB trigger
+///   handle_new_user copies signUp metadata into public.users on creation);
+/// - `/auth/profile-setup` only if name is genuinely missing.
+String _postOnboardingRoute() {
+  final user = Supabase.instance.client.auth.currentUser;
+  if (user == null) return '/auth/login';
+  final name = (user.userMetadata?['name'] as String?)?.trim() ?? '';
+  return name.isNotEmpty ? '/home' : '/auth/profile-setup';
+}
 
 // ---------------------------------------------------------------------------
 // Data model for each onboarding slide
@@ -55,14 +67,14 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       subtitle:
           'Найди клуб в приложении, приди и отсканируй QR-постер на входе. Чекин за 3 секунды!',
       gradient: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
-      particleTint: Color(0xFF06B6D4),
+      particleTint: AppTheme.neonCyan,
     ),
     _SlideData(
       title: 'Выбери\nсвой тариф',
       subtitle:
           'От 149K UZS/мес. Базовый, Стандарт, Про или VIP — в зависимости от твоего ритма игры.',
-      gradient: [Color(0xFFF59E0B), Color(0xFFD97706)],
-      particleTint: Color(0xFFFBBF24),
+      gradient: [AppTheme.warning, Color(0xFFD97706)],
+      particleTint: AppTheme.tierVip,
     ),
   ];
 
@@ -111,13 +123,13 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       );
     } else {
       await _markOnboardingSeen();
-      if (mounted) context.go('/auth/profile-setup');
+      if (mounted) context.go(_postOnboardingRoute());
     }
   }
 
   Future<void> _skip() async {
     await _markOnboardingSeen();
-    if (mounted) context.go('/auth/profile-setup');
+    if (mounted) context.go(_postOnboardingRoute());
   }
 
   Future<void> _markOnboardingSeen() async {
@@ -224,7 +236,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       decoration: BoxDecoration(
                         color: _page == i
                             ? AppTheme.primary
-                            : context.text3.withValues(alpha: 0.3),
+                            : context.text3,
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -238,10 +250,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   child: GestureDetector(
                     onTap: _next,
                     child: Container(
-                      height: 54,
+                      height: 52,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [AppTheme.primary, Color(0xFF6366F1)],
+                          colors: [AppTheme.primary, AppTheme.indigo],
                           begin: Alignment.centerLeft,
                           end: Alignment.centerRight,
                         ),
@@ -254,7 +266,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                           ),
                           BoxShadow(
                             color:
-                                const Color(0xFF6366F1).withValues(alpha: 0.2),
+                                AppTheme.indigo.withValues(alpha: 0.2),
                             blurRadius: 40,
                             offset: const Offset(0, 10),
                           ),
@@ -386,11 +398,11 @@ class _RotatingRingIcon extends StatelessWidget {
               shape: BoxShape.circle,
               gradient: SweepGradient(
                 colors: const [
-                  Color(0xFF6366F1),
-                  Color(0xFF8B5CF6),
-                  Color(0xFF06B6D4),
-                  Color(0xFFA78BFA),
-                  Color(0xFF6366F1),
+                  AppTheme.indigo,
+                  AppTheme.neonPurple,
+                  AppTheme.neonCyan,
+                  AppTheme.neonLavender,
+                  AppTheme.indigo,
                 ],
                 transform: GradientRotation(controller.value * 2 * math.pi),
               ),
@@ -411,7 +423,7 @@ class _RotatingRingIcon extends StatelessWidget {
             height: 100,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFF6366F1).withValues(alpha: 0.12),
+              color: AppTheme.indigo.withValues(alpha: 0.20),
             ),
             child: const Icon(
               Icons.sports_esports_rounded,
@@ -447,9 +459,9 @@ class _ScanningQRIcon extends StatelessWidget {
               height: 130,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF06B6D4).withValues(alpha: 0.10),
+                color: AppTheme.neonCyan.withValues(alpha: 0.20),
                 border: Border.all(
-                  color: const Color(0xFF06B6D4).withValues(alpha: 0.20),
+                  color: AppTheme.neonCyan.withValues(alpha: 0.20),
                   width: 1.5,
                 ),
               ),
@@ -478,16 +490,16 @@ class _ScanningQRIcon extends StatelessWidget {
                       gradient: LinearGradient(
                         colors: [
                           Colors.transparent,
-                          const Color(0xFF10B981).withValues(alpha: 0.9),
-                          const Color(0xFF06B6D4),
-                          const Color(0xFF10B981).withValues(alpha: 0.9),
+                          AppTheme.neonGreen.withValues(alpha: 0.9),
+                          AppTheme.neonCyan,
+                          AppTheme.neonGreen.withValues(alpha: 0.9),
                           Colors.transparent,
                         ],
                         stops: const [0.0, 0.2, 0.5, 0.8, 1.0],
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.5),
+                          color: AppTheme.neonGreen.withValues(alpha: 0.5),
                           blurRadius: 12,
                           spreadRadius: 2,
                         ),
@@ -570,10 +582,10 @@ class _PulsingDiamondIconState extends State<_PulsingDiamondIcon>
             height: 130,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFFF59E0B).withValues(alpha: 0.10),
+              color: AppTheme.warning.withValues(alpha: 0.10),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFFBBF24).withValues(alpha: glowOpacity),
+                  color: AppTheme.tierVip.withValues(alpha: glowOpacity),
                   blurRadius: 40,
                   spreadRadius: 4,
                 ),
@@ -583,7 +595,7 @@ class _PulsingDiamondIconState extends State<_PulsingDiamondIcon>
               child: Icon(
                 Icons.diamond_rounded,
                 size: 56,
-                color: Color(0xFFFBBF24),
+                color: AppTheme.tierVip,
               ),
             ),
           ),

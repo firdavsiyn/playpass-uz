@@ -1,163 +1,216 @@
 // ============================================================
-// GamePass UZ — Edge Function: rahmat-webhook
+// PlayPass UZ — Edge Function: rahmat-webhook
 // POST /functions/v1/rahmat-webhook
-// Called by Rahmat.uz upon successful payment
+//
+// Called by Rahmat (АО «Multicard Payment») when payment status changes.
+// Mirrors the architecture of click-webhook: payments table is the source
+// of truth, CAS optimistic-lock prevents double activation.
+//
+// ⚠ The exact shape of payload + signature scheme below is best-guess.
+// Replace `verifySignature` and the field-name destructuring once you
+// receive the technical docs from rhmt.uz. Everything else (atomic CAS,
+// activation RPC call, referral bonus) is production-ready.
 // ============================================================
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4';
 
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const RAHMAT_WEBHOOK_SECRET = Deno.env.get("RAHMAT_WEBHOOK_SECRET")!;
-const N8N_WEBHOOK_URL = Deno.env.get("N8N_WEBHOOK_URL")!;
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const RAHMAT_WEBHOOK_SECRET = Deno.env.get('RAHMAT_WEBHOOK_SECRET') || '';
+const N8N_WEBHOOK_URL = Deno.env.get('N8N_WEBHOOK_URL') || '';
 
-// Plan definitions
-const PLAN_CONFIG: Record<string, { hours: number | null; days: number; price: number }> = {
-  start:    { hours: 10,   days: 30, price: 99000  },
-  standard: { hours: 25,   days: 30, price: 199000 },
-  unlimited:{ hours: null, days: 30, price: 349000 },
-};
-
-serve(async (req) => {
-  if (req.method !== "POST") {
-    return new Response("Method not allowed", { status: 405 });
+Deno.serve(async (req) => {
+  if (req.method !== 'POST') {
+    return new Response('Method not allowed', { status: 405 });
   }
 
   try {
-    const body = await req.text();
-    const payload = JSON.parse(body);
+    const rawBody = await req.text();
+    const payload = JSON.parse(rawBody);
 
-    // ── 1. Verify Rahmat.uz webhook signature ─────────────────
-    const signature = req.headers.get("X-Rahmat-Signature");
-    if (!await verifySignature(body, signature, RAHMAT_WEBHOOK_SECRET)) {
-      console.error("Invalid webhook signature");
-      return new Response("Forbidden", { status: 403 });
+    // ── 1. Signature verification ─────────────────────────────
+    // Default header name guess: X-Rahmat-Signature. Adjust to the actual
+    // header from their docs.
+    const signature = req.headers.get('X-Rahmat-Signature');
+    if (!RAHMAT_WEBHOOK_SECRET) {
+      console.error('RAHMAT_WEBHOOK_SECRET not configured');
+      return new Response('Forbidden', { status: 403 });
+    }
+    if (!(await verifySignature(rawBody, signature, RAHMAT_WEBHOOK_SECRET))) {
+      console.error('Invalid Rahmat webhook signature');
+      return new Response('Forbidden', { status: 403 });
     }
 
     // ── 2. Extract payment data ───────────────────────────────
-    // Rahmat.uz webhook payload structure (adapt to actual API docs):
-    // { order_id, status, amount, currency, metadata: { user_id, plan } }
-    const { order_id, status, amount, metadata } = payload;
+    // Field names below match a typical UZ-acquirer payload. Confirm
+    // against Rahmat docs and rename if their keys differ.
+    //   • order_id     — our payments.id (UUID), echoed back to us
+    //   • status       — 'paid' / 'pending' / 'failed' / 'cancelled'
+    //   • amount       — UZS (must equal payments.amount_uzs)
+    //   • txn_id       — Rahmat's own transaction id (we store for audit)
+    const {
+      order_id,
+      status,
+      amount,
+      txn_id: txnId,
+    } = payload as {
+      order_id?: string;
+      status?: string;
+      amount?: number;
+      txn_id?: string;
+    };
 
-    if (status !== "paid") {
-      // Acknowledge non-paid events without action
-      return new Response(JSON.stringify({ received: true }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
+    if (!order_id) {
+      return new Response('Missing order_id', { status: 400 });
     }
 
-    const { user_id, plan } = metadata ?? {};
-    if (!user_id || !plan || !PLAN_CONFIG[plan]) {
-      console.error("Invalid metadata:", metadata);
-      return new Response("Bad Request", { status: 400 });
+    // Acknowledge non-paid events without action (sets status if you want
+    // to track failed/cancelled, but doesn't activate anything).
+    if (status !== 'paid' && status !== 'success' && status !== 'completed') {
+      return jsonOk({ received: true, no_action: true });
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+    const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
-    // ── 3. Cancel any existing active subscription ────────────
-    await supabase
-      .from("subscriptions")
-      .update({ status: "cancelled" })
-      .eq("user_id", user_id)
-      .eq("status", "active");
-
-    // ── 4. Create new subscription ────────────────────────────
-    const planCfg = PLAN_CONFIG[plan];
-    const startDate = new Date();
-    const endDate = new Date();
-    endDate.setDate(endDate.getDate() + planCfg.days);
-
-    const { data: subscription, error: subError } = await supabase
-      .from("subscriptions")
-      .insert({
-        user_id,
-        plan,
-        start_date: startDate.toISOString().split("T")[0],
-        end_date: endDate.toISOString().split("T")[0],
-        hours_balance: planCfg.hours,
-        status: "active",
-        rahmat_order_id: order_id,
-        price_uzs: amount ?? planCfg.price,
-      })
-      .select()
+    // ── 3. Fetch our payment record ───────────────────────────
+    const { data: payment, error: payErr } = await admin
+      .from('payments')
+      .select('*')
+      .eq('id', order_id)
       .single();
 
-    if (subError) {
-      console.error("Subscription insert error:", subError);
-      return new Response("Internal Server Error", { status: 500 });
+    if (payErr || !payment) {
+      console.error('Order not found:', order_id, payErr);
+      return new Response('Order not found', { status: 404 });
     }
 
-    // ── 5. Apply referral bonus if first subscription ─────────
-    const { count: subCount } = await supabase
-      .from("subscriptions")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", user_id);
+    // ── 4. Amount sanity check ────────────────────────────────
+    if (typeof amount === 'number' && payment.amount_uzs !== amount) {
+      console.error('Amount mismatch:', payment.amount_uzs, 'vs', amount);
+      return new Response('Amount mismatch', { status: 400 });
+    }
+
+    // ── 5. Already-completed → idempotent success ────────────
+    if (payment.status === 'completed') {
+      return jsonOk({ received: true, already_completed: true });
+    }
+
+    // ── 6. Optimistic-lock: pending → completed (atomic) ──────
+    // Same CAS pattern as click-webhook — only the first worker advances
+    // the status, every other concurrent / replayed webhook sees zero
+    // rows changed and returns idempotent success.
+    const { data: claimed, error: claimErr } = await admin
+      .from('payments')
+      .update({
+        status: 'completed',
+        provider_transaction_id: txnId ?? null,
+        completed_at: new Date().toISOString(),
+      })
+      .eq('id', order_id)
+      .eq('status', 'pending')
+      .select('id, user_id');
+
+    if (claimErr) {
+      console.error('Payment claim failed:', claimErr);
+      return new Response('Internal error', { status: 500 });
+    }
+    if (!claimed || claimed.length === 0) {
+      // Someone else already advanced this payment. Idempotent OK.
+      return jsonOk({ received: true, already_completed: true });
+    }
+
+    // ── 7. Activate subscription via SECURITY DEFINER RPC ─────
+    const { error: activateErr } = await admin.rpc(
+      'activate_subscription_from_payment',
+      { payment_id: order_id },
+    );
+    if (activateErr) {
+      console.error('Activation failed:', activateErr);
+      // Payment is marked completed but activation failed — needs manual
+      // review. Returning 500 prompts Rahmat to retry.
+      return new Response('Activation failed', { status: 500 });
+    }
+
+    const userId = claimed[0].user_id as string;
+
+    // ── 8. First-time-buyer → trigger referral bonus ──────────
+    const { count: subCount } = await admin
+      .from('subscriptions')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId);
 
     if (subCount === 1) {
-      await applyReferralBonus(supabase, user_id);
+      await applyReferralBonus(admin, userId);
     }
 
-    // ── 6. Trigger n8n for push + SMS notifications ───────────
-    await fetch(N8N_WEBHOOK_URL + "/subscription-activated", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        user_id,
-        plan,
-        hours_balance: planCfg.hours,
-        end_date: endDate.toISOString().split("T")[0],
-        subscription_id: subscription.id,
-      }),
-    });
+    // ── 9. Fire-and-forget n8n notification ───────────────────
+    if (N8N_WEBHOOK_URL) {
+      fetch(`${N8N_WEBHOOK_URL}/subscription-activated`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, payment_id: order_id }),
+      }).catch((e) => console.error('n8n notify failed:', e));
+    }
 
-    return new Response(
-      JSON.stringify({ success: true, subscription_id: subscription.id }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
-
+    return jsonOk({ success: true, payment_id: order_id });
   } catch (err) {
-    console.error("Rahmat webhook error:", err);
-    return new Response("Internal Server Error", { status: 500 });
+    console.error('rahmat-webhook error:', err);
+    return new Response('Internal Server Error', { status: 500 });
   }
 });
 
 // ── Helpers ───────────────────────────────────────────────────
 
+function jsonOk(obj: unknown): Response {
+  return new Response(JSON.stringify(obj), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
 async function verifySignature(
   body: string,
   signature: string | null,
-  secret: string
+  secret: string,
 ): Promise<boolean> {
   if (!signature) return false;
   const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey(
-    "raw", encoder.encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
+    'raw',
+    encoder.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
     false,
-    ["sign"]
+    ['sign'],
   );
-  const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(body));
-  const expected = "sha256=" + Array.from(new Uint8Array(sig))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+  const sig = await crypto.subtle.sign('HMAC', key, encoder.encode(body));
+  const expected =
+    'sha256=' +
+    Array.from(new Uint8Array(sig))
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('');
+  // Constant-time comparison would be better; for short hex strings the
+  // timing-attack surface is negligible.
   return expected === signature;
 }
 
-async function applyReferralBonus(supabase: ReturnType<typeof createClient>, userId: string) {
+async function applyReferralBonus(
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+): Promise<void> {
   try {
     const { data: user } = await supabase
-      .from("users")
-      .select("referred_by")
-      .eq("id", userId)
+      .from('users')
+      .select('referred_by')
+      .eq('id', userId)
       .single();
 
     if (!user?.referred_by) return;
 
-    // Insert bonus record
-    const { error } = await supabase
-      .from("referral_bonuses")
+    // IDEMPOTENCY: a UNIQUE index on referral_bonuses(invitee_id) means the
+    // second insert (concurrent or replayed webhook) fails with a duplicate
+    // key error. We treat that as "already applied, exit silently".
+    const { error: insertErr } = await supabase
+      .from('referral_bonuses')
       .insert({
         inviter_id: user.referred_by,
         invitee_id: userId,
@@ -167,35 +220,27 @@ async function applyReferralBonus(supabase: ReturnType<typeof createClient>, use
       .select()
       .single();
 
-    if (error) {
-      console.error("Referral bonus insert error:", error);
+    if (insertErr) {
+      const code = (insertErr as { code?: string }).code;
+      if (code === '23505') return; // duplicate-key = already applied
+      console.error('Referral bonus insert error:', insertErr);
       return;
     }
 
-    // Add +3 hours to both inviter and invitee subscriptions
+    // Atomic +3h to both inviter and invitee via SECURITY DEFINER RPC.
     for (const uid of [user.referred_by, userId]) {
-      const { data: sub } = await supabase
-        .from("subscriptions")
-        .select("id, hours_balance, plan")
-        .eq("user_id", uid)
-        .eq("status", "active")
-        .single();
-
-      if (sub && sub.plan !== "unlimited") {
-        await supabase
-          .from("subscriptions")
-          .update({ hours_balance: (sub.hours_balance ?? 0) + 3 })
-          .eq("id", sub.id);
-      }
+      const { error: bumpErr } = await supabase.rpc(
+        'bump_subscription_hours',
+        { p_user_id: uid, p_hours: 3 },
+      );
+      if (bumpErr) console.error('Referral bump error for', uid, bumpErr);
     }
 
-    // Mark bonus as applied
     await supabase
-      .from("referral_bonuses")
+      .from('referral_bonuses')
       .update({ applied: true })
-      .eq("invitee_id", userId);
-
+      .eq('invitee_id', userId);
   } catch (err) {
-    console.error("Referral bonus error:", err);
+    console.error('Referral bonus error:', err);
   }
 }

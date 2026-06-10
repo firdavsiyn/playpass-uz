@@ -7,7 +7,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../models/club.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_locale.dart';
-import '../../../core/widgets/neon_shimmer.dart';
 
 class NearbyClubsRow extends ConsumerWidget {
   final AsyncValue<List<Club>> clubsAsync;
@@ -28,15 +27,9 @@ class NearbyClubsRow extends ConsumerWidget {
                 itemBuilder: (_, i) => _ClubCard(club: clubs[i]),
               ),
             ),
-      loading: () => SizedBox(
-        height: 175,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          itemCount: 3,
-          separatorBuilder: (_, __) => const SizedBox(width: 12),
-          itemBuilder: (_, __) => const _ClubCardSkeleton(),
-        ),
-      ),
+      // No shimmer placeholders — the section just appears once data is ready.
+      // Reserves the row height to prevent layout jump when cards slide in.
+      loading: () => const SizedBox(height: 175),
       error: (_, __) => Text(ref.lang('nearby.error'),
           style: const TextStyle(color: AppTheme.error)),
     );
@@ -90,9 +83,9 @@ class _ClubCard extends StatelessWidget {
                             placeholder: (_, __) => Container(
                               height: 100,
                               color: context.surface,
-                              child: const Center(
+                              child: Center(
                                 child: Icon(Icons.image_outlined,
-                                    color: AppTheme.textMuted, size: 24),
+                                    color: context.text3, size: 24),
                               ),
                             ),
                             errorWidget: (_, __, ___) => Container(
@@ -107,9 +100,9 @@ class _ClubCard extends StatelessWidget {
                                   end: Alignment.bottomRight,
                                 ),
                               ),
-                              child: const Center(
+                              child: Center(
                                 child: Icon(Icons.sports_esports_rounded,
-                                    color: AppTheme.textMuted, size: 28),
+                                    color: context.text3, size: 28),
                               ),
                             ),
                           )
@@ -125,9 +118,9 @@ class _ClubCard extends StatelessWidget {
                                 end: Alignment.bottomRight,
                               ),
                             ),
-                            child: const Center(
+                            child: Center(
                               child: Icon(Icons.sports_esports_rounded,
-                                  color: AppTheme.textMuted, size: 32),
+                                  color: context.text3, size: 32),
                             ),
                           ),
                   ),
@@ -162,7 +155,7 @@ class _ClubCard extends StatelessWidget {
                         const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                     decoration: BoxDecoration(
                       color: statusColor.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(8),
                       border:
                           Border.all(color: statusColor.withValues(alpha: 0.4)),
                       boxShadow: [
@@ -192,7 +185,7 @@ class _ClubCard extends StatelessWidget {
                           club.isOpen ? 'LIVE' : 'OFF',
                           style: TextStyle(
                             color: statusColor,
-                            fontSize: 9,
+                            fontSize: 11,
                             fontWeight: FontWeight.w800,
                             letterSpacing: 0.5,
                           ),
@@ -212,14 +205,14 @@ class _ClubCard extends StatelessWidget {
                           horizontal: 6, vertical: 3),
                       decoration: BoxDecoration(
                         color: AppTheme.tierVip.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(8),
                         border: Border.all(
                             color: AppTheme.tierVip.withValues(alpha: 0.4)),
                       ),
                       child: const Text('VIP',
                           style: TextStyle(
                             color: AppTheme.tierVip,
-                            fontSize: 8,
+                            fontSize: 11,
                             fontWeight: FontWeight.w800,
                           )),
                     ),
@@ -277,22 +270,5 @@ class _ClubCard extends StatelessWidget {
   }
 }
 
-class _ClubCardSkeleton extends StatelessWidget {
-  const _ClubCardSkeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    return NeonShimmer(
-      borderRadius: 16,
-      child: Container(
-        width: 150,
-        height: 175,
-        decoration: BoxDecoration(
-          color: context.card,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.primary.withValues(alpha: 0.04)),
-        ),
-      ),
-    );
-  }
-}
+// _ClubCardSkeleton was removed — empty SizedBox is used during loading
+// to avoid the visual flicker of shimmer tiles on cold start.

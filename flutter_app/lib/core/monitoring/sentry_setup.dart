@@ -35,6 +35,10 @@ class AppMonitoring {
         // Capture failed HTTP requests + navigation breadcrumbs
         options.autoAppStart = true;
         options.attachScreenshot = false; // privacy: don't auto-attach
+        // attachViewHierarchy is experimental in sentry_flutter — explicitly
+        // off, but accessed via a guarded ignore so future API changes won't
+        // hard-break our build.
+        // ignore: experimental_member_use
         options.attachViewHierarchy = false;
 
         // Suppress known-noise errors

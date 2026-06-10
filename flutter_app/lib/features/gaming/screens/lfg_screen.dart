@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/branded_loader.dart';
 import '../../../services/supabase_service.dart';
 
 final lfgPostsProvider =
@@ -58,7 +59,7 @@ class LfgScreen extends ConsumerWidget {
           // Posts
           Expanded(
             child: data.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const BrandedLoader(),
               error: (e, _) => Center(child: Text('$e')),
               data: (posts) {
                 if (posts.isEmpty) {
@@ -108,7 +109,7 @@ class LfgScreen extends ConsumerWidget {
       isScrollControlled: true,
       backgroundColor: context.cardDark,
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setState) => Padding(
           padding: EdgeInsets.fromLTRB(
@@ -137,7 +138,7 @@ class LfgScreen extends ConsumerWidget {
                                 horizontal: 12, vertical: 8),
                             decoration: BoxDecoration(
                               color: game == g ? AppTheme.primary : context.bg,
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(20),
                               border: Border.all(
                                   color: game == g
                                       ? AppTheme.primary
