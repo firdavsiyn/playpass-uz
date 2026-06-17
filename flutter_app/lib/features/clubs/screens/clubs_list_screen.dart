@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -181,13 +182,19 @@ class ClubsListScreen extends ConsumerWidget {
                   ),
                   const SizedBox(width: 10),
                   _DiscoveryCard(
-                    icon: Icons.sports_esports_rounded,
+                    icon: Icons.near_me_rounded,
                     iconColor: AppTheme.primary,
                     iconBg: AppTheme.primary.withValues(alpha: 0.12),
-                    label: ref.lang('clubs.by_zones'),
-                    selected: viewMode == 'zones',
-                    onTap: () => ref.read(viewModeProvider.notifier).state =
-                        viewMode == 'zones' ? 'list' : 'zones',
+                    label: ref.lang('clubs.nearby'),
+                    selected: false,
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              const FullscreenMapScreen(nearby: true),
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(width: 10),
                   _DiscoveryCard(
@@ -558,7 +565,10 @@ class _MapView extends ConsumerWidget {
 // ── Fullscreen map screen ──────────────────────────────────
 
 class FullscreenMapScreen extends ConsumerStatefulWidget {
-  const FullscreenMapScreen({super.key});
+  /// When true, the map opens in "nearby" mode: resolves the user's location,
+  /// centers on it, and shows only clubs within [nearbyRadiusMeters].
+  final bool nearby;
+  const FullscreenMapScreen({super.key, this.nearby = false});
 
   @override
   ConsumerState<FullscreenMapScreen> createState() =>
@@ -566,8 +576,71 @@ class FullscreenMapScreen extends ConsumerStatefulWidget {
 }
 
 class _FullscreenMapScreenState extends ConsumerState<FullscreenMapScreen> {
+  static const double nearbyRadiusMeters = 1000;
+
   String? _tierFilter;
   bool _psFilter = false;
+
+  // Nearby-mode state
+  double? _userLat;
+  double? _userLon;
+  bool _locating = false;
+  String? _geoError;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.nearby) _resolveLocation();
+  }
+
+  Future<void> _resolveLocation() async {
+    setState(() {
+      _locating = true;
+      _geoError = null;
+    });
+    try {
+      if (!await Geolocator.isLocationServiceEnabled()) {
+        throw Exception('off');
+      }
+      var perm = await Geolocator.checkPermission();
+      if (perm == LocationPermission.denied) {
+        perm = await Geolocator.requestPermission();
+      }
+      if (perm == LocationPermission.denied ||
+          perm == LocationPermission.deniedForever) {
+        throw Exception('denied');
+      }
+      final pos = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 8),
+      );
+      if (!mounted) return;
+      setState(() {
+        _userLat = pos.latitude;
+        _userLon = pos.longitude;
+        _locating = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _locating = false;
+        _geoError = 'Не удалось определить местоположение';
+      });
+    }
+  }
+
+  /// Haversine distance in meters.
+  double _distanceMeters(double lat1, double lon1, double lat2, double lon2) {
+    const r = 6371000.0;
+    final dLat = (lat2 - lat1) * math.pi / 180;
+    final dLon = (lon2 - lon1) * math.pi / 180;
+    final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+        math.cos(lat1 * math.pi / 180) *
+            math.cos(lat2 * math.pi / 180) *
+            math.sin(dLon / 2) *
+            math.sin(dLon / 2);
+    return r * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+  }
 
   void _showClubSheet(String clubId) {
     final clubs = ref.read(clubsFilteredProvider).valueOrNull ?? [];
@@ -592,6 +665,14 @@ class _FullscreenMapScreenState extends ConsumerState<FullscreenMapScreen> {
     if (_psFilter) {
       filtered = filtered.where((c) => c.hasPlaystation).toList();
     }
+    // Nearby mode: keep only clubs within the radius of the user.
+    if (widget.nearby && _userLat != null && _userLon != null) {
+      filtered = filtered.where((c) {
+        if (c.lat == null || c.lon == null) return false;
+        return _distanceMeters(_userLat!, _userLon!, c.lat!, c.lon!) <=
+            nearbyRadiusMeters;
+      }).toList();
+    }
     return filtered;
   }
 
@@ -611,6 +692,8 @@ class _FullscreenMapScreenState extends ConsumerState<FullscreenMapScreen> {
                 clubs: filtered,
                 occupancy: occ,
                 onMarkerTapped: _showClubSheet,
+                centerLat: widget.nearby ? _userLat : null,
+                centerLon: widget.nearby ? _userLon : null,
               ),
 
               // Top bar overlay
@@ -637,7 +720,13 @@ class _FullscreenMapScreenState extends ConsumerState<FullscreenMapScreen> {
                               borderRadius: BorderRadius.circular(14),
                             ),
                             child: Text(
-                              '${filtered.length} ${ref.lang('clubs.on_map_count')}',
+                              widget.nearby
+                                  ? (_locating
+                                      ? 'Определяем геолокацию…'
+                                      : _geoError != null
+                                          ? _geoError!
+                                          : '${filtered.length} в радиусе 1 км')
+                                  : '${filtered.length} ${ref.lang('clubs.on_map_count')}',
                               style: TextStyle(
                                 color: context.text1,
                                 fontWeight: FontWeight.w600,
@@ -649,7 +738,9 @@ class _FullscreenMapScreenState extends ConsumerState<FullscreenMapScreen> {
                         const SizedBox(width: 10),
                         _MapOverlayButton(
                           icon: Icons.my_location_rounded,
-                          onTap: () => YandexMapService.locateUser(),
+                          onTap: () => widget.nearby
+                              ? _resolveLocation()
+                              : YandexMapService.locateUser(),
                         ),
                       ],
                     ),

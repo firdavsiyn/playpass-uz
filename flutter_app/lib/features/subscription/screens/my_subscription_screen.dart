@@ -157,38 +157,10 @@ class MySubscriptionScreen extends ConsumerWidget {
               ),
             ),
 
-            // ── Plan comparison ─────────────────────────
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
-                child: Text(
-                  ref.lang('sub.compare'),
-                  style: TextStyle(
-                    color: context.text3,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ),
-
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 200,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: AppConstants.plans.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 12),
-                  itemBuilder: (context, index) {
-                    final plan = AppConstants.plans.values.toList()[index];
-                    return _MiniPlanCard(
-                      plan: plan,
-                      onTap: () => context.push('/payment', extra: plan.id),
-                    );
-                  },
-                ),
-              ),
-            ),
+            // (Plan comparison section removed — it listed every plan
+            //  including legacy/non-purchasable tiers. Plans live on the
+            //  dedicated "Купить абонемент" → PlansScreen, gated to
+            //  purchasablePlanCodes.)
 
             // Bottom spacing
             const SliverToBoxAdapter(child: SizedBox(height: 100)),
@@ -730,104 +702,6 @@ class _PromoDialogState extends ConsumerState<_PromoDialog> {
                 : Text(ref.lang('sub.promo_activate')),
           ),
       ],
-    );
-  }
-}
-
-// ── Mini plan card ──────────────────────────────────────────
-
-class _MiniPlanCard extends ConsumerWidget {
-  final PlanConfig plan;
-  final VoidCallback onTap;
-
-  const _MiniPlanCard({required this.plan, required this.onTap});
-
-  Color get _color => AppTheme.planColor(plan.id);
-
-  String _formatPrice(int priceUzs) {
-    final str = priceUzs.toString();
-    final buffer = StringBuffer();
-    for (var i = 0; i < str.length; i++) {
-      if (i > 0 && (str.length - i) % 3 == 0) buffer.write(' ');
-      buffer.write(str[i]);
-    }
-    return '${buffer.toString()} UZS';
-  }
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 160,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: context.card,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: _color.withValues(alpha: 0.25)),
-          boxShadow: [
-            BoxShadow(
-              color: _color.withValues(alpha: 0.1),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Plan name
-            Text(
-              ref.lang('plan.${plan.id}'),
-              style: TextStyle(
-                color: _color,
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 6),
-            // Hours
-            Text(
-              plan.isUnlimited
-                  ? ref.lang('sub.visit_per_day')
-                  : '${plan.hours} ${ref.lang('sub.hours_per_month')}',
-              style: TextStyle(color: context.text2, fontSize: 13),
-            ),
-            const Spacer(),
-            // Price
-            Text(
-              _formatPrice(plan.priceUzs),
-              style: TextStyle(
-                color: context.text1,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(ref.lang('sub.per_month_label'),
-                style: TextStyle(color: context.text3, fontSize: 12)),
-            const SizedBox(height: 10),
-            // Button
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              decoration: BoxDecoration(
-                color: _color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                ref.lang('sub.order_btn'),
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: _color,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

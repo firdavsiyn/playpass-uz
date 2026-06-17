@@ -12,7 +12,6 @@ import '../../../services/supabase_service.dart';
 import '../../../core/constants/feature_flags.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_locale.dart';
-import '../../../core/utils/savings_calculator.dart';
 import '../widgets/subscription_widget.dart';
 import '../widgets/nearby_clubs_row.dart';
 import '../widgets/recent_visits_widget.dart';
@@ -350,27 +349,7 @@ class HomeScreen extends ConsumerWidget {
                       },
                     ),
 
-                  // ── 8. Savings indicator (duplicates hours) ──
-                  subscriptionAsync.when(
-                    data: (sub) {
-                      if (sub == null || !sub.isActive)
-                        return const SizedBox.shrink();
-                      final hoursUsed =
-                          (sub.hoursTotal ?? 0) - (sub.hoursBalance ?? 0);
-                      final saved = SavingsCalculator.calculate(
-                        hoursUsed: hoursUsed,
-                        plan: sub.plan,
-                        subscriptionCost: sub.priceUzs,
-                      );
-                      if (saved <= 0) return const SizedBox.shrink();
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: _SavingsWidget(saved: saved),
-                      );
-                    },
-                    loading: () => const SizedBox.shrink(),
-                    error: (_, __) => const SizedBox.shrink(),
-                  ),
+                  // (Savings indicator removed from home.)
 
                   // ── 9. Friends online widget (social — demoted) ──
                   if (FeatureFlags.friends) ...[
@@ -595,67 +574,6 @@ class _QuickAction extends StatelessWidget {
                   overflow: TextOverflow.ellipsis),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-// ── Savings Widget ─────────────────────────────────────────
-
-class _SavingsWidget extends ConsumerWidget {
-  final int saved;
-  const _SavingsWidget({required this.saved});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final formattedSaved = SavingsCalculator.formatAmount(saved);
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        context.push('/savings');
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              AppTheme.success.withValues(alpha: 0.08),
-              AppTheme.neonCyan.withValues(alpha: 0.04),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppTheme.success.withValues(alpha: 0.15)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppTheme.success.withValues(alpha: 0.15),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.savings_rounded,
-                  color: AppTheme.success, size: 20),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(ref.lang('home.you_saved'),
-                      style: TextStyle(color: context.text2, fontSize: 12)),
-                  Text('$formattedSaved ${ref.lang('home.currency')}',
-                      style: const TextStyle(
-                          color: AppTheme.success,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700)),
-                ],
-              ),
-            ),
-            Icon(Icons.chevron_right_rounded,
-                color: AppTheme.success.withValues(alpha: 0.6), size: 24),
-          ],
         ),
       ),
     );

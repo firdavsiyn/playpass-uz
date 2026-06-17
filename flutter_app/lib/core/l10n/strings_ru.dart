@@ -528,7 +528,7 @@ const Map<String, String> stringsRu = {
   'clubs.favorites': 'Избранные',
   'clubs.free_seats': 'Свободные',
   'clubs.standard': 'Стандарт',
-  'clubs.nearby': 'Рядом',
+  'clubs.nearby': 'Ближайшие',
   'clubs.sort_rating': 'По рейтингу',
   'clubs.sort_price': 'По цене',
   'clubs.sort_name': 'По имени',

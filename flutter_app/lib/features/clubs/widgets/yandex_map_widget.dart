@@ -10,11 +10,18 @@ class YandexMapWidget extends StatefulWidget {
   final Map<String, int>? occupancy;
   final void Function(String clubId)? onMarkerTapped;
 
+  /// When provided, the map centers on this point after init (used by the
+  /// "Ближайшие" / nearby mode to focus on the user's location).
+  final double? centerLat;
+  final double? centerLon;
+
   const YandexMapWidget({
     super.key,
     required this.clubs,
     this.occupancy,
     this.onMarkerTapped,
+    this.centerLat,
+    this.centerLon,
   });
 
   @override
@@ -58,6 +65,10 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         YandexMapService.registerMarkerClick(widget.onMarkerTapped!);
       }
       YandexMapService.setMarkers(widget.clubs, occupancy: widget.occupancy);
+      // Center on the user in nearby mode (if a center was supplied).
+      if (widget.centerLat != null && widget.centerLon != null) {
+        YandexMapService.panTo(widget.centerLat!, widget.centerLon!);
+      }
       if (mounted) setState(() => _mapReady = true);
     } catch (e) {
       debugPrint('[YandexMap] init error: $e');
@@ -79,6 +90,13 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     if (clubsChanged || occupancyChanged) {
       // Re-render markers with fresh occupancy. Cached SVG icons keep this fast.
       YandexMapService.setMarkers(widget.clubs, occupancy: widget.occupancy);
+    }
+
+    // Center became available (location resolved after map init) — pan to it.
+    final centerChanged = widget.centerLat != oldWidget.centerLat ||
+        widget.centerLon != oldWidget.centerLon;
+    if (centerChanged && widget.centerLat != null && widget.centerLon != null) {
+      YandexMapService.panTo(widget.centerLat!, widget.centerLon!);
     }
   }
 

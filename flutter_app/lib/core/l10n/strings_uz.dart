@@ -529,7 +529,7 @@ const Map<String, String> stringsUz = {
   'clubs.favorites': 'Sevimlilar',
   'clubs.free_seats': 'Bo\'sh',
   'clubs.standard': 'Standart',
-  'clubs.nearby': 'Yaqinda',
+  'clubs.nearby': 'Yaqin atrofda',
   'clubs.sort_rating': 'Reyting bo\'yicha',
   'clubs.sort_price': 'Narx bo\'yicha',
   'clubs.sort_name': 'Nomi bo\'yicha',
