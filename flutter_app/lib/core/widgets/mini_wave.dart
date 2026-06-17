@@ -10,11 +10,16 @@ class MiniWave extends StatelessWidget {
   final Color color;
   final Color markerColor;
 
+  /// Soft refracted underglow beneath the line (canvas MaskFilter). Gate to
+  /// hero usage only.
+  final bool glow;
+
   const MiniWave({
     super.key,
     this.height = 40,
     this.color = AppTheme.softBlue,
     this.markerColor = AppTheme.accent,
+    this.glow = false,
   });
 
   @override
@@ -23,7 +28,7 @@ class MiniWave extends StatelessWidget {
       height: height,
       width: double.infinity,
       child: CustomPaint(
-        painter: _WavePainter(color: color, marker: markerColor),
+        painter: _WavePainter(color: color, marker: markerColor, glow: glow),
       ),
     );
   }
@@ -32,7 +37,8 @@ class MiniWave extends StatelessWidget {
 class _WavePainter extends CustomPainter {
   final Color color;
   final Color marker;
-  _WavePainter({required this.color, required this.marker});
+  final bool glow;
+  _WavePainter({required this.color, required this.marker, required this.glow});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -52,6 +58,17 @@ class _WavePainter extends CustomPainter {
       }
       tip = Offset(x, y);
     }
+    if (glow) {
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = color.withValues(alpha: 0.15)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 5
+          ..strokeCap = StrokeCap.round
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
+      );
+    }
     canvas.drawPath(
       path,
       Paint()
@@ -70,5 +87,5 @@ class _WavePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _WavePainter old) =>
-      old.color != color || old.marker != marker;
+      old.color != color || old.marker != marker || old.glow != glow;
 }

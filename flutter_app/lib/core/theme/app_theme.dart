@@ -22,16 +22,56 @@ extension ThemeColors on BuildContext {
   Color get borderSubtle =>
       isDark ? const Color(0xFF161F36) : const Color(0xFFE3ECFA);
 
-  // Glass
+  // Glass (legacy micro-tints — still used for icon-chip overlays)
   Color get glass => isDark ? const Color(0x14FFFFFF) : const Color(0x0A000000);
   Color get glassStrong =>
       isDark ? const Color(0x28FFFFFF) : const Color(0x18000000);
+
+  // ── Liquid Glass tokens (navy frost; never hardcoded white/black bodies
+  //    so light mode holds) ──────────────────────────────────────────────
+  /// Fake-glass body (no real blur). Higher alpha hides the lack of refraction.
+  Color get glassFill => isDark
+      ? AppTheme.bgCard.withValues(alpha: 0.62)
+      : AppTheme.lightCard.withValues(alpha: 0.70);
+
+  /// Stronger fill for in-scroll tiles / dense rows so they read solid.
+  Color get glassFillStrong => isDark
+      ? AppTheme.bgCard.withValues(alpha: 0.78)
+      : AppTheme.lightCard.withValues(alpha: 0.86);
+
+  /// Lower-alpha body used BEHIND a real BackdropFilter (blur supplies body).
+  Color get glassFillReal => isDark
+      ? AppTheme.bgCard.withValues(alpha: 0.50)
+      : AppTheme.lightCard.withValues(alpha: 0.60);
+
+  /// Top specular sheen start color (wet-glass highlight).
+  Color get glassSheen => isDark
+      ? Colors.white.withValues(alpha: 0.15)
+      : Colors.white.withValues(alpha: 0.30);
+
+  /// Bright rim / lensing edge stop (soft-blue on dark, white on light).
+  Color get glassRim =>
+      isDark ? const Color(0x59BBD9FF) : const Color(0x73FFFFFF);
+
+  /// Background aurora blob colors (a: top-right, b: bottom-left, c: warm edge).
+  ({Color a, Color b, Color c}) get glassBlobs => isDark
+      ? (
+          a: AppTheme.primaryDark.withValues(alpha: 0.22),
+          b: AppTheme.indigo.withValues(alpha: 0.16),
+          c: AppTheme.accent.withValues(alpha: 0.05),
+        )
+      : (
+          a: AppTheme.primary.withValues(alpha: 0.06),
+          b: AppTheme.indigo.withValues(alpha: 0.05),
+          c: Colors.transparent,
+        );
 
   // Nav bar bg (deep navy)
   Color get navBg => isDark ? const Color(0xFF0A1120) : Colors.white;
 
   // Frozen subscription state (replaces Colors.blueGrey literals)
-  Color get frozen => isDark ? const Color(0xFF78909C) : const Color(0xFF546E7A);
+  Color get frozen =>
+      isDark ? const Color(0xFF78909C) : const Color(0xFF546E7A);
   Color get frozenBg => frozen.withValues(alpha: 0.15);
 }
 
@@ -43,11 +83,14 @@ class AppTheme {
   // ══════════════════════════════════════════════════════════
 
   // ── Brand Colors ────────────────────────────────────────
-  static const Color primary = Color(0xFF2E6FE0); // Royal blue (readable on dark)
+  static const Color primary =
+      Color(0xFF2E6FE0); // Royal blue (readable on dark)
   static const Color primaryLight = Color(0xFF6FA3F5);
   static const Color primaryDark = Color(0xFF004797); // Brand royal-blue swatch
-  static const Color accent = Color(0xFFE6F945); // ⚡ Electric lime — CTAs/highlights
-  static const Color softBlue = Color(0xFFBBD9FF); // Soft blue — chips/secondary
+  static const Color accent =
+      Color(0xFFE6F945); // ⚡ Electric lime — CTAs/highlights
+  static const Color softBlue =
+      Color(0xFFBBD9FF); // Soft blue — chips/secondary
 
   // Glow / gradient stops (names kept; remapped to navy-blue family)
   static const Color neonPurple = Color(0xFF2E6FE0); // → royal blue
@@ -91,9 +134,11 @@ class AppTheme {
   static const Color indigo = Color(0xFF1E5BC6);
 
   // ── Brand One-offs ──────────────────────────────────────
-  static const Color telegram = Color(0xFF2AABEE); // Telegram brand (club_detail, profile)
+  static const Color telegram =
+      Color(0xFF2AABEE); // Telegram brand (club_detail, profile)
   static const Color streakFlame = Color(0xFFFF6B35); // streak widget flame
-  static const Color streakFlameLight = Color(0xFFFFB627); // streak flame gradient end
+  static const Color streakFlameLight =
+      Color(0xFFFFB627); // streak flame gradient end
 
   /// Canonical plan → tier color mapping (single source of truth).
   /// Replaces the duplicated switch in my_subscription / plans / gift_purchase.
@@ -132,6 +177,7 @@ class AppTheme {
       ];
 
   /// Glassmorphism decoration
+  @Deprecated('Use GlassSurface + context.glassFill for liquid-glass surfaces')
   static BoxDecoration glassDecoration({
     double borderRadius = 16,
     Color? glowColor,
@@ -190,6 +236,7 @@ class AppTheme {
   }
 
   /// Glassmorphism card decoration — frosted glass effect with configurable opacity
+  @Deprecated('Use GlassSurface + context.glassFill for liquid-glass surfaces')
   static BoxDecoration glassCard({
     double borderRadius = 16,
     double opacity = 0.08,
@@ -631,7 +678,9 @@ class AppTheme {
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             textStyle: const TextStyle(
-                fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w700),
+                fontFamily: 'Poppins',
+                fontSize: 15,
+                fontWeight: FontWeight.w700),
           ),
         ),
 

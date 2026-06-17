@@ -1,7 +1,7 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../monitoring/sentry_setup.dart';
+import '../widgets/glass_surface.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -313,26 +313,26 @@ class MainShell extends ConsumerWidget {
         clipBehavior: Clip.none,
         alignment: Alignment.bottomCenter,
         children: [
-          // --- Glassmorphism bottom nav ---
-          ClipRRect(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: context.navBg.withValues(alpha: 0.85),
-                  border: Border(
-                    top: BorderSide(
-                      color: AppTheme.primary.withValues(alpha: 0.08),
-                    ),
+          // --- Liquid-glass bottom nav (the ONE persistent real blur) ---
+          // Wrapped in RepaintBoundary so body scroll never re-triggers the
+          // BackdropFilter pass. Upward primary lip carried by the outer shadow.
+          RepaintBoundary(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primary.withValues(alpha: 0.10),
+                    blurRadius: 24,
+                    offset: const Offset(0, -4),
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.primary.withValues(alpha: 0.10),
-                      blurRadius: 24,
-                      offset: const Offset(0, -4),
-                    ),
-                  ],
-                ),
+                ],
+              ),
+              child: GlassSurface(
+                real: true,
+                blurSigma: 18,
+                padding: EdgeInsets.zero,
+                customRadius:
+                    const BorderRadius.vertical(top: Radius.circular(28)),
                 // Respect the bottom safe area (home indicator on iPhone X+).
                 // The glass background still fills down to the screen edge;
                 // only the tappable items/labels are lifted above the inset.
@@ -453,28 +453,23 @@ class _ScannerButton extends StatelessWidget {
         height: 56,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF7C3AED),
-              Color(0xFF6366F1),
-              Color(0xFF06B6D4),
-            ],
+          gradient: AppTheme.premiumGradient,
+          border: Border.all(
+            color: AppTheme.accent.withValues(alpha: active ? 0.7 : 0.4),
+            width: 1.5,
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF7C3AED)
-                  .withValues(alpha: active ? 0.6 : 0.35),
-              blurRadius: active ? 20 : 14,
+              color: AppTheme.primary.withValues(alpha: active ? 0.6 : 0.35),
+              blurRadius: active ? 22 : 14,
               spreadRadius: active ? 2 : 0,
               offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: const Icon(
+        child: Icon(
           Icons.qr_code_scanner_rounded,
-          color: Colors.white,
+          color: active ? AppTheme.accent : Colors.white,
           size: 26,
         ),
       ),

@@ -9,6 +9,8 @@ import 'package:image_picker/image_picker.dart';
 import '../../../services/supabase_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/glow_card.dart';
+import '../../../core/widgets/glass_surface.dart';
+import '../../../core/widgets/glass_backdrop.dart';
 import '../../../core/widgets/dot_number.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/feature_flags.dart';
@@ -76,17 +78,19 @@ class ProfileScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(ref.lang('profile.title'))),
-      body: RefreshIndicator(
-        color: AppTheme.primary,
-        onRefresh: () async {
-          ref.invalidate(profileProvider);
-          ref.invalidate(subscriptionProvider);
-          await Future.wait([
-            ref.read(profileProvider.future),
-            ref.read(subscriptionProvider.future),
-          ]).catchError((_) => <Object?>[]);
-        },
-        child: body,
+      body: GlassBackdrop(
+        child: RefreshIndicator(
+          color: AppTheme.primary,
+          onRefresh: () async {
+            ref.invalidate(profileProvider);
+            ref.invalidate(subscriptionProvider);
+            await Future.wait([
+              ref.read(profileProvider.future),
+              ref.read(subscriptionProvider.future),
+            ]).catchError((_) => <Object?>[]);
+          },
+          child: body,
+        ),
       ),
     );
   }
@@ -138,12 +142,11 @@ class _ProfileContent extends ConsumerWidget {
             borderRadius: BorderRadius.circular(20),
           ),
           padding: const EdgeInsets.all(1.5),
-          child: Container(
+          child: GlassSurface(
+            radius: 19,
             padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: context.card,
-              borderRadius: BorderRadius.circular(19),
-            ),
+            glowColor: AppTheme.primary,
+            glowAt: const Alignment(-0.6, -0.8),
             child: Column(
               children: [
                 // Avatar + Name row
@@ -348,15 +351,10 @@ class _ProfileContent extends ConsumerWidget {
 
         // Subscription card
         if (subscription != null)
-          Container(
+          GlassSurface(
+            strong: true,
+            radius: 14,
             padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: context.card,
-              borderRadius: BorderRadius.circular(14),
-              border:
-                  Border.all(color: AppTheme.primary.withValues(alpha: 0.2)),
-              boxShadow: AppTheme.cardGlow(),
-            ),
             child: Row(
               children: [
                 Column(
@@ -809,20 +807,17 @@ class _LanguageToggle extends ConsumerWidget {
     final locale = ref.watch(localeProvider);
     final isRu = locale == 'ru';
 
-    return GestureDetector(
-      onTap: () {
-        final next = isRu ? 'uz' : 'ru';
-        ref.read(localeProvider.notifier).state = next;
-        SupabaseService().updateLanguage(next);
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: GlassSurface(
+        strong: true,
+        radius: 14,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: context.card,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppTheme.primary.withValues(alpha: 0.1)),
-        ),
+        onTap: () {
+          final next = isRu ? 'uz' : 'ru';
+          ref.read(localeProvider.notifier).state = next;
+          SupabaseService().updateLanguage(next);
+        },
         child: Row(
           children: [
             Icon(Icons.language_rounded, color: context.text1, size: 22),
@@ -870,40 +865,42 @@ class _ThemeToggle extends ConsumerWidget {
       label = 'Auto';
     }
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: context.card,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppTheme.primary.withValues(alpha: 0.1)),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: context.text1, size: 22),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Text(label,
-                style: TextStyle(color: context.text1, fontSize: 15)),
-          ),
-          Container(
-            padding: const EdgeInsets.all(2),
-            decoration: BoxDecoration(
-              color: context.surface,
-              borderRadius: BorderRadius.circular(10),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: GlassSurface(
+        strong: true,
+        radius: 14,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            Icon(icon, color: context.text1, size: 22),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(label,
+                  style: TextStyle(color: context.text1, fontSize: 15)),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _ThemeChip(
-                    label: '\u2600\uFE0F', value: 'light', current: themeMode),
-                _ThemeChip(
-                    label: '\uD83C\uDF19', value: 'dark', current: themeMode),
-                _ThemeChip(label: '\u23F0', value: 'auto', current: themeMode),
-              ],
+            Container(
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                color: context.surface,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _ThemeChip(
+                      label: '\u2600\uFE0F',
+                      value: 'light',
+                      current: themeMode),
+                  _ThemeChip(
+                      label: '\uD83C\uDF19', value: 'dark', current: themeMode),
+                  _ThemeChip(
+                      label: '\u23F0', value: 'auto', current: themeMode),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -956,6 +953,8 @@ class _BentoStat extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GlowCard(
+      glass: true,
+      strong: true,
       glowColor: glow,
       glowAt: glowAt,
       height: 96,
@@ -1037,20 +1036,17 @@ class _MenuItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = color ?? context.text1;
     final iconColor = color ?? AppTheme.primaryLight;
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        onTap();
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 6),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: GlassSurface(
+        strong: true,
+        radius: 14,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-        decoration: BoxDecoration(
-          color: context.card,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-              color: (color ?? AppTheme.primary).withValues(alpha: 0.1)),
-        ),
+        borderColor: (color ?? AppTheme.primary).withValues(alpha: 0.10),
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onTap();
+        },
         child: Row(
           children: [
             Container(

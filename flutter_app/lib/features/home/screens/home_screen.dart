@@ -13,6 +13,8 @@ import '../../../core/constants/feature_flags.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_locale.dart';
 import '../../../core/widgets/glow_card.dart';
+import '../../../core/widgets/glass_surface.dart';
+import '../../../core/widgets/glass_backdrop.dart';
 import '../../../core/widgets/dot_number.dart';
 import '../../../core/widgets/mini_wave.dart';
 import '../widgets/nearby_clubs_row.dart';
@@ -108,239 +110,219 @@ class HomeScreen extends ConsumerWidget {
 
     return Scaffold(
       // ── Main Content ────────────────────────────────────
-      // Utility-first: no atmospheric orbs (removed — pure decoration that
-      // reads as dirty blotches on the light background).
-      body: RefreshIndicator(
-        color: AppTheme.primary,
-        onRefresh: () async {
-          await Future.wait([
-            ref.refresh(activeSubscriptionProvider.future),
-            ref.refresh(nearbyClubsProvider.future),
-            ref.refresh(recentVisitsProvider.future),
-            ref.refresh(activeSessionProvider.future),
-          ]);
-        },
-        child: CustomScrollView(
-          slivers: [
-            // ── App Bar ─────────────────────────────────────
-            SliverAppBar(
-              floating: true,
-              pinned: false,
-              backgroundColor: context.bg,
-              title: Row(
-                children: [
-                  // Logo with neon glow
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [AppTheme.primary, AppTheme.neonCyan],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.primary.withValues(alpha: 0.4),
-                          blurRadius: 12,
-                          spreadRadius: -4,
+      // GlassBackdrop paints the static aurora field so every frosted surface
+      // (and the nav blur) has navy light to lens, instead of flat grey film.
+      body: GlassBackdrop(
+        child: RefreshIndicator(
+          color: AppTheme.primary,
+          onRefresh: () async {
+            await Future.wait([
+              ref.refresh(activeSubscriptionProvider.future),
+              ref.refresh(nearbyClubsProvider.future),
+              ref.refresh(recentVisitsProvider.future),
+              ref.refresh(activeSessionProvider.future),
+            ]);
+          },
+          child: CustomScrollView(
+            slivers: [
+              // ── App Bar ─────────────────────────────────────
+              SliverAppBar(
+                floating: true,
+                pinned: false,
+                backgroundColor: context.bg,
+                title: Row(
+                  children: [
+                    // Logo with neon glow
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [AppTheme.primary, AppTheme.neonCyan],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
-                      ],
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.primary.withValues(alpha: 0.4),
+                            blurRadius: 12,
+                            spreadRadius: -4,
+                          ),
+                        ],
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.sports_esports_rounded,
+                            color: Colors.white, size: 20),
+                      ),
                     ),
-                    child: const Center(
-                      child: Icon(Icons.sports_esports_rounded,
-                          color: Colors.white, size: 20),
+                    const SizedBox(width: 10),
+                    Text(
+                      'PlayPass',
+                      style: TextStyle(
+                        color: context.text1,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 22,
+                        letterSpacing: -0.5,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    'PlayPass',
-                    style: TextStyle(
-                      color: context.text1,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 22,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
+                  ],
+                ),
+                actions: [
+                  Consumer(builder: (context, ref, _) {
+                    final count =
+                        ref.watch(unreadNotifCountProvider).valueOrNull ?? 0;
+                    return IconButton(
+                      icon: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Icon(Icons.notifications_outlined,
+                              color: context.text1),
+                          if (count > 0)
+                            Positioned(
+                              right: -4,
+                              top: -4,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.error,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                        color: AppTheme.error
+                                            .withValues(alpha: 0.4),
+                                        blurRadius: 6)
+                                  ],
+                                ),
+                                constraints: const BoxConstraints(
+                                    minWidth: 16, minHeight: 16),
+                                child: Text(
+                                  count > 99 ? '99+' : '$count',
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w700),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      onPressed: () => context.push('/notifications'),
+                    );
+                  }),
+                  const SizedBox(width: 4),
                 ],
               ),
-              actions: [
-                Consumer(builder: (context, ref, _) {
-                  final count =
-                      ref.watch(unreadNotifCountProvider).valueOrNull ?? 0;
-                  return IconButton(
-                    icon: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Icon(Icons.notifications_outlined,
-                            color: context.text1),
-                        if (count > 0)
-                          Positioned(
-                            right: -4,
-                            top: -4,
-                            child: Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: BoxDecoration(
-                                color: AppTheme.error,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                      color:
-                                          AppTheme.error.withValues(alpha: 0.4),
-                                      blurRadius: 6)
-                                ],
-                              ),
-                              constraints: const BoxConstraints(
-                                  minWidth: 16, minHeight: 16),
-                              child: Text(
-                                count > 99 ? '99+' : '$count',
-                                style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w700),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                    onPressed: () => context.push('/notifications'),
-                  );
-                }),
-                const SizedBox(width: 4),
-              ],
-            ),
 
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  const SizedBox(height: 8),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    const SizedBox(height: 8),
 
-                  // ════════════════════════════════════════════
-                  // ABOVE THE FOLD — utility-first
-                  // ════════════════════════════════════════════
+                    // ════════════════════════════════════════════
+                    // ABOVE THE FOLD — utility-first
+                    // ════════════════════════════════════════════
 
-                  // ── 1. Active session widget (genuine utility) ──
-                  // Only renders when a session is live.
-                  ref.watch(activeSessionProvider).when(
-                        data: (session) => session != null
-                            ? Padding(
-                                padding: const EdgeInsets.only(bottom: 16),
-                                child: ActiveSessionWidget(
-                                  session: session,
-                                  onEnded: () {
-                                    ref.invalidate(activeSessionProvider);
-                                    ref.invalidate(activeSubscriptionProvider);
-                                  },
-                                  activeSessionLabel:
-                                      ref.lang('home.active_session'),
-                                  endSessionLabel: ref.lang('home.end_session'),
-                                  clubDefault: ref.lang('common.club_default'),
-                                  errorPrefix: ref.lang('common.error_prefix'),
-                                  timeH: ref.lang('common.time_h'),
-                                  timeM: ref.lang('common.time_m'),
-                                  timeS: ref.lang('common.time_s'),
-                                ),
-                              )
-                            : const SizedBox.shrink(),
-                        loading: () => const SizedBox.shrink(),
-                        error: (_, __) => const SizedBox.shrink(),
-                      ),
-
-                  // ── 2. Bento dashboard (glow cards + dot-matrix) ──
-                  subscriptionAsync.when(
-                    data: (sub) => _BentoDashboard(subscription: sub),
-                    loading: () => const SizedBox.shrink(),
-                    error: (_, __) => const _SubscriptionError(),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // ════════════════════════════════════════════
-                  // (Scan moved out of home — the floating scan
-                  //  button in the bottom nav is the single entry.)
-                  // ════════════════════════════════════════════
-
-                  // ── 4. Nearby Clubs Section (gated) ─────────
-                  // Render the whole section only when clubs exist;
-                  // otherwise emit nothing (no header, no "all →").
-                  ref.watch(nearbyClubsProvider).when(
-                        data: (clubs) => clubs.isEmpty
-                            ? const SizedBox.shrink()
-                            : Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  _SectionHeader(
-                                    title: ref.lang('home.nearby'),
-                                    action: ref.lang('home.all'),
-                                    onAction: () => context.go('/clubs'),
+                    // ── 1. Active session widget (genuine utility) ──
+                    // Only renders when a session is live.
+                    ref.watch(activeSessionProvider).when(
+                          data: (session) => session != null
+                              ? Padding(
+                                  padding: const EdgeInsets.only(bottom: 16),
+                                  child: ActiveSessionWidget(
+                                    session: session,
+                                    onEnded: () {
+                                      ref.invalidate(activeSessionProvider);
+                                      ref.invalidate(
+                                          activeSubscriptionProvider);
+                                    },
+                                    activeSessionLabel:
+                                        ref.lang('home.active_session'),
+                                    endSessionLabel:
+                                        ref.lang('home.end_session'),
+                                    clubDefault:
+                                        ref.lang('common.club_default'),
+                                    errorPrefix:
+                                        ref.lang('common.error_prefix'),
+                                    timeH: ref.lang('common.time_h'),
+                                    timeM: ref.lang('common.time_m'),
+                                    timeS: ref.lang('common.time_s'),
                                   ),
-                                  const SizedBox(height: 12),
-                                  NearbyClubsRow(
-                                      clubsAsync:
-                                          ref.watch(nearbyClubsProvider)),
-                                  const SizedBox(height: 24),
-                                ],
-                              ),
-                        loading: () => const SizedBox.shrink(),
-                        error: (_, __) => const SizedBox.shrink(),
-                      ),
+                                )
+                              : const SizedBox.shrink(),
+                          loading: () => const SizedBox.shrink(),
+                          error: (_, __) => const SizedBox.shrink(),
+                        ),
 
-                  // ── 5. Recent Visits Section ───────────────
-                  _SectionHeader(
-                    title: ref.lang('home.recent'),
-                    action: ref.lang('home.history'),
-                    onAction: () => context.push('/profile/history'),
-                  ),
-                  const SizedBox(height: 12),
-                  RecentVisitsWidget(
-                      visitsAsync: ref.watch(recentVisitsProvider)),
+                    // ── 2. Bento dashboard (glow cards + dot-matrix) ──
+                    subscriptionAsync.when(
+                      data: (sub) => _BentoDashboard(subscription: sub),
+                      loading: () => const SizedBox.shrink(),
+                      error: (_, __) => const _SubscriptionError(),
+                    ),
 
-                  const SizedBox(height: 24),
+                    const SizedBox(height: 24),
 
-                  // ── 6. Streak widget (engagement — demoted) ──
-                  Consumer(
-                    builder: (context, ref, _) {
-                      final streakAsync = ref.watch(streakProvider);
-                      return streakAsync.when(
-                        data: (data) {
-                          final days = data['streak_days'] as int? ?? 0;
-                          if (days < 1) return const SizedBox.shrink();
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: StreakWidget(
-                              streakDays: days,
-                              lastVisitDate:
-                                  data['last_visit_date'] as DateTime?,
-                            ),
-                          );
-                        },
-                        loading: () => const SizedBox.shrink(),
-                        error: (_, __) => const SizedBox.shrink(),
-                      );
-                    },
-                  ),
+                    // ════════════════════════════════════════════
+                    // (Scan moved out of home — the floating scan
+                    //  button in the bottom nav is the single entry.)
+                    // ════════════════════════════════════════════
 
-                  // ── 7. Smart Home Feed (engagement — demoted) ──
-                  if (FeatureFlags.smartHomeFeed)
+                    // ── 4. Nearby Clubs Section (gated) ─────────
+                    // Render the whole section only when clubs exist;
+                    // otherwise emit nothing (no header, no "all →").
+                    ref.watch(nearbyClubsProvider).when(
+                          data: (clubs) => clubs.isEmpty
+                              ? const SizedBox.shrink()
+                              : Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    _SectionHeader(
+                                      title: ref.lang('home.nearby'),
+                                      action: ref.lang('home.all'),
+                                      onAction: () => context.go('/clubs'),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    NearbyClubsRow(
+                                        clubsAsync:
+                                            ref.watch(nearbyClubsProvider)),
+                                    const SizedBox(height: 24),
+                                  ],
+                                ),
+                          loading: () => const SizedBox.shrink(),
+                          error: (_, __) => const SizedBox.shrink(),
+                        ),
+
+                    // ── 5. Recent Visits Section ───────────────
+                    _SectionHeader(
+                      title: ref.lang('home.recent'),
+                      action: ref.lang('home.history'),
+                      onAction: () => context.push('/profile/history'),
+                    ),
+                    const SizedBox(height: 12),
+                    RecentVisitsWidget(
+                        visitsAsync: ref.watch(recentVisitsProvider)),
+
+                    const SizedBox(height: 24),
+
+                    // ── 6. Streak widget (engagement — demoted) ──
                     Consumer(
                       builder: (context, ref, _) {
-                        final hintsAsync =
-                            ref.watch(homeRecommendationsProvider);
-                        return hintsAsync.when(
-                          data: (hints) {
-                            if (hints.isEmpty) return const SizedBox.shrink();
-                            return Column(
-                              children: hints
-                                  .take(2)
-                                  .map((h) => Padding(
-                                        padding:
-                                            const EdgeInsets.only(bottom: 10),
-                                        child: SmartHintCard(hint: h),
-                                      ))
-                                  .toList(),
+                        final streakAsync = ref.watch(streakProvider);
+                        return streakAsync.when(
+                          data: (data) {
+                            final days = data['streak_days'] as int? ?? 0;
+                            if (days < 1) return const SizedBox.shrink();
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: StreakWidget(
+                                streakDays: days,
+                                lastVisitDate:
+                                    data['last_visit_date'] as DateTime?,
+                              ),
                             );
                           },
                           loading: () => const SizedBox.shrink(),
@@ -349,36 +331,63 @@ class HomeScreen extends ConsumerWidget {
                       },
                     ),
 
-                  // (Savings indicator removed from home.)
+                    // ── 7. Smart Home Feed (engagement — demoted) ──
+                    if (FeatureFlags.smartHomeFeed)
+                      Consumer(
+                        builder: (context, ref, _) {
+                          final hintsAsync =
+                              ref.watch(homeRecommendationsProvider);
+                          return hintsAsync.when(
+                            data: (hints) {
+                              if (hints.isEmpty) return const SizedBox.shrink();
+                              return Column(
+                                children: hints
+                                    .take(2)
+                                    .map((h) => Padding(
+                                          padding:
+                                              const EdgeInsets.only(bottom: 10),
+                                          child: SmartHintCard(hint: h),
+                                        ))
+                                    .toList(),
+                              );
+                            },
+                            loading: () => const SizedBox.shrink(),
+                            error: (_, __) => const SizedBox.shrink(),
+                          );
+                        },
+                      ),
 
-                  // ── 9. Friends online widget (social — demoted) ──
-                  if (FeatureFlags.friends) ...[
-                    const FriendsOnlineWidget(),
+                    // (Savings indicator removed from home.)
+
+                    // ── 9. Friends online widget (social — demoted) ──
+                    if (FeatureFlags.friends) ...[
+                      const FriendsOnlineWidget(),
+                      const SizedBox(height: 16),
+                    ],
+
+                    // ════════════════════════════════════════════
+                    // MARKETING — very bottom (each self-hides empty)
+                    // ════════════════════════════════════════════
+
+                    // ── 10. Stories bubbles ────────────────────
+                    if (FeatureFlags.stories) ...[
+                      const StoryBubbles(),
+                      const SizedBox(height: 16),
+                    ],
+
+                    // ── 11. Quick Actions ──────────────────────
+                    const _QuickActions(),
                     const SizedBox(height: 16),
-                  ],
 
-                  // ════════════════════════════════════════════
-                  // MARKETING — very bottom (each self-hides empty)
-                  // ════════════════════════════════════════════
+                    // ── 12. Banners ────────────────────────────
+                    const BannersCarousel(),
 
-                  // ── 10. Stories bubbles ────────────────────
-                  if (FeatureFlags.stories) ...[
-                    const StoryBubbles(),
-                    const SizedBox(height: 16),
-                  ],
-
-                  // ── 11. Quick Actions ──────────────────────
-                  const _QuickActions(),
-                  const SizedBox(height: 16),
-
-                  // ── 12. Banners ────────────────────────────
-                  const BannersCarousel(),
-
-                  const SizedBox(height: 100),
-                ]),
+                    const SizedBox(height: 100),
+                  ]),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -538,42 +547,39 @@ class _QuickAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: GestureDetector(
+      child: GlassSurface(
+        strong: true,
+        radius: 14,
+        padding: EdgeInsets.zero,
+        borderColor: color.withValues(alpha: 0.18),
         onTap: () {
           HapticFeedback.lightImpact();
           onTap();
         },
-        child: Container(
-          decoration: BoxDecoration(
-            color: context.glass,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: color.withValues(alpha: 0.12)),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  gradient: RadialGradient(
-                    colors: [
-                      color.withValues(alpha: 0.15),
-                      color.withValues(alpha: 0.05),
-                    ],
-                  ),
-                  shape: BoxShape.circle,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  colors: [
+                    color.withValues(alpha: 0.15),
+                    color.withValues(alpha: 0.05),
+                  ],
                 ),
-                child: Icon(icon, color: color, size: 20),
+                shape: BoxShape.circle,
               ),
-              const SizedBox(height: 6),
-              Text(label,
-                  style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: context.text2),
-                  overflow: TextOverflow.ellipsis),
-            ],
-          ),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            const SizedBox(height: 6),
+            Text(label,
+                style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: context.text2),
+                overflow: TextOverflow.ellipsis),
+          ],
         ),
       ),
     );
@@ -623,6 +629,7 @@ class _BentoDashboard extends ConsumerWidget {
     // No active subscription → lime CTA card.
     if (sub == null || !sub.isActive) {
       return GlowCard(
+        glass: true,
         glowColor: AppTheme.accent,
         glowAt: const Alignment(-0.4, -0.3),
         padding: const EdgeInsets.all(20),
@@ -661,8 +668,9 @@ class _BentoDashboard extends ConsumerWidget {
 
     return Column(
       children: [
-        // Hero — visits remaining as dot-matrix + live wave
+        // Hero — visits remaining as dot-matrix + live wave (frosted glass)
         GlowCard(
+          glass: true,
           glowColor: glow,
           glowAt: const Alignment(0.7, -0.2),
           height: 188,
@@ -694,10 +702,13 @@ class _BentoDashboard extends ConsumerWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  DotMatrixNumber(
-                    isInf ? '∞' : '$visits',
-                    dotSize: 7,
-                    color: AppTheme.accent,
+                  RepaintBoundary(
+                    child: DotMatrixNumber(
+                      isInf ? '∞' : '$visits',
+                      dotSize: 7,
+                      color: AppTheme.accent,
+                      glow: true,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Padding(
@@ -710,7 +721,7 @@ class _BentoDashboard extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: 10),
-              const MiniWave(height: 26),
+              const RepaintBoundary(child: MiniWave(height: 26, glow: true)),
             ],
           ),
         ),
@@ -788,6 +799,8 @@ class _StatTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GlowCard(
+      glass: true,
+      strong: true,
       glowColor: glow,
       glowAt: glowAt,
       height: 118,

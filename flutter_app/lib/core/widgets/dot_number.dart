@@ -12,6 +12,10 @@ class DotMatrixNumber extends StatelessWidget {
   /// Faint "unlit" dots behind the lit ones (the characteristic LED look).
   final bool showGrid;
 
+  /// Soft neon bloom behind each lit dot (canvas MaskFilter, not a
+  /// BackdropFilter). Gate to hero numerals only — never in-scroll tiles.
+  final bool glow;
+
   const DotMatrixNumber(
     this.text, {
     super.key,
@@ -19,6 +23,7 @@ class DotMatrixNumber extends StatelessWidget {
     this.dotGap = 2.2,
     this.color = Colors.white,
     this.showGrid = true,
+    this.glow = false,
   });
 
   @override
@@ -41,6 +46,7 @@ class DotMatrixNumber extends StatelessWidget {
           charGap: charGap,
           color: color,
           showGrid: showGrid,
+          glow: glow,
         ),
       ),
     );
@@ -56,6 +62,7 @@ class _DotPainter extends CustomPainter {
   final double charGap;
   final Color color;
   final bool showGrid;
+  final bool glow;
 
   _DotPainter({
     required this.text,
@@ -64,12 +71,18 @@ class _DotPainter extends CustomPainter {
     required this.charGap,
     required this.color,
     required this.showGrid,
+    required this.glow,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
     final lit = Paint()..color = color;
     final dim = Paint()..color = color.withValues(alpha: 0.10);
+    final bloom = glow
+        ? (Paint()
+          ..color = color.withValues(alpha: 0.5)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.8))
+        : null;
     final r = dotSize / 2;
     double x = 0;
 
@@ -90,6 +103,7 @@ class _DotPainter extends CustomPainter {
           final cx = x + col * cell + r;
           final cy = row * cell + r;
           if (on) {
+            if (bloom != null) canvas.drawCircle(Offset(cx, cy), r, bloom);
             canvas.drawCircle(Offset(cx, cy), r, lit);
           } else if (showGrid) {
             canvas.drawCircle(Offset(cx, cy), r * 0.55, dim);
@@ -102,7 +116,10 @@ class _DotPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _DotPainter old) =>
-      old.text != text || old.color != color || old.dotSize != dotSize;
+      old.text != text ||
+      old.color != color ||
+      old.dotSize != dotSize ||
+      old.glow != glow;
 
   // 5×7 bitmaps (top→bottom rows, 5 bits each). Narrow glyphs use 2 bits.
   static const Map<String, List<int>> _font = {

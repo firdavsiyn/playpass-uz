@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import 'glass_surface.dart';
 
 /// Bento-grid card with a soft aurora glow inside (glucose-monitor reference,
 /// kept in the navy + lime palette). Dark navy base, a radial glow from a
 /// focal point, hairline border, rounded 22.
+///
+/// Set [glass]:true to render as a liquid-glass surface (frosted body +
+/// specular sheen + lensing rim) via [GlassSurface], keeping the same aurora
+/// glow trapped inside the frost. The opaque default ([glass]:false) is
+/// unchanged for existing callers.
 class GlowCard extends StatelessWidget {
   final Widget child;
   final Color glowColor;
@@ -14,6 +20,17 @@ class GlowCard extends StatelessWidget {
   final Alignment glowAt;
   final VoidCallback? onTap;
 
+  /// Render as frosted liquid glass instead of an opaque card.
+  final bool glass;
+
+  /// Only meaningful when [glass]. Adds the one budgeted real BackdropFilter —
+  /// never use inside a scrolling list.
+  final bool real;
+
+  /// Only meaningful when [glass]. Uses the stronger fill so the card reads
+  /// solid inside a scroll view.
+  final bool strong;
+
   const GlowCard({
     super.key,
     required this.child,
@@ -22,10 +39,27 @@ class GlowCard extends StatelessWidget {
     this.padding = const EdgeInsets.all(16),
     this.glowAt = const Alignment(0.6, 0.2),
     this.onTap,
+    this.glass = false,
+    this.real = false,
+    this.strong = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    if (glass) {
+      return GlassSurface(
+        radius: 22,
+        padding: padding,
+        height: height > 0 ? height : null,
+        glowColor: glowColor,
+        glowAt: glowAt,
+        onTap: onTap,
+        real: real,
+        strong: strong,
+        child: child,
+      );
+    }
+
     final card = ClipRRect(
       borderRadius: BorderRadius.circular(22),
       child: Container(
