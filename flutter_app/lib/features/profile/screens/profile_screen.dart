@@ -447,11 +447,6 @@ class _ProfileContent extends ConsumerWidget {
           subtitle: ref.lang('profile.notif_sub'),
           onTap: () => context.push('/notifications-settings'),
         ),
-        _MenuItem(
-          icon: Icons.card_membership_rounded,
-          title: ref.lang('profile.buy_sub'),
-          onTap: () => context.push('/plans'),
-        ),
         if (FeatureFlags.gifts)
           _MenuItem(
             icon: Icons.card_giftcard_rounded,
@@ -471,21 +466,6 @@ class _ProfileContent extends ConsumerWidget {
             title: 'Друзья',
             subtitle: 'Добавляй и следи за активностью',
             onTap: () => context.push('/friends'),
-          ),
-        if (subscription != null && subscription!.canFreeze)
-          _MenuItem(
-            icon: Icons.ac_unit_rounded,
-            title: ref.lang('profile.freeze'),
-            subtitle:
-                '${subscription!.freezeDaysLeft} ${ref.lang('profile.freeze_days')}',
-            onTap: () => context.push('/profile/freeze', extra: subscription),
-          ),
-        if (subscription != null && subscription!.isFrozen)
-          _MenuItem(
-            icon: Icons.ac_unit_rounded,
-            title: ref.lang('profile.frozen'),
-            subtitle: ref.lang('profile.frozen_sub'),
-            onTap: () => context.push('/profile/freeze', extra: subscription),
           ),
         _LanguageToggle(),
         _ThemeToggle(),

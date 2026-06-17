@@ -25,6 +25,7 @@ class MySubscriptionScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final subAsync = ref.watch(_mySubProvider);
+    final sub = subAsync.valueOrNull;
 
     return Scaffold(
       body: GlassBackdrop(
@@ -108,9 +109,32 @@ class MySubscriptionScreen extends ConsumerWidget {
                         _ActionTile(
                           icon: Icons.card_membership_rounded,
                           iconColor: AppTheme.primary,
-                          title: ref.lang('sub.buy'),
+                          title: ref.lang('profile.buy_sub'),
                           onTap: () => context.push('/plans'),
                         ),
+                        if (sub != null && sub.canFreeze) ...[
+                          const _Divider(),
+                          _ActionTile(
+                            icon: Icons.ac_unit_rounded,
+                            iconColor: AppTheme.neonCyan,
+                            title: ref.lang('profile.freeze'),
+                            subtitle:
+                                '${sub.freezeDaysLeft} ${ref.lang('profile.freeze_days')}',
+                            onTap: () =>
+                                context.push('/profile/freeze', extra: sub),
+                          ),
+                        ],
+                        if (sub != null && sub.isFrozen) ...[
+                          const _Divider(),
+                          _ActionTile(
+                            icon: Icons.ac_unit_rounded,
+                            iconColor: AppTheme.neonCyan,
+                            title: ref.lang('profile.frozen'),
+                            subtitle: ref.lang('profile.frozen_sub'),
+                            onTap: () =>
+                                context.push('/profile/freeze', extra: sub),
+                          ),
+                        ],
                         const _Divider(),
                         _ActionTile(
                           icon: Icons.confirmation_number_outlined,
@@ -540,12 +564,14 @@ class _ActionTile extends StatelessWidget {
   final IconData icon;
   final Color iconColor;
   final String title;
+  final String? subtitle;
   final VoidCallback onTap;
 
   const _ActionTile({
     required this.icon,
     required this.iconColor,
     required this.title,
+    this.subtitle,
     required this.onTap,
   });
 
@@ -569,13 +595,23 @@ class _ActionTile extends StatelessWidget {
             ),
             const SizedBox(width: 14),
             Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
-                  color: context.text1,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: context.text1,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  if (subtitle != null)
+                    Text(
+                      subtitle!,
+                      style: TextStyle(color: context.text3, fontSize: 12),
+                    ),
+                ],
               ),
             ),
             Icon(Icons.chevron_right_rounded,
