@@ -12,7 +12,9 @@ import '../../../services/supabase_service.dart';
 import '../../../core/constants/feature_flags.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_locale.dart';
-import '../widgets/subscription_widget.dart';
+import '../../../core/widgets/glow_card.dart';
+import '../../../core/widgets/dot_number.dart';
+import '../../../core/widgets/mini_wave.dart';
 import '../widgets/nearby_clubs_row.dart';
 import '../widgets/recent_visits_widget.dart';
 import '../widgets/active_session_widget.dart';
@@ -247,11 +249,9 @@ class HomeScreen extends ConsumerWidget {
                         error: (_, __) => const SizedBox.shrink(),
                       ),
 
-                  // ── 2. Compact subscription STATUS strip ────
-                  // No skeleton on loading — emit nothing so the layout
-                  // stays calm and the real strip slides in when ready.
+                  // ── 2. Bento dashboard (glow cards + dot-matrix) ──
                   subscriptionAsync.when(
-                    data: (sub) => SubscriptionWidget(subscription: sub),
+                    data: (sub) => _BentoDashboard(subscription: sub),
                     loading: () => const SizedBox.shrink(),
                     error: (_, __) => const _SubscriptionError(),
                   ),
@@ -606,6 +606,201 @@ class _SubscriptionError extends ConsumerWidget {
                 color: AppTheme.error.withValues(alpha: 0.7), size: 20),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ── Bento dashboard (glow cards + dot-matrix numerals) ──────
+class _BentoDashboard extends ConsumerWidget {
+  final Subscription? subscription;
+  const _BentoDashboard({required this.subscription});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final sub = subscription;
+
+    // No active subscription → lime CTA card.
+    if (sub == null || !sub.isActive) {
+      return GlowCard(
+        glowColor: AppTheme.accent,
+        glowAt: const Alignment(-0.4, -0.3),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const GlowCardLabel('Подписка'),
+            const SizedBox(height: 10),
+            Text(
+              'Нет активной',
+              style: TextStyle(
+                color: context.text1,
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                fontFamily: 'SpaceGrotesk',
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => context.push('/plans'),
+                child: const Text('Оформить'),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final isInf = sub.isUnlimited;
+    final visits = sub.hoursBalance ?? 0;
+    final streakDays =
+        (ref.watch(streakProvider).valueOrNull?['streak_days'] as int?) ?? 0;
+    final glow = isInf ? AppTheme.accent : AppTheme.primary;
+
+    return Column(
+      children: [
+        // Hero — visits remaining as dot-matrix + live wave
+        GlowCard(
+          glowColor: glow,
+          glowAt: const Alignment(0.7, -0.2),
+          height: 188,
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
+          onTap: () => context.go('/subscription'),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  _PlanBadge(sub: sub),
+                  const SizedBox(width: 10),
+                  Text(
+                    sub.isFrozen ? 'Заморожена' : 'Активна',
+                    style: TextStyle(color: context.text2, fontSize: 13),
+                  ),
+                  const Spacer(),
+                  Text(
+                    '${sub.daysRemaining} дн.',
+                    style: TextStyle(
+                      color: context.text2,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+              const Spacer(),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  DotMatrixNumber(
+                    isInf ? '∞' : '$visits',
+                    dotSize: 7,
+                    color: AppTheme.accent,
+                  ),
+                  const SizedBox(width: 12),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Text(
+                      isInf ? 'безлимит' : 'визитов',
+                      style: TextStyle(color: context.text2, fontSize: 14),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              const MiniWave(height: 26),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        // Bento stat tiles
+        Row(
+          children: [
+            Expanded(
+              child: _StatTile(
+                label: 'Стрик',
+                value: '$streakDays',
+                unit: 'дней',
+                glow: AppTheme.accent,
+                glowAt: const Alignment(-0.3, 0.4),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _StatTile(
+                label: 'Осталось',
+                value: '${sub.daysRemaining}',
+                unit: 'дней',
+                glow: AppTheme.primary,
+                glowAt: const Alignment(0.4, 0.4),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _PlanBadge extends StatelessWidget {
+  final Subscription sub;
+  const _PlanBadge({required this.sub});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = sub.isUnlimited ? AppTheme.accent : AppTheme.primary;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      decoration: BoxDecoration(
+        color: c.withValues(alpha: 0.16),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: c.withValues(alpha: 0.45)),
+      ),
+      child: Text(
+        sub.planName.toUpperCase(),
+        style: TextStyle(
+          color: c,
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+}
+
+class _StatTile extends StatelessWidget {
+  final String label;
+  final String value;
+  final String unit;
+  final Color glow;
+  final Alignment glowAt;
+  const _StatTile({
+    required this.label,
+    required this.value,
+    required this.unit,
+    required this.glow,
+    required this.glowAt,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GlowCard(
+      glowColor: glow,
+      glowAt: glowAt,
+      height: 118,
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          GlowCardLabel(label),
+          const Spacer(),
+          DotMatrixNumber(value, dotSize: 5, color: context.text1),
+          const SizedBox(height: 6),
+          Text(unit, style: TextStyle(color: context.text2, fontSize: 12)),
+        ],
       ),
     );
   }

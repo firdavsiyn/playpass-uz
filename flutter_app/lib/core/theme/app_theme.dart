@@ -17,18 +17,18 @@ extension ThemeColors on BuildContext {
       isDark ? AppTheme.textSecondary : AppTheme.lightTextSecondary;
   Color get text3 => isDark ? AppTheme.textMuted : AppTheme.lightTextMuted;
 
-  // Borders
-  Color get border => isDark ? const Color(0xFF2A1F4E) : AppTheme.lightBorder;
+  // Borders (navy-tinted on dark)
+  Color get border => isDark ? const Color(0xFF22304F) : AppTheme.lightBorder;
   Color get borderSubtle =>
-      isDark ? const Color(0xFF1A1040) : const Color(0xFFEDE9FE);
+      isDark ? const Color(0xFF161F36) : const Color(0xFFE3ECFA);
 
   // Glass
   Color get glass => isDark ? const Color(0x14FFFFFF) : const Color(0x0A000000);
   Color get glassStrong =>
       isDark ? const Color(0x28FFFFFF) : const Color(0x18000000);
 
-  // Nav bar bg
-  Color get navBg => isDark ? const Color(0xFF06060F) : Colors.white;
+  // Nav bar bg (deep navy)
+  Color get navBg => isDark ? const Color(0xFF0A1120) : Colors.white;
 
   // Frozen subscription state (replaces Colors.blueGrey literals)
   Color get frozen => isDark ? const Color(0xFF78909C) : const Color(0xFF546E7A);
@@ -36,50 +36,50 @@ extension ThemeColors on BuildContext {
 }
 
 class AppTheme {
+  // ══════════════════════════════════════════════════════════
+  // ██ REBRAND v2 — Navy + Electric Lime (refs: DriveX/cocktail)
+  // Palette: royal blue #004797 · lime #E6F945 · soft blue #BBD9FF · white.
+  // Token NAMES preserved so screens inherit the new look automatically.
+  // ══════════════════════════════════════════════════════════
+
   // ── Brand Colors ────────────────────────────────────────
-  static const Color primary = Color(0xFF7C3AED); // Vibrant Purple
-  static const Color primaryLight = Color(0xFF9F67FF);
-  static const Color primaryDark = Color(0xFF5B21B6);
-  static const Color accent = Color(0xFF06B6D4); // Neon Cyan
+  static const Color primary = Color(0xFF2E6FE0); // Royal blue (readable on dark)
+  static const Color primaryLight = Color(0xFF6FA3F5);
+  static const Color primaryDark = Color(0xFF004797); // Brand royal-blue swatch
+  static const Color accent = Color(0xFFE6F945); // ⚡ Electric lime — CTAs/highlights
+  static const Color softBlue = Color(0xFFBBD9FF); // Soft blue — chips/secondary
 
-  // Neon glow colors
-  static const Color neonPurple = Color(0xFF8B5CF6);
-  static const Color neonBlue = Color(0xFF3B82F6);
-  static const Color neonCyan = Color(0xFF06B6D4);
-  static const Color neonPink =
-      Color(0xFFF472B6); // Refined — softer pink for multi-color gradients
+  // Glow / gradient stops (names kept; remapped to navy-blue family)
+  static const Color neonPurple = Color(0xFF2E6FE0); // → royal blue
+  static const Color neonBlue = Color(0xFF3D7BD9);
+  static const Color neonCyan = Color(0xFF4D8DF0); // gradient end (bright blue)
+  static const Color neonPink = Color(0xFFE6F945); // → lime (favourites accent)
   static const Color neonGreen = Color(0xFF10B981);
-  static const Color neonMagenta =
-      Color(0xFFF472B6); // Alias for neonPink — used in gradient contexts
-  static const Color neonLavender =
-      Color(0xFFA78BFA); // NEW — softer purple for subtle accents
+  static const Color neonMagenta = Color(0xFFE6F945); // alias → lime
+  static const Color neonLavender = Color(0xFFBBD9FF); // → soft blue
 
-  // ── Background (dark theme) ─────────────────────────────
-  static const Color bgDark = Color(
-      0xFF040811); // Deeper, richer dark — almost pure black with blue-purple hint
-  static const Color bgCard = Color(0xFF0C0A1D); // Deeper card
-  static const Color bgCardDeep = Color(0xFF080716); // Even darker card
-  static const Color bgSurface = Color(0xFF110E24); // Richer elevated surface
-  static const Color bgGlass =
-      Color(0x0EFFFFFF); // More subtle glassmorphism overlay
+  // ── Background (dark theme, deep navy) ──────────────────
+  static const Color bgDark = Color(0xFF070C18); // Deep navy-black
+  static const Color bgCard = Color(0xFF0E1626); // Navy card
+  static const Color bgCardDeep = Color(0xFF0A111E); // Darker navy card
+  static const Color bgSurface = Color(0xFF16203A); // Elevated navy surface
+  static const Color bgGlass = Color(0x0EFFFFFF); // Glass overlay
 
   // ── Text ────────────────────────────────────────────────
-  static const Color textPrimary =
-      Color(0xFFF0EDFF); // Slightly purple-tinted white
-  static const Color textSecondary =
-      Color(0xFF8B7EB0); // Slightly richer muted purple
-  static const Color textMuted = Color(0xFF4E4470); // Adjusted deep muted
+  static const Color textPrimary = Color(0xFFFFFFFF); // Pure white
+  static const Color textSecondary = Color(0xFF9FB2D0); // Muted blue-grey
+  static const Color textMuted = Color(0xFF5A6B8C); // Deep muted blue-grey
 
   // ── Status Colors ───────────────────────────────────────
   static const Color success = Color(0xFF10B981);
   static const Color error = Color(0xFFEF4444);
   static const Color warning = Color(0xFFF59E0B);
-  static const Color info = Color(0xFF3B82F6);
+  static const Color info = Color(0xFF2E6FE0);
 
   // ── Tier Colors ─────────────────────────────────────────
-  static const Color tierVip = Color(0xFFFBBF24);
-  static const Color tierPro = Color(0xFF8B5CF6);
-  static const Color tierStandard = Color(0xFF06B6D4);
+  static const Color tierVip = Color(0xFFE6F945); // lime = top tier
+  static const Color tierPro = Color(0xFF2E6FE0);
+  static const Color tierStandard = Color(0xFFBBD9FF);
 
   // ── Medal / Loyalty Tier Colors ─────────────────────────
   static const Color medalGold = Color(0xFFFFD700);
@@ -87,8 +87,8 @@ class AppTheme {
   static const Color medalBronze = Color(0xFFCD7F32);
   static const Color tierDiamond = Color(0xFF00CED1);
 
-  // Indigo mid-stop used in buttonGradient / premiumGradient / neonGradient
-  static const Color indigo = Color(0xFF6366F1);
+  // Mid-stop for blue gradients (kept name 'indigo' for call-site compat).
+  static const Color indigo = Color(0xFF1E5BC6);
 
   // ── Brand One-offs ──────────────────────────────────────
   static const Color telegram = Color(0xFF2AABEE); // Telegram brand (club_detail, profile)
@@ -220,22 +220,22 @@ class AppTheme {
     );
   }
 
-  /// Neon gradient — purple to cyan (primary brand gradient)
+  /// Brand gradient — navy → royal blue
   static const LinearGradient neonGradient = LinearGradient(
-    colors: [neonPurple, Color(0xFF6366F1), neonCyan],
+    colors: [primaryDark, indigo, neonCyan],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient neonGradientSubtle = LinearGradient(
-    colors: [Color(0x407C3AED), Color(0x406366F1), Color(0x4006B6D4)],
+    colors: [Color(0x40004797), Color(0x401E5BC6), Color(0x404D8DF0)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  /// Premium gradient — 4-color sweep for premium surfaces
+  /// Premium gradient — navy → blue sweep for premium surfaces
   static const LinearGradient premiumGradient = LinearGradient(
-    colors: [neonPurple, primary, Color(0xFF6366F1), neonCyan],
+    colors: [primaryDark, primary, indigo, neonCyan],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
@@ -252,9 +252,9 @@ class AppTheme {
     end: Alignment(1.5, 0.3),
   );
 
-  /// Button gradient — purple to cyan
+  /// Button gradient — navy → royal blue (used for tab indicator etc.)
   static const LinearGradient buttonGradient = LinearGradient(
-    colors: [Color(0xFF7C3AED), Color(0xFF6366F1)],
+    colors: [primaryDark, primary],
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
   );
@@ -281,7 +281,7 @@ class AppTheme {
         height: height,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: colors ?? const [Color(0xFF7C3AED), Color(0xFF6366F1)],
+            colors: colors ?? const [primaryDark, primary],
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
           ),
@@ -359,7 +359,7 @@ class AppTheme {
           onError: Colors.white,
         ),
         scaffoldBackgroundColor: bgDark,
-        fontFamily: 'Inter',
+        fontFamily: 'Poppins',
 
         // AppBar — transparent blend with background
         appBarTheme: const AppBarTheme(
@@ -368,7 +368,7 @@ class AppTheme {
           scrolledUnderElevation: 0,
           centerTitle: false,
           titleTextStyle: TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: 'SpaceGrotesk',
             fontSize: 20,
             fontWeight: FontWeight.w700,
             color: textPrimary,
@@ -388,17 +388,18 @@ class AppTheme {
         ),
 
         // Elevated Buttons — gradient-ready base
+        // Primary CTA = electric lime with dark text (signature look).
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: primary,
-            foregroundColor: Colors.white,
-            minimumSize: const Size(double.infinity, 52),
+            backgroundColor: accent,
+            foregroundColor: const Color(0xFF0A1120),
+            minimumSize: const Size(double.infinity, 54),
             elevation: 0,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(16),
             ),
             textStyle: const TextStyle(
-              fontFamily: 'Inter',
+              fontFamily: 'Poppins',
               fontSize: 15,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.2,
@@ -415,7 +416,7 @@ class AppTheme {
               borderRadius: BorderRadius.circular(14),
             ),
             textStyle: const TextStyle(
-              fontFamily: 'Inter',
+              fontFamily: 'Poppins',
               fontSize: 15,
               fontWeight: FontWeight.w600,
             ),
@@ -427,7 +428,7 @@ class AppTheme {
           style: TextButton.styleFrom(
             foregroundColor: primaryLight,
             textStyle: const TextStyle(
-              fontFamily: 'Inter',
+              fontFamily: 'Poppins',
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -487,22 +488,30 @@ class AppTheme {
         // Text theme — bolder, more impactful
         textTheme: const TextTheme(
           displayLarge: TextStyle(
+              fontFamily: 'SpaceGrotesk',
               color: textPrimary,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               letterSpacing: -1),
           displayMedium: TextStyle(
+              fontFamily: 'SpaceGrotesk',
               color: textPrimary,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               letterSpacing: -0.5),
           headlineLarge: TextStyle(
+              fontFamily: 'SpaceGrotesk',
               color: textPrimary,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               letterSpacing: -0.5),
-          headlineMedium:
-              TextStyle(color: textPrimary, fontWeight: FontWeight.w700),
-          headlineSmall:
-              TextStyle(color: textPrimary, fontWeight: FontWeight.w700),
+          headlineMedium: TextStyle(
+              fontFamily: 'SpaceGrotesk',
+              color: textPrimary,
+              fontWeight: FontWeight.w700),
+          headlineSmall: TextStyle(
+              fontFamily: 'SpaceGrotesk',
+              color: textPrimary,
+              fontWeight: FontWeight.w700),
           titleLarge: TextStyle(
+              fontFamily: 'SpaceGrotesk',
               color: textPrimary,
               fontWeight: FontWeight.w700,
               letterSpacing: -0.3),
@@ -586,7 +595,7 @@ class AppTheme {
           onError: Colors.white,
         ),
         scaffoldBackgroundColor: lightBg,
-        fontFamily: 'Inter',
+        fontFamily: 'Poppins',
 
         appBarTheme: const AppBarTheme(
           backgroundColor: lightBg,
@@ -594,7 +603,7 @@ class AppTheme {
           scrolledUnderElevation: 0,
           centerTitle: false,
           titleTextStyle: TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: 'SpaceGrotesk',
             fontSize: 20,
             fontWeight: FontWeight.w700,
             color: lightTextPrimary,
@@ -615,15 +624,14 @@ class AppTheme {
 
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: primary,
-            foregroundColor: Colors.white,
-            minimumSize: const Size(double.infinity, 52),
-            elevation: 2,
-            shadowColor: primary.withValues(alpha: 0.25),
+            backgroundColor: accent,
+            foregroundColor: const Color(0xFF0A1120),
+            minimumSize: const Size(double.infinity, 54),
+            elevation: 0,
             shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             textStyle: const TextStyle(
-                fontFamily: 'Inter', fontSize: 15, fontWeight: FontWeight.w700),
+                fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w700),
           ),
         ),
 
@@ -695,22 +703,30 @@ class AppTheme {
 
         textTheme: const TextTheme(
           displayLarge: TextStyle(
+              fontFamily: 'SpaceGrotesk',
               color: lightTextPrimary,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               letterSpacing: -1),
           displayMedium: TextStyle(
+              fontFamily: 'SpaceGrotesk',
               color: lightTextPrimary,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               letterSpacing: -0.5),
           headlineLarge: TextStyle(
+              fontFamily: 'SpaceGrotesk',
               color: lightTextPrimary,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               letterSpacing: -0.5),
-          headlineMedium:
-              TextStyle(color: lightTextPrimary, fontWeight: FontWeight.w700),
-          headlineSmall:
-              TextStyle(color: lightTextPrimary, fontWeight: FontWeight.w700),
+          headlineMedium: TextStyle(
+              fontFamily: 'SpaceGrotesk',
+              color: lightTextPrimary,
+              fontWeight: FontWeight.w700),
+          headlineSmall: TextStyle(
+              fontFamily: 'SpaceGrotesk',
+              color: lightTextPrimary,
+              fontWeight: FontWeight.w700),
           titleLarge: TextStyle(
+              fontFamily: 'SpaceGrotesk',
               color: lightTextPrimary,
               fontWeight: FontWeight.w700,
               letterSpacing: -0.3),

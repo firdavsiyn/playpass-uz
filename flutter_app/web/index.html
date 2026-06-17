@@ -40,7 +40,7 @@
   <style>
     body {
       margin: 0;
-      background: #050510;
+      background: #070C18;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
@@ -49,8 +49,8 @@
       position: fixed; inset: 0;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      background: radial-gradient(circle at 80% 20%, rgba(124, 58, 237, 0.18), transparent 50%),
-                  radial-gradient(circle at 20% 80%, rgba(6, 182, 212, 0.12), transparent 50%),
+      background: radial-gradient(circle at 80% 20%, rgba(0, 71, 151, 0.18), transparent 50%),
+                  radial-gradient(circle at 20% 80%, rgba(77, 141, 240, 0.12), transparent 50%),
                   #050510;
       gap: 28px; z-index: 9999;
       overflow: hidden;
@@ -67,12 +67,12 @@
     }
     #loading::before {
       width: 280px; height: 280px;
-      background: rgba(124, 58, 237, 0.25);
+      background: rgba(0, 71, 151, 0.25);
       top: 10%; right: -80px;
     }
     #loading::after {
       width: 240px; height: 240px;
-      background: rgba(6, 182, 212, 0.20);
+      background: rgba(77, 141, 240, 0.20);
       bottom: 12%; left: -60px;
       animation-delay: -6s;
     }
@@ -85,10 +85,10 @@
     #loading .logo-wrap {
       width: 96px; height: 96px;
       border-radius: 24px;
-      background: linear-gradient(135deg, #7C3AED 0%, #6366F1 50%, #06B6D4 100%);
+      background: linear-gradient(135deg, #004797 0%, #1E5BC6 50%, #4D8DF0 100%);
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 12px 40px rgba(124, 58, 237, 0.4),
-                  0 0 0 0 rgba(124, 58, 237, 0.6);
+      box-shadow: 0 12px 40px rgba(0, 71, 151, 0.4),
+                  0 0 0 0 rgba(0, 71, 151, 0.6);
       animation: glow 2s ease-in-out infinite;
       position: relative; z-index: 1;
     }
@@ -96,14 +96,14 @@
       width: 64px; height: 64px;
     }
     @keyframes glow {
-      0%, 100% { box-shadow: 0 12px 40px rgba(124, 58, 237, 0.4), 0 0 0 0 rgba(124, 58, 237, 0.6); }
-      50% { box-shadow: 0 12px 60px rgba(124, 58, 237, 0.6), 0 0 0 16px rgba(124, 58, 237, 0); }
+      0%, 100% { box-shadow: 0 12px 40px rgba(0, 71, 151, 0.4), 0 0 0 0 rgba(0, 71, 151, 0.6); }
+      50% { box-shadow: 0 12px 60px rgba(0, 71, 151, 0.6), 0 0 0 16px rgba(0, 71, 151, 0); }
     }
 
-    /* Wordmark */
+    /* Wordmark — electric lime → soft blue (rebrand signature) */
     #loading .wordmark {
       font-size: 32px; font-weight: 900; letter-spacing: 6px;
-      background: linear-gradient(90deg, #9F67FF 0%, #06B6D4 100%);
+      background: linear-gradient(90deg, #E6F945 0%, #BBD9FF 100%);
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
@@ -113,14 +113,14 @@
     /* Loading bar */
     #loading .progress {
       width: 160px; height: 3px;
-      background: rgba(124, 58, 237, 0.15);
+      background: rgba(0, 71, 151, 0.15);
       border-radius: 3px;
       overflow: hidden;
       position: relative; z-index: 1;
     }
     #loading .progress-bar {
       width: 40%; height: 100%;
-      background: linear-gradient(90deg, #7C3AED, #06B6D4);
+      background: linear-gradient(90deg, #004797, #4D8DF0);
       border-radius: 3px;
       animation: slide 1.4s ease-in-out infinite;
     }
@@ -285,8 +285,8 @@
       // Brand gradient inside the pin
       var gradId = 'g_' + key.replace(/[^a-z0-9]/gi, '');
       var gradStops = '<linearGradient id="' + gradId + '" x1="0%" y1="0%" x2="100%" y2="100%">' +
-        '<stop offset="0%" stop-color="#7C3AED"/>' +
-        '<stop offset="100%" stop-color="#06B6D4"/></linearGradient>';
+        '<stop offset="0%" stop-color="#004797"/>' +
+        '<stop offset="100%" stop-color="#4D8DF0"/></linearGradient>';
       var fillFill = 'url(#' + gradId + ')';
 
       // Occupancy color overrides default white border; VIP gold has priority

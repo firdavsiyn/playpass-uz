@@ -8,6 +8,8 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../services/supabase_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/glow_card.dart';
+import '../../../core/widgets/dot_number.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/feature_flags.dart';
 import '../../../core/l10n/app_locale.dart';
@@ -103,7 +105,6 @@ class _ProfileContent extends ConsumerWidget {
     final level = profile?['level'] as String? ?? 'novice';
     final totalVisits = profile?['total_visits'] as int? ?? 0;
     final xp = profile?['xp'] as int? ?? 0;
-    final totalHours = profile?['total_hours'] as int? ?? 0;
     final streakDays = profile?['streak_days'] as int? ?? 0;
 
     // XP progress to next level
@@ -307,23 +308,35 @@ class _ProfileContent extends ConsumerWidget {
 
                 const SizedBox(height: 16),
 
-                // Stats row — glass containers with gaps
+                // Stats — bento glow tiles with dot-matrix numerals
                 Row(
                   children: [
-                    _StatItem(
+                    Expanded(
+                      child: _BentoStat(
                         value: '$totalVisits',
                         label: ref.lang('profile.visits_total'),
-                        color: AppTheme.neonCyan),
-                    const SizedBox(width: 8),
-                    _StatItem(
-                        value: '${totalHours}h',
-                        label: ref.lang('profile.hours_label'),
-                        color: AppTheme.neonPurple),
-                    const SizedBox(width: 8),
-                    _StatItem(
+                        glow: AppTheme.primary,
+                        glowAt: const Alignment(-0.3, 0.4),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _BentoStat(
                         value: '$streakDays',
                         label: ref.lang('profile.streak_label'),
-                        color: AppTheme.warning),
+                        glow: AppTheme.accent,
+                        glowAt: const Alignment(0, 0.5),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _BentoStat(
+                        value: '$xp',
+                        label: 'XP',
+                        glow: AppTheme.softBlue,
+                        glowAt: const Alignment(0.3, 0.4),
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -928,39 +941,49 @@ class _ThemeChip extends ConsumerWidget {
   }
 }
 
-class _StatItem extends StatelessWidget {
+class _BentoStat extends StatelessWidget {
   final String value;
   final String label;
-  final Color color;
-  const _StatItem(
-      {required this.value, required this.label, required this.color});
+  final Color glow;
+  final Alignment glowAt;
+  const _BentoStat({
+    required this.value,
+    required this.label,
+    required this.glow,
+    required this.glowAt,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-        decoration: BoxDecoration(
-          color: context.glass,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          children: [
-            Text(value,
-                style: TextStyle(
-                  color: color,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                )),
-            const SizedBox(height: 2),
-            Text(label,
-                style: TextStyle(
-                  color: context.text3,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w500,
-                )),
-          ],
-        ),
+    return GlowCard(
+      glowColor: glow,
+      glowAt: glowAt,
+      height: 96,
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // scaleDown so any digit count fits the narrow tile
+          Align(
+            alignment: Alignment.centerLeft,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: DotMatrixNumber(value, dotSize: 4, color: context.text1),
+            ),
+          ),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: context.text2,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -978,8 +1001,7 @@ class _LangChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         gradient: selected
-            ? const LinearGradient(
-                colors: [AppTheme.primary, AppTheme.indigo])
+            ? const LinearGradient(colors: [AppTheme.primary, AppTheme.indigo])
             : null,
         color: selected ? null : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
