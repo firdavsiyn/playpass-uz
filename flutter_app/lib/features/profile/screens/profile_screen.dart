@@ -636,98 +636,103 @@ class _ProfileContent extends ConsumerWidget {
   void _showSupportSheet(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: context.card,
+      backgroundColor: Colors.transparent,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (_) => Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 20),
-              decoration: BoxDecoration(
-                color: context.text3.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppTheme.primary.withValues(alpha: 0.2),
-                    AppTheme.neonPurple.withValues(alpha: 0.15),
-                  ],
+      builder: (_) => RepaintBoundary(
+        child: GlassSurface(
+          real: true,
+          blurSigma: 16,
+          customRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  color: context.text3.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2),
                 ),
-                shape: BoxShape.circle,
-                boxShadow: AppTheme.neonGlow(radius: 16),
               ),
-              child: const Icon(Icons.headset_mic_rounded,
-                  color: AppTheme.primaryLight, size: 28),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              ref.lang('support.title'),
-              style: TextStyle(
-                color: context.text1,
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppTheme.primary.withValues(alpha: 0.2),
+                      AppTheme.neonPurple.withValues(alpha: 0.15),
+                    ],
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: AppTheme.neonGlow(radius: 16),
+                ),
+                child: const Icon(Icons.headset_mic_rounded,
+                    color: AppTheme.primaryLight, size: 28),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              ref.lang('support.hours'),
-              style: TextStyle(color: context.text2, fontSize: 14),
-            ),
-            const SizedBox(height: 24),
-            _SupportOption(
-              icon: Icons.send_rounded,
-              title: 'Telegram',
-              subtitle: '@playpass_support',
-              color: AppTheme.telegram,
-              onTap: () async {
-                Navigator.pop(context);
-                final url = Uri.parse('https://t.me/playpass_support');
-                if (await canLaunchUrl(url)) {
-                  await launchUrl(url, mode: LaunchMode.externalApplication);
-                }
-              },
-            ),
-            const SizedBox(height: 12),
-            _SupportOption(
-              icon: Icons.phone_rounded,
-              title: ref.lang('support.phone'),
-              subtitle: '+998 90 123 45 67',
-              color: AppTheme.success,
-              onTap: () async {
-                Navigator.pop(context);
-                final url = Uri.parse('tel:+998901234567');
-                if (await canLaunchUrl(url)) {
-                  await launchUrl(url);
-                }
-              },
-            ),
-            const SizedBox(height: 12),
-            _SupportOption(
-              icon: Icons.email_rounded,
-              title: 'Email',
-              subtitle: 'support@playpass.uz',
-              color: AppTheme.primary,
-              onTap: () async {
-                Navigator.pop(context);
-                final url = Uri.parse('mailto:support@playpass.uz');
-                if (await canLaunchUrl(url)) {
-                  await launchUrl(url);
-                }
-              },
-            ),
-            const SizedBox(height: 24),
-          ],
+              const SizedBox(height: 16),
+              Text(
+                ref.lang('support.title'),
+                style: TextStyle(
+                  color: context.text1,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                ref.lang('support.hours'),
+                style: TextStyle(color: context.text2, fontSize: 14),
+              ),
+              const SizedBox(height: 24),
+              _SupportOption(
+                icon: Icons.send_rounded,
+                title: 'Telegram',
+                subtitle: '@playpass_support',
+                color: AppTheme.telegram,
+                onTap: () async {
+                  Navigator.pop(context);
+                  final url = Uri.parse('https://t.me/playpass_support');
+                  if (await canLaunchUrl(url)) {
+                    await launchUrl(url, mode: LaunchMode.externalApplication);
+                  }
+                },
+              ),
+              const SizedBox(height: 12),
+              _SupportOption(
+                icon: Icons.phone_rounded,
+                title: ref.lang('support.phone'),
+                subtitle: '+998 90 123 45 67',
+                color: AppTheme.success,
+                onTap: () async {
+                  Navigator.pop(context);
+                  final url = Uri.parse('tel:+998901234567');
+                  if (await canLaunchUrl(url)) {
+                    await launchUrl(url);
+                  }
+                },
+              ),
+              const SizedBox(height: 12),
+              _SupportOption(
+                icon: Icons.email_rounded,
+                title: 'Email',
+                subtitle: 'support@playpass.uz',
+                color: AppTheme.primary,
+                onTap: () async {
+                  Navigator.pop(context);
+                  final url = Uri.parse('mailto:support@playpass.uz');
+                  if (await canLaunchUrl(url)) {
+                    await launchUrl(url);
+                  }
+                },
+              ),
+              const SizedBox(height: 24),
+            ],
+          ),
         ),
       ),
     );

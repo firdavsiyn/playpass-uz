@@ -742,8 +742,7 @@ class _FullPhotoViewer extends StatelessWidget {
                     color: Colors.black.withValues(alpha: 0.6),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.close,
-                      color: Colors.white, size: 22),
+                  child: const Icon(Icons.close, color: Colors.white, size: 22),
                 ),
               ),
             ),
@@ -756,8 +755,8 @@ class _FullPhotoViewer extends StatelessWidget {
               right: 0,
               child: Center(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.55),
                     borderRadius: BorderRadius.circular(20),

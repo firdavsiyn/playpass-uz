@@ -7,6 +7,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/glass_backdrop.dart';
+import '../../../core/widgets/glass_surface.dart';
 import '../../../services/supabase_service.dart';
 
 /// Экран оплаты MVP — ручной перевод + заявка
@@ -127,26 +129,28 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           ),
           title: Text(ref.lang('pay.title')),
         ),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.error_outline_rounded,
-                    color: AppTheme.error, size: 40),
-                const SizedBox(height: 12),
-                Text(
-                  'Тариф «${widget.plan}» временно недоступен',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: context.text2, fontSize: 14),
-                ),
-                const SizedBox(height: 16),
-                OutlinedButton(
-                  onPressed: () => context.pop(),
-                  child: const Text('Назад'),
-                ),
-              ],
+        body: GlassBackdrop(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.error_outline_rounded,
+                      color: AppTheme.error, size: 40),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Тариф «${widget.plan}» временно недоступен',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: context.text2, fontSize: 14),
+                  ),
+                  const SizedBox(height: 16),
+                  OutlinedButton(
+                    onPressed: () => context.pop(),
+                    child: const Text('Назад'),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -163,13 +167,15 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
             ? ref.lang('pay.request_sent_title')
             : ref.lang('pay.title')),
       ),
-      body: SafeArea(
-        child: switch (_step) {
-          0 => _buildPaymentInstruction(),
-          1 => _buildRequestForm(),
-          2 => _buildConfirmation(),
-          _ => const SizedBox(),
-        },
+      body: GlassBackdrop(
+        child: SafeArea(
+          child: switch (_step) {
+            0 => _buildPaymentInstruction(),
+            1 => _buildRequestForm(),
+            2 => _buildConfirmation(),
+            _ => const SizedBox(),
+          },
+        ),
       ),
     );
   }
@@ -307,12 +313,10 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           const SizedBox(height: 12),
 
           // Receiver name
-          Container(
+          GlassSurface(
+            strong: true,
+            radius: 10,
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: context.surface,
-              borderRadius: BorderRadius.circular(10),
-            ),
             child: Row(
               children: [
                 Icon(Icons.person_outline, size: 18, color: context.text3),
@@ -328,14 +332,11 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           const SizedBox(height: 32),
 
           // Important note
-          Container(
+          GlassSurface(
+            strong: true,
+            radius: 12,
             padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: AppTheme.warning.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                  color: AppTheme.warning.withValues(alpha: 0.3)),
-            ),
+            borderColor: AppTheme.warning.withValues(alpha: 0.3),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

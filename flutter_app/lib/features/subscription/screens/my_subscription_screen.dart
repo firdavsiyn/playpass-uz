@@ -7,6 +7,8 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_locale.dart';
 import '../../../core/widgets/neon_shimmer.dart';
+import '../../../core/widgets/glass_backdrop.dart';
+import '../../../core/widgets/glass_surface.dart';
 import '../../../models/subscription.dart';
 import '../../../services/supabase_service.dart';
 
@@ -24,147 +26,144 @@ class MySubscriptionScreen extends ConsumerWidget {
     final subAsync = ref.watch(_mySubProvider);
 
     return Scaffold(
-      body: RefreshIndicator(
-        color: AppTheme.primary,
-        onRefresh: () async {
-          ref.invalidate(_mySubProvider);
-          // ignore: avoid_returning_null_for_void
-          await ref.read(_mySubProvider.future).catchError((_) => null);
-        },
-        child: CustomScrollView(
-          slivers: [
-            // ── Header ──────────────────────────────────
-            SliverToBoxAdapter(
-              child: SafeArea(
-                bottom: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                  child: Text(
-                    ref.lang('sub.my'),
-                    style: TextStyle(
-                      color: context.text1,
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
+      body: GlassBackdrop(
+        child: RefreshIndicator(
+          color: AppTheme.primary,
+          onRefresh: () async {
+            ref.invalidate(_mySubProvider);
+            // ignore: avoid_returning_null_for_void
+            await ref.read(_mySubProvider.future).catchError((_) => null);
+          },
+          child: CustomScrollView(
+            slivers: [
+              // ── Header ──────────────────────────────────
+              SliverToBoxAdapter(
+                child: SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                    child: Text(
+                      ref.lang('sub.my'),
+                      style: TextStyle(
+                        color: context.text1,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
 
-            // ── Subscription card ───────────────────────
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                child: subAsync.when(
-                  data: (sub) => _SubscriptionCard(subscription: sub),
-                  loading: () => _SubscriptionCardSkeleton(),
-                  error: (_, __) => _SubscriptionCard(subscription: null),
-                ),
-              ),
-            ),
-
-            // ── Actions section ─────────────────────────
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
-                child: Text(
-                  ref.lang('sub.actions'),
-                  style: TextStyle(
-                    color: context.text3,
-                    fontSize: 14,
+              // ── Subscription card ───────────────────────
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                  child: subAsync.when(
+                    data: (sub) => _SubscriptionCard(subscription: sub),
+                    loading: () => _SubscriptionCardSkeleton(),
+                    error: (_, __) => _SubscriptionCard(subscription: null),
                   ),
                 ),
               ),
-            ),
 
-            // Day-Pass CTA — show only if user has no active subscription
-            SliverToBoxAdapter(
-              child: subAsync.maybeWhen(
-                data: (sub) {
-                  if (sub != null && sub.isActive)
-                    return const SizedBox.shrink();
-                  return Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-                    child: _DayPassCard(),
-                  );
-                },
-                orElse: () => const SizedBox.shrink(),
-              ),
-            ),
-
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: context.card,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                        color: AppTheme.primary.withValues(alpha: 0.08)),
-                    boxShadow: AppTheme.cardGlow(),
-                  ),
-                  child: Column(
-                    children: [
-                      _ActionTile(
-                        icon: Icons.card_membership_rounded,
-                        iconColor: AppTheme.primary,
-                        title: ref.lang('sub.buy'),
-                        onTap: () => context.push('/plans'),
-                      ),
-                      const _Divider(),
-                      _ActionTile(
-                        icon: Icons.confirmation_number_outlined,
-                        iconColor: AppTheme.success,
-                        title: ref.lang('sub.promo'),
-                        onTap: () => _showPromoDialog(context, ref),
-                      ),
-                      const _Divider(),
-                      _ActionTile(
-                        icon: Icons.card_giftcard_rounded,
-                        iconColor: AppTheme.error,
-                        title: ref.lang('sub.gift_buy'),
-                        onTap: () => _showGiftInfo(context),
-                      ),
-                      const _Divider(),
-                      _ActionTile(
-                        icon: Icons.redeem_rounded,
-                        iconColor: AppTheme.neonPurple,
-                        title: ref.lang('sub.gift_redeem'),
-                        onTap: () => context.push('/gift/redeem'),
-                      ),
-                    ],
+              // ── Actions section ─────────────────────────
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
+                  child: Text(
+                    ref.lang('sub.actions'),
+                    style: TextStyle(
+                      color: context.text3,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
               ),
-            ),
 
-            // ── FAQ section ─────────────────────────────
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: context.card,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: _ActionTile(
-                    icon: Icons.help_outline_rounded,
-                    iconColor: context.text3,
-                    title: ref.lang('sub.faq'),
-                    onTap: () => _showFAQ(context, ref: ref),
+              // Day-Pass CTA — show only if user has no active subscription
+              SliverToBoxAdapter(
+                child: subAsync.maybeWhen(
+                  data: (sub) {
+                    if (sub != null && sub.isActive)
+                      return const SizedBox.shrink();
+                    return Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                      child: _DayPassCard(),
+                    );
+                  },
+                  orElse: () => const SizedBox.shrink(),
+                ),
+              ),
+
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: GlassSurface(
+                    strong: true,
+                    radius: 16,
+                    padding: EdgeInsets.zero,
+                    child: Column(
+                      children: [
+                        _ActionTile(
+                          icon: Icons.card_membership_rounded,
+                          iconColor: AppTheme.primary,
+                          title: ref.lang('sub.buy'),
+                          onTap: () => context.push('/plans'),
+                        ),
+                        const _Divider(),
+                        _ActionTile(
+                          icon: Icons.confirmation_number_outlined,
+                          iconColor: AppTheme.success,
+                          title: ref.lang('sub.promo'),
+                          onTap: () => _showPromoDialog(context, ref),
+                        ),
+                        const _Divider(),
+                        _ActionTile(
+                          icon: Icons.card_giftcard_rounded,
+                          iconColor: AppTheme.error,
+                          title: ref.lang('sub.gift_buy'),
+                          onTap: () => _showGiftInfo(context),
+                        ),
+                        const _Divider(),
+                        _ActionTile(
+                          icon: Icons.redeem_rounded,
+                          iconColor: AppTheme.neonPurple,
+                          title: ref.lang('sub.gift_redeem'),
+                          onTap: () => context.push('/gift/redeem'),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
 
-            // (Plan comparison section removed — it listed every plan
-            //  including legacy/non-purchasable tiers. Plans live on the
-            //  dedicated "Купить абонемент" → PlansScreen, gated to
-            //  purchasablePlanCodes.)
+              // ── FAQ section ─────────────────────────────
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                  child: GlassSurface(
+                    strong: true,
+                    radius: 16,
+                    padding: EdgeInsets.zero,
+                    child: _ActionTile(
+                      icon: Icons.help_outline_rounded,
+                      iconColor: context.text3,
+                      title: ref.lang('sub.faq'),
+                      onTap: () => _showFAQ(context, ref: ref),
+                    ),
+                  ),
+                ),
+              ),
 
-            // Bottom spacing
-            const SliverToBoxAdapter(child: SizedBox(height: 100)),
-          ],
+              // (Plan comparison section removed — it listed every plan
+              //  including legacy/non-purchasable tiers. Plans live on the
+              //  dedicated "Купить абонемент" → PlansScreen, gated to
+              //  purchasablePlanCodes.)
+
+              // Bottom spacing
+              const SliverToBoxAdapter(child: SizedBox(height: 100)),
+            ],
+          ),
         ),
       ),
     );
@@ -188,7 +187,7 @@ class MySubscriptionScreen extends ConsumerWidget {
   void _showFAQ(BuildContext context, {required WidgetRef ref}) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: context.card,
+      backgroundColor: Colors.transparent,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -198,41 +197,48 @@ class MySubscriptionScreen extends ConsumerWidget {
         maxChildSize: 0.9,
         minChildSize: 0.4,
         expand: false,
-        builder: (_, scrollCtrl) => ListView(
-          controller: scrollCtrl,
-          padding: const EdgeInsets.all(24),
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 20),
-                decoration: BoxDecoration(
-                  color: context.text3.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(2),
+        builder: (_, scrollCtrl) => RepaintBoundary(
+          child: GlassSurface(
+            real: true,
+            blurSigma: 16,
+            padding: EdgeInsets.zero,
+            customRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            child: ListView(
+              controller: scrollCtrl,
+              padding: const EdgeInsets.all(24),
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 20),
+                    decoration: BoxDecoration(
+                      color: context.text3.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
                 ),
-              ),
+                Text(ref.lang('faq.title'),
+                    style: TextStyle(
+                        color: context.text1,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700)),
+                const SizedBox(height: 20),
+                _faqItem(ref.lang('faq.q1'), ref.lang('faq.a1')),
+                _faqItem(
+                    ref.lang('faq.q2'),
+                    ref.lang('faq.a2').replaceAll(
+                        '{n}', '${AppConstants.freezeMaxDaysPerMonth}')),
+                _faqItem(ref.lang('faq.q3'), ref.lang('faq.a3')),
+                _faqItem(ref.lang('faq.q4'), ref.lang('faq.a4')),
+                _faqItem(ref.lang('faq.q5'), ref.lang('faq.a5')),
+                _faqItem(
+                    ref.lang('faq.q6'),
+                    ref.lang('faq.a6').replaceAll(
+                        '{n}', '${AppConstants.referralBonusHours}')),
+              ],
             ),
-            Text(ref.lang('faq.title'),
-                style: TextStyle(
-                    color: context.text1,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700)),
-            const SizedBox(height: 20),
-            _faqItem(ref.lang('faq.q1'), ref.lang('faq.a1')),
-            _faqItem(
-                ref.lang('faq.q2'),
-                ref.lang('faq.a2').replaceAll(
-                    '{n}', '${AppConstants.freezeMaxDaysPerMonth}')),
-            _faqItem(ref.lang('faq.q3'), ref.lang('faq.a3')),
-            _faqItem(ref.lang('faq.q4'), ref.lang('faq.a4')),
-            _faqItem(ref.lang('faq.q5'), ref.lang('faq.a5')),
-            _faqItem(
-                ref.lang('faq.q6'),
-                ref
-                    .lang('faq.a6')
-                    .replaceAll('{n}', '${AppConstants.referralBonusHours}')),
-          ],
+          ),
         ),
       ),
     );

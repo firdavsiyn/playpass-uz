@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/glass_backdrop.dart';
+import '../../../core/widgets/glass_surface.dart';
 import '../../../services/supabase_service.dart';
 
 class GiftRedeemScreen extends ConsumerStatefulWidget {
@@ -71,7 +73,9 @@ class _GiftRedeemScreenState extends ConsumerState<GiftRedeemScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(ref.lang('gift.redeem_title'))),
-      body: _success ? _buildSuccess() : _buildForm(),
+      body: GlassBackdrop(
+        child: _success ? _buildSuccess() : _buildForm(),
+      ),
     );
   }
 
@@ -149,14 +153,11 @@ class _GiftRedeemScreenState extends ConsumerState<GiftRedeemScreen> {
           ],
           if (_giftInfo != null) ...[
             const SizedBox(height: 16),
-            Container(
+            GlassSurface(
+              strong: true,
+              radius: 16,
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: context.card,
-                borderRadius: BorderRadius.circular(16),
-                border:
-                    Border.all(color: AppTheme.success.withValues(alpha: 0.2)),
-              ),
+              borderColor: AppTheme.success.withValues(alpha: 0.2),
               child: Column(
                 children: [
                   Text(

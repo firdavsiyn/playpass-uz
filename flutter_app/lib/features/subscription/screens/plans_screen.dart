@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_locale.dart';
+import '../../../core/widgets/glass_backdrop.dart';
 
 /// Экран выбора тарифа — покупаемые планы (Day-Pass / Day / Anytime),
 /// помесячно. Годовая оплата отложена (BM v1.2).
@@ -28,58 +29,60 @@ class PlansScreen extends ConsumerWidget {
         ),
         title: Text(ref.lang('plans.title')),
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 20, bottom: 8),
-                child: Text(
-                  ref.lang('plans.subtitle'),
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        color: context.text1,
-                      ),
+      body: GlassBackdrop(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 20, bottom: 8),
+                  child: Text(
+                    ref.lang('plans.subtitle'),
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          color: context.text1,
+                        ),
+                  ),
                 ),
               ),
-            ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Text(
-                  ref.lang('plans.desc'),
-                  style: TextStyle(color: context.text2, fontSize: 14),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Text(
+                    ref.lang('plans.desc'),
+                    style: TextStyle(color: context.text2, fontSize: 14),
+                  ),
                 ),
               ),
-            ),
-            // Monthly / Annual toggle
-            // Annual billing deferred — toggle hidden.
-            const SliverToBoxAdapter(child: SizedBox(height: 8)),
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final plan = plans[index];
-                  final isPopular = plan.id == 'day';
+              // Monthly / Annual toggle
+              // Annual billing deferred — toggle hidden.
+              const SliverToBoxAdapter(child: SizedBox(height: 8)),
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final plan = plans[index];
+                    final isPopular = plan.id == 'day';
 
-                  return Padding(
-                    padding: EdgeInsets.only(
-                      bottom: index < plans.length - 1 ? 16 : 24,
-                    ),
-                    child: _PlanCard(
-                      plan: plan,
-                      isPopular: isPopular,
-                      isAnnual: false,
-                      displayPrice: plan.priceUzs,
-                      monthlyEquivalent: null,
-                      onSelect: () =>
-                          context.push('/payment', extra: plan.id),
-                    ),
-                  );
-                },
-                childCount: plans.length,
+                    return Padding(
+                      padding: EdgeInsets.only(
+                        bottom: index < plans.length - 1 ? 16 : 24,
+                      ),
+                      child: _PlanCard(
+                        plan: plan,
+                        isPopular: isPopular,
+                        isAnnual: false,
+                        displayPrice: plan.priceUzs,
+                        monthlyEquivalent: null,
+                        onSelect: () =>
+                            context.push('/payment', extra: plan.id),
+                      ),
+                    );
+                  },
+                  childCount: plans.length,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

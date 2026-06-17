@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/glass_backdrop.dart';
+import '../../../core/widgets/glass_surface.dart';
 
 class UpsellScreen extends ConsumerWidget {
   final Map<String, String> extra;
@@ -33,124 +35,126 @@ class UpsellScreen extends ConsumerWidget {
         ),
         title: Text(ref.lang('upsell.title')),
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Column(
-          children: [
-            const SizedBox(height: 24),
+      body: GlassBackdrop(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            children: [
+              const SizedBox(height: 24),
 
-            // Icon
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: AppTheme.warning.withValues(alpha: 0.15),
-                shape: BoxShape.circle,
+              // Icon
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: AppTheme.warning.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.lock_rounded,
+                  color: AppTheme.warning,
+                  size: 40,
+                ),
               ),
-              child: const Icon(
-                Icons.lock_rounded,
-                color: AppTheme.warning,
-                size: 40,
+
+              const SizedBox(height: 24),
+
+              // Title
+              Text(
+                ref.lang('upsell.zone_requires'),
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleLarge,
               ),
-            ),
 
-            const SizedBox(height: 24),
+              const SizedBox(height: 12),
 
-            // Title
-            Text(
-              ref.lang('upsell.zone_requires'),
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
+              if (clubName.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Text(
+                    clubName,
+                    style: TextStyle(
+                      color: context.text2,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
 
-            const SizedBox(height: 12),
-
-            if (clubName.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Text(
-                  clubName,
-                  style: TextStyle(
-                    color: context.text2,
-                    fontSize: 14,
+              // Plan comparison card
+              SizedBox(
+                width: double.infinity,
+                child: GlassSurface(
+                  strong: true,
+                  radius: 16,
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      _PlanRow(
+                        label: ref.lang('upsell.your_plan'),
+                        planName: currentPlanName,
+                        color: context.text3,
+                        icon: Icons.close_rounded,
+                        iconColor: AppTheme.error,
+                      ),
+                      const SizedBox(height: 16),
+                      Container(
+                        height: 1,
+                        color: context.border,
+                      ),
+                      const SizedBox(height: 16),
+                      _PlanRow(
+                        label: ref
+                            .lang('upsell.required_for_zone')
+                            .replaceFirst('{zone}', zoneName),
+                        planName: requiredPlanName,
+                        color: context.text1,
+                        icon: Icons.check_circle_rounded,
+                        iconColor: AppTheme.success,
+                      ),
+                    ],
                   ),
                 ),
               ),
 
-            // Plan comparison card
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: context.card,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                children: [
-                  _PlanRow(
-                    label: ref.lang('upsell.your_plan'),
-                    planName: currentPlanName,
-                    color: context.text3,
-                    icon: Icons.close_rounded,
-                    iconColor: AppTheme.error,
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    height: 1,
-                    color: context.border,
-                  ),
-                  const SizedBox(height: 16),
-                  _PlanRow(
-                    label: ref
-                        .lang('upsell.required_for_zone')
-                        .replaceFirst('{zone}', zoneName),
-                    planName: requiredPlanName,
-                    color: context.text1,
-                    icon: Icons.check_circle_rounded,
-                    iconColor: AppTheme.success,
-                  ),
-                ],
-              ),
-            ),
+              const Spacer(),
 
-            const Spacer(),
-
-            // Action buttons
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => context.push('/plans'),
-                child: Text(ref
-                    .lang('upsell.upgrade_to')
-                    .replaceFirst('{plan}', requiredPlanName)),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: () => context.push('/clubs'),
-                child: Text(ref.lang('upsell.find_basic_club')),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            SizedBox(
-              width: double.infinity,
-              child: TextButton(
-                onPressed: () => context.pop(),
-                child: Text(
-                  ref.lang('upsell.back'),
-                  style: TextStyle(color: context.text2),
+              // Action buttons
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => context.push('/plans'),
+                  child: Text(ref
+                      .lang('upsell.upgrade_to')
+                      .replaceFirst('{plan}', requiredPlanName)),
                 ),
               ),
-            ),
 
-            const SizedBox(height: 32),
-          ],
+              const SizedBox(height: 12),
+
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () => context.push('/clubs'),
+                  child: Text(ref.lang('upsell.find_basic_club')),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () => context.pop(),
+                  child: Text(
+                    ref.lang('upsell.back'),
+                    style: TextStyle(color: context.text2),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );

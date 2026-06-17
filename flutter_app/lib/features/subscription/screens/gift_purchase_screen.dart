@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/glass_backdrop.dart';
+import '../../../core/widgets/glass_surface.dart';
 import '../../../services/supabase_service.dart';
 
 class GiftPurchaseScreen extends ConsumerStatefulWidget {
@@ -57,7 +59,9 @@ class _GiftPurchaseScreenState extends ConsumerState<GiftPurchaseScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(ref.lang('gift.buy_title'))),
-      body: _giftCode != null ? _buildSuccess() : _buildForm(),
+      body: GlassBackdrop(
+        child: _giftCode != null ? _buildSuccess() : _buildForm(),
+      ),
     );
   }
 
@@ -198,15 +202,11 @@ class _GiftPurchaseScreenState extends ConsumerState<GiftPurchaseScreen> {
             Text(ref.lang('gift.share'),
                 style: TextStyle(color: context.text2)),
             const SizedBox(height: 24),
-            Container(
+            GlassSurface(
+              strong: true,
+              radius: 16,
               padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: context.card,
-                borderRadius: BorderRadius.circular(16),
-                border:
-                    Border.all(color: AppTheme.primary.withValues(alpha: 0.2)),
-                boxShadow: AppTheme.neonGlow(radius: 16),
-              ),
+              glowColor: AppTheme.primary,
               child: Column(
                 children: [
                   Text(

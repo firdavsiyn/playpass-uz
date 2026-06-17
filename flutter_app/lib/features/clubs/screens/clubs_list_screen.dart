@@ -9,6 +9,8 @@ import '../../../models/club.dart';
 import '../../../services/supabase_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/neon_shimmer.dart';
+import '../../../core/widgets/glass_surface.dart';
+import '../../../core/widgets/glass_backdrop.dart';
 import '../../../core/widgets/error_retry.dart';
 import '../../../core/l10n/app_locale.dart';
 import '../providers/favorites_provider.dart';
@@ -94,306 +96,309 @@ class ClubsListScreen extends ConsumerWidget {
     final viewMode = ref.watch(viewModeProvider);
 
     return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            // ── Title + notification bell ──────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-              child: Row(
-                children: [
-                  Text(
-                    ref.lang('nav.clubs'),
-                    style: TextStyle(
-                      color: context.text1,
-                      fontSize: 26,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const Spacer(),
-                  GestureDetector(
-                    onTap: () => context.push('/notifications'),
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: context.card,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: context.border),
-                      ),
-                      child: Icon(Icons.notifications_none_rounded,
-                          color: context.text2, size: 22),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            // ── Search bar ────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: SizedBox(
-                height: 44,
-                child: TextField(
-                  onChanged: (v) =>
-                      ref.read(searchQueryProvider.notifier).state = v,
-                  style: const TextStyle(fontSize: 14),
-                  decoration: InputDecoration(
-                    hintText: ref.lang('clubs.search_hint'),
-                    hintStyle: TextStyle(color: context.text3),
-                    prefixIcon: Icon(Icons.search_rounded,
-                        color: context.text3, size: 22),
-                    filled: true,
-                    fillColor: context.surface,
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // ── 3 Discovery cards ─────────────────────────
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  _DiscoveryCard(
-                    icon: Icons.map_rounded,
-                    iconColor: AppTheme.success,
-                    iconBg: AppTheme.success.withValues(alpha: 0.12),
-                    label: ref.lang('clubs.on_map'),
-                    selected: false,
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const FullscreenMapScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(width: 10),
-                  _DiscoveryCard(
-                    icon: Icons.near_me_rounded,
-                    iconColor: AppTheme.primary,
-                    iconBg: AppTheme.primary.withValues(alpha: 0.12),
-                    label: ref.lang('clubs.nearby'),
-                    selected: false,
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              const FullscreenMapScreen(nearby: true),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(width: 10),
-                  _DiscoveryCard(
-                    icon: Icons.favorite_rounded,
-                    iconColor: const Color(0xFFE91E8C),
-                    iconBg: const Color(0xFFE91E8C).withValues(alpha: 0.12),
-                    label: ref.lang('clubs.favorites'),
-                    selected: viewMode == 'favorites',
-                    onTap: () => ref.read(viewModeProvider.notifier).state =
-                        viewMode == 'favorites' ? 'list' : 'favorites',
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 14),
-
-            // ── Quick filter chips (horizontal scroll) ────
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Row(
-                children: [
-                  _QuickChip(
-                    icon: Icons.local_fire_department_rounded,
-                    label: ref.lang('clubs.free_seats'),
-                    color: AppTheme.success,
-                    selected: ref.watch(filterFreeProvider),
-                    onTap: () {
-                      ref.read(filterFreeProvider.notifier).state =
-                          !ref.read(filterFreeProvider);
-                      ref.read(viewModeProvider.notifier).state = 'list';
-                    },
-                  ),
-                  _QuickChip(
-                    icon: Icons.star_rounded,
-                    label: 'VIP',
-                    color: AppTheme.tierVip,
-                    selected: ref.watch(selectedTierProvider) == 'vip',
-                    onTap: () {
-                      final t = ref.read(selectedTierProvider);
-                      ref.read(selectedTierProvider.notifier).state =
-                          t == 'vip' ? null : 'vip';
-                      ref.read(viewModeProvider.notifier).state = 'list';
-                    },
-                  ),
-                  _QuickChip(
-                    icon: Icons.computer_rounded,
-                    label: ref.lang('clubs.standard'),
-                    color: AppTheme.primary,
-                    selected: ref.watch(selectedTierProvider) == 'standard',
-                    onTap: () {
-                      final t = ref.read(selectedTierProvider);
-                      ref.read(selectedTierProvider.notifier).state =
-                          t == 'standard' ? null : 'standard';
-                      ref.read(viewModeProvider.notifier).state = 'list';
-                    },
-                  ),
-                  _QuickChip(
-                    icon: Icons.videogame_asset_rounded,
-                    label: 'PlayStation',
-                    color: AppTheme.info,
-                    selected: ref.watch(filterPsProvider),
-                    onTap: () {
-                      ref.read(filterPsProvider.notifier).state =
-                          !ref.read(filterPsProvider);
-                      ref.read(viewModeProvider.notifier).state = 'list';
-                    },
-                  ),
-                  _QuickChip(
-                    icon: Icons.near_me_rounded,
-                    label: ref.lang('clubs.nearby'),
-                    color: AppTheme.info,
-                    selected: viewMode == 'nearby',
-                    onTap: () => ref.read(viewModeProvider.notifier).state =
-                        viewMode == 'nearby' ? 'list' : 'nearby',
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            // ── Sort row ──────────────────────────────────
-            if (viewMode == 'list' ||
-                viewMode == 'zones' ||
-                viewMode == 'nearby')
+      body: GlassBackdrop(
+        child: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              // ── Title + notification bell ──────────────────
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                 child: Row(
                   children: [
-                    Icon(Icons.sort_rounded, size: 14, color: context.text3),
-                    const SizedBox(width: 6),
-                    ...['rating', 'price', 'name'].map((mode) {
-                      final sortMode = ref.watch(sortModeProvider);
-                      final selected = sortMode == mode;
-                      final label = mode == 'rating'
-                          ? ref.lang('clubs.sort_rating')
-                          : mode == 'price'
-                              ? ref.lang('clubs.sort_price')
-                              : ref.lang('clubs.sort_name');
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 6),
-                        child: GestureDetector(
-                          onTap: () =>
-                              ref.read(sortModeProvider.notifier).state = mode,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: selected
-                                  ? AppTheme.primary.withValues(alpha: 0.15)
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(label,
-                                style: TextStyle(
-                                  color: selected
-                                      ? AppTheme.primary
-                                      : context.text3,
-                                  fontSize: 11,
-                                  fontWeight: selected
-                                      ? FontWeight.w600
-                                      : FontWeight.normal,
-                                )),
-                          ),
+                    Text(
+                      ref.lang('nav.clubs'),
+                      style: TextStyle(
+                        color: context.text1,
+                        fontSize: 26,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const Spacer(),
+                    GestureDetector(
+                      onTap: () => context.push('/notifications'),
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: context.card,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: context.border),
                         ),
-                      );
-                    }),
+                        child: Icon(Icons.notifications_none_rounded,
+                            color: context.text2, size: 22),
+                      ),
+                    ),
                   ],
                 ),
               ),
 
-            // ── Content ───────────────────────────────────
-            Expanded(
-              child: RefreshIndicator(
-                color: AppTheme.primary,
-                onRefresh: () async {
-                  ref.invalidate(_allClubsProvider);
-                  ref.invalidate(nearbyClubsListProvider);
-                  ref.invalidate(clubsOccupancyProvider);
-                  await ref.read(_allClubsProvider.future);
-                },
-                child: clubsAsync.when(
-                  data: (clubs) {
-                    var filtered = query.isEmpty
-                        ? clubs
-                        : clubs
-                            .where((c) => c.name
-                                .toLowerCase()
-                                .contains(query.toLowerCase()))
-                            .toList();
+              const SizedBox(height: 12),
 
-                    // Apply "Свободные" filter — hide clubs with >80% occupancy
-                    if (ref.watch(filterFreeProvider)) {
-                      final occ =
-                          ref.watch(clubsOccupancyProvider).valueOrNull ?? {};
-                      filtered = filtered.where((c) {
-                        final count = occ[c.id] ?? 0;
-                        if (c.pcCount == 0) return true;
-                        return (count / c.pcCount * 100) < 80;
-                      }).toList();
-                    }
-
-                    if (viewMode == 'map') {
-                      return _MapView(clubs: filtered, allClubs: clubs);
-                    }
-                    if (viewMode == 'favorites') {
-                      return _FavoritesView(allClubs: clubs);
-                    }
-                    if (viewMode == 'zones') {
-                      return _ZonesView(clubs: filtered);
-                    }
-                    if (viewMode == 'nearby') {
-                      return _NearbyView();
-                    }
-                    return _ListView(clubs: filtered);
-                  },
-                  loading: () => GridView.builder(
-                    padding: const EdgeInsets.all(16),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.75,
-                      mainAxisSpacing: 12,
-                      crossAxisSpacing: 12,
+              // ── Search bar ────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: SizedBox(
+                  height: 44,
+                  child: TextField(
+                    onChanged: (v) =>
+                        ref.read(searchQueryProvider.notifier).state = v,
+                    style: const TextStyle(fontSize: 14),
+                    decoration: InputDecoration(
+                      hintText: ref.lang('clubs.search_hint'),
+                      hintStyle: TextStyle(color: context.text3),
+                      prefixIcon: Icon(Icons.search_rounded,
+                          color: context.text3, size: 22),
+                      filled: true,
+                      fillColor: context.surface,
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 0),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
                     ),
-                    itemCount: 6,
-                    itemBuilder: (_, __) =>
-                        const NeonSkeletonCard(height: 200, borderRadius: 16),
-                  ),
-                  error: (e, _) => ErrorRetry(
-                    error: e,
-                    onRetry: () => ref.invalidate(_allClubsProvider),
                   ),
                 ),
               ),
-            ),
-          ],
+
+              const SizedBox(height: 16),
+
+              // ── 3 Discovery cards ─────────────────────────
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    _DiscoveryCard(
+                      icon: Icons.map_rounded,
+                      iconColor: AppTheme.success,
+                      iconBg: AppTheme.success.withValues(alpha: 0.12),
+                      label: ref.lang('clubs.on_map'),
+                      selected: false,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const FullscreenMapScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(width: 10),
+                    _DiscoveryCard(
+                      icon: Icons.near_me_rounded,
+                      iconColor: AppTheme.primary,
+                      iconBg: AppTheme.primary.withValues(alpha: 0.12),
+                      label: ref.lang('clubs.nearby'),
+                      selected: false,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                const FullscreenMapScreen(nearby: true),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(width: 10),
+                    _DiscoveryCard(
+                      icon: Icons.favorite_rounded,
+                      iconColor: const Color(0xFFE91E8C),
+                      iconBg: const Color(0xFFE91E8C).withValues(alpha: 0.12),
+                      label: ref.lang('clubs.favorites'),
+                      selected: viewMode == 'favorites',
+                      onTap: () => ref.read(viewModeProvider.notifier).state =
+                          viewMode == 'favorites' ? 'list' : 'favorites',
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 14),
+
+              // ── Quick filter chips (horizontal scroll) ────
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Row(
+                  children: [
+                    _QuickChip(
+                      icon: Icons.local_fire_department_rounded,
+                      label: ref.lang('clubs.free_seats'),
+                      color: AppTheme.success,
+                      selected: ref.watch(filterFreeProvider),
+                      onTap: () {
+                        ref.read(filterFreeProvider.notifier).state =
+                            !ref.read(filterFreeProvider);
+                        ref.read(viewModeProvider.notifier).state = 'list';
+                      },
+                    ),
+                    _QuickChip(
+                      icon: Icons.star_rounded,
+                      label: 'VIP',
+                      color: AppTheme.tierVip,
+                      selected: ref.watch(selectedTierProvider) == 'vip',
+                      onTap: () {
+                        final t = ref.read(selectedTierProvider);
+                        ref.read(selectedTierProvider.notifier).state =
+                            t == 'vip' ? null : 'vip';
+                        ref.read(viewModeProvider.notifier).state = 'list';
+                      },
+                    ),
+                    _QuickChip(
+                      icon: Icons.computer_rounded,
+                      label: ref.lang('clubs.standard'),
+                      color: AppTheme.primary,
+                      selected: ref.watch(selectedTierProvider) == 'standard',
+                      onTap: () {
+                        final t = ref.read(selectedTierProvider);
+                        ref.read(selectedTierProvider.notifier).state =
+                            t == 'standard' ? null : 'standard';
+                        ref.read(viewModeProvider.notifier).state = 'list';
+                      },
+                    ),
+                    _QuickChip(
+                      icon: Icons.videogame_asset_rounded,
+                      label: 'PlayStation',
+                      color: AppTheme.info,
+                      selected: ref.watch(filterPsProvider),
+                      onTap: () {
+                        ref.read(filterPsProvider.notifier).state =
+                            !ref.read(filterPsProvider);
+                        ref.read(viewModeProvider.notifier).state = 'list';
+                      },
+                    ),
+                    _QuickChip(
+                      icon: Icons.near_me_rounded,
+                      label: ref.lang('clubs.nearby'),
+                      color: AppTheme.info,
+                      selected: viewMode == 'nearby',
+                      onTap: () => ref.read(viewModeProvider.notifier).state =
+                          viewMode == 'nearby' ? 'list' : 'nearby',
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              // ── Sort row ──────────────────────────────────
+              if (viewMode == 'list' ||
+                  viewMode == 'zones' ||
+                  viewMode == 'nearby')
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
+                  child: Row(
+                    children: [
+                      Icon(Icons.sort_rounded, size: 14, color: context.text3),
+                      const SizedBox(width: 6),
+                      ...['rating', 'price', 'name'].map((mode) {
+                        final sortMode = ref.watch(sortModeProvider);
+                        final selected = sortMode == mode;
+                        final label = mode == 'rating'
+                            ? ref.lang('clubs.sort_rating')
+                            : mode == 'price'
+                                ? ref.lang('clubs.sort_price')
+                                : ref.lang('clubs.sort_name');
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 6),
+                          child: GestureDetector(
+                            onTap: () => ref
+                                .read(sortModeProvider.notifier)
+                                .state = mode,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: selected
+                                    ? AppTheme.primary.withValues(alpha: 0.15)
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(label,
+                                  style: TextStyle(
+                                    color: selected
+                                        ? AppTheme.primary
+                                        : context.text3,
+                                    fontSize: 11,
+                                    fontWeight: selected
+                                        ? FontWeight.w600
+                                        : FontWeight.normal,
+                                  )),
+                            ),
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+                ),
+
+              // ── Content ───────────────────────────────────
+              Expanded(
+                child: RefreshIndicator(
+                  color: AppTheme.primary,
+                  onRefresh: () async {
+                    ref.invalidate(_allClubsProvider);
+                    ref.invalidate(nearbyClubsListProvider);
+                    ref.invalidate(clubsOccupancyProvider);
+                    await ref.read(_allClubsProvider.future);
+                  },
+                  child: clubsAsync.when(
+                    data: (clubs) {
+                      var filtered = query.isEmpty
+                          ? clubs
+                          : clubs
+                              .where((c) => c.name
+                                  .toLowerCase()
+                                  .contains(query.toLowerCase()))
+                              .toList();
+
+                      // Apply "Свободные" filter — hide clubs with >80% occupancy
+                      if (ref.watch(filterFreeProvider)) {
+                        final occ =
+                            ref.watch(clubsOccupancyProvider).valueOrNull ?? {};
+                        filtered = filtered.where((c) {
+                          final count = occ[c.id] ?? 0;
+                          if (c.pcCount == 0) return true;
+                          return (count / c.pcCount * 100) < 80;
+                        }).toList();
+                      }
+
+                      if (viewMode == 'map') {
+                        return _MapView(clubs: filtered, allClubs: clubs);
+                      }
+                      if (viewMode == 'favorites') {
+                        return _FavoritesView(allClubs: clubs);
+                      }
+                      if (viewMode == 'zones') {
+                        return _ZonesView(clubs: filtered);
+                      }
+                      if (viewMode == 'nearby') {
+                        return _NearbyView();
+                      }
+                      return _ListView(clubs: filtered);
+                    },
+                    loading: () => GridView.builder(
+                      padding: const EdgeInsets.all(16),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 0.75,
+                        mainAxisSpacing: 12,
+                        crossAxisSpacing: 12,
+                      ),
+                      itemCount: 6,
+                      itemBuilder: (_, __) =>
+                          const NeonSkeletonCard(height: 200, borderRadius: 16),
+                    ),
+                    error: (e, _) => ErrorRetry(
+                      error: e,
+                      onRetry: () => ref.invalidate(_allClubsProvider),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -1033,15 +1038,13 @@ class _NearbyClubChip extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 120,
-        decoration: BoxDecoration(
-          color: context.card,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: context.border),
-        ),
+    return SizedBox(
+      width: 120,
+      child: GlassSurface(
+        strong: true,
+        radius: 14,
+        padding: EdgeInsets.zero,
+        onTap: onTap,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1128,192 +1131,187 @@ class _ClubListCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isFav = ref.watch(favoritesProvider).contains(club.id);
 
-    return GestureDetector(
+    return GlassSurface(
+      strong: true,
+      radius: 16,
+      padding: EdgeInsets.zero,
       onTap: () => context.push('/clubs/${club.id}'),
-      child: Container(
-        decoration: BoxDecoration(
-          color: context.card,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Row(
-          children: [
-            Hero(
-              tag: 'club_image_${club.id}',
-              child: ClipRRect(
-                borderRadius:
-                    const BorderRadius.horizontal(left: Radius.circular(16)),
-                child: club.thumbnail != null
-                    ? CachedNetworkImage(
-                        imageUrl: club.thumbnail!,
-                        width: 100,
-                        height: 110,
-                        fit: BoxFit.cover,
-                      )
-                    : Container(
-                        width: 100,
-                        height: 110,
-                        color: context.surface,
-                        child: Icon(Icons.sports_esports,
-                            color: context.text3, size: 36),
-                      ),
-              ),
+      child: Row(
+        children: [
+          Hero(
+            tag: 'club_image_${club.id}',
+            child: ClipRRect(
+              borderRadius:
+                  const BorderRadius.horizontal(left: Radius.circular(16)),
+              child: club.thumbnail != null
+                  ? CachedNetworkImage(
+                      imageUrl: club.thumbnail!,
+                      width: 100,
+                      height: 110,
+                      fit: BoxFit.cover,
+                    )
+                  : Container(
+                      width: 100,
+                      height: 110,
+                      color: context.surface,
+                      child: Icon(Icons.sports_esports,
+                          color: context.text3, size: 36),
+                    ),
             ),
-            Expanded(
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            club.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: context.text1,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 15,
-                            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          club.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: context.text1,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 15,
                           ),
                         ),
-                        if (club.tier == 'vip')
-                          _Badge(label: 'VIP', color: AppTheme.tierVip),
-                        const SizedBox(width: 4),
-                        GestureDetector(
-                          onTap: () => ref
-                              .read(favoritesProvider.notifier)
-                              .toggle(club.id),
-                          child: Icon(
-                            isFav
-                                ? Icons.favorite_rounded
-                                : Icons.favorite_border_rounded,
-                            color: isFav ? AppTheme.error : context.text3,
-                            size: 20,
-                          ),
+                      ),
+                      if (club.tier == 'vip')
+                        _Badge(label: 'VIP', color: AppTheme.tierVip),
+                      const SizedBox(width: 4),
+                      GestureDetector(
+                        onTap: () => ref
+                            .read(favoritesProvider.notifier)
+                            .toggle(club.id),
+                        child: Icon(
+                          isFav
+                              ? Icons.favorite_rounded
+                              : Icons.favorite_border_rounded,
+                          color: isFav ? AppTheme.error : context.text3,
+                          size: 20,
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(Icons.location_on_outlined,
-                            size: 13, color: context.text3),
-                        const SizedBox(width: 2),
-                        Expanded(
-                          child: Text(
-                            club.address,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style:
-                                TextStyle(color: context.text3, fontSize: 12),
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (showDistance && club.distanceMeters != null) ...[
-                      const SizedBox(height: 3),
-                      Row(
-                        children: [
-                          Icon(Icons.near_me_rounded,
-                              size: 12, color: AppTheme.info),
-                          const SizedBox(width: 3),
-                          Text(club.distanceText,
-                              style: TextStyle(
-                                  color: AppTheme.info,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600)),
-                        ],
                       ),
                     ],
-                    const SizedBox(height: 6),
-                    if (club.hasPlaystation)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 6),
-                        child: Wrap(
-                          spacing: 4,
-                          children: [
-                            _Badge(label: 'PS', color: AppTheme.info),
-                          ],
-                        ),
-                      ),
-                    Row(
-                      children: [
-                        const Icon(Icons.star_rounded,
-                            size: 14, color: AppTheme.tierVip),
-                        const SizedBox(width: 2),
-                        Text(
-                          club.rating.toStringAsFixed(1),
-                          style: TextStyle(color: context.text2, fontSize: 12),
-                        ),
-                        const SizedBox(width: 10),
-                        Icon(Icons.computer, size: 14, color: context.text3),
-                        const SizedBox(width: 2),
-                        Text(
-                          '${club.pcCount} ${ref.lang('clubs.pc')}',
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(Icons.location_on_outlined,
+                          size: 13, color: context.text3),
+                      const SizedBox(width: 2),
+                      Expanded(
+                        child: Text(
+                          club.address,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(color: context.text3, fontSize: 12),
                         ),
-                        Consumer(builder: (_, ref, __) {
-                          final occ =
-                              ref.watch(clubsOccupancyProvider).valueOrNull;
-                          final count = occ?[club.id] ?? 0;
-                          if (count == 0) return const SizedBox.shrink();
-                          final pct = club.pcCount > 0
-                              ? (count / club.pcCount * 100).round()
-                              : 0;
-                          final color = pct > 80
-                              ? AppTheme.error
-                              : pct > 50
-                                  ? AppTheme.warning
-                                  : AppTheme.success;
-                          return Padding(
-                            padding: const EdgeInsets.only(left: 8),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: color.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text('$pct%',
-                                  style: TextStyle(
-                                      color: color,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w700)),
-                            ),
-                          );
-                        }),
-                        const Spacer(),
-                        Container(
-                          width: 7,
-                          height: 7,
-                          decoration: BoxDecoration(
-                            color:
-                                club.isOpen ? AppTheme.success : AppTheme.error,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          club.isOpen
-                              ? ref.lang('clubs.open')
-                              : ref.lang('clubs.closed'),
-                          style: TextStyle(
-                            color:
-                                club.isOpen ? AppTheme.success : AppTheme.error,
-                            fontSize: 11,
-                          ),
-                        ),
+                      ),
+                    ],
+                  ),
+                  if (showDistance && club.distanceMeters != null) ...[
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        Icon(Icons.near_me_rounded,
+                            size: 12, color: AppTheme.info),
+                        const SizedBox(width: 3),
+                        Text(club.distanceText,
+                            style: TextStyle(
+                                color: AppTheme.info,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600)),
                       ],
                     ),
                   ],
-                ),
+                  const SizedBox(height: 6),
+                  if (club.hasPlaystation)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Wrap(
+                        spacing: 4,
+                        children: [
+                          _Badge(label: 'PS', color: AppTheme.info),
+                        ],
+                      ),
+                    ),
+                  Row(
+                    children: [
+                      const Icon(Icons.star_rounded,
+                          size: 14, color: AppTheme.tierVip),
+                      const SizedBox(width: 2),
+                      Text(
+                        club.rating.toStringAsFixed(1),
+                        style: TextStyle(color: context.text2, fontSize: 12),
+                      ),
+                      const SizedBox(width: 10),
+                      Icon(Icons.computer, size: 14, color: context.text3),
+                      const SizedBox(width: 2),
+                      Text(
+                        '${club.pcCount} ${ref.lang('clubs.pc')}',
+                        style: TextStyle(color: context.text3, fontSize: 12),
+                      ),
+                      Consumer(builder: (_, ref, __) {
+                        final occ =
+                            ref.watch(clubsOccupancyProvider).valueOrNull;
+                        final count = occ?[club.id] ?? 0;
+                        if (count == 0) return const SizedBox.shrink();
+                        final pct = club.pcCount > 0
+                            ? (count / club.pcCount * 100).round()
+                            : 0;
+                        final color = pct > 80
+                            ? AppTheme.error
+                            : pct > 50
+                                ? AppTheme.warning
+                                : AppTheme.success;
+                        return Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: color.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text('$pct%',
+                                style: TextStyle(
+                                    color: color,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700)),
+                          ),
+                        );
+                      }),
+                      const Spacer(),
+                      Container(
+                        width: 7,
+                        height: 7,
+                        decoration: BoxDecoration(
+                          color:
+                              club.isOpen ? AppTheme.success : AppTheme.error,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        club.isOpen
+                            ? ref.lang('clubs.open')
+                            : ref.lang('clubs.closed'),
+                        style: TextStyle(
+                          color:
+                              club.isOpen ? AppTheme.success : AppTheme.error,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
