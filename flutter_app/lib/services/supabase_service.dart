@@ -314,9 +314,8 @@ class SupabaseService {
       throw const PaymentException('Неизвестный платёжный провайдер');
     }
 
-    final fnName = provider == 'click'
-        ? 'click-create-payment'
-        : 'rahmat-create-payment';
+    final fnName =
+        provider == 'click' ? 'click-create-payment' : 'rahmat-create-payment';
 
     try {
       final res = await _client.functions.invoke(
@@ -333,8 +332,7 @@ class SupabaseService {
       if (data['error'] != null) {
         // 503 "not configured" is a special case we want to expose verbatim.
         final code = data['error'].toString();
-        if (code == 'rahmat_not_configured' ||
-            code == 'click_not_configured') {
+        if (code == 'rahmat_not_configured' || code == 'click_not_configured') {
           throw const PaymentException(
               'Этот способ оплаты ещё не подключён. Попробуйте другой.');
         }
@@ -423,8 +421,14 @@ class SupabaseService {
   }
 
   Future<Club?> getClub(String clubId) async {
-    final res =
-        await _client.from('clubs').select().eq('id', clubId).maybeSingle();
+    // Explicit safe columns — never select qr_token / payout_details (secrets
+    // are revoked from anon/authenticated; only edge functions read them).
+    final res = await _client
+        .from('clubs')
+        .select(
+            'id, name, address, lat, lon, photos, working_hours, pc_count, rating, status, tier, has_playstation, description, price_per_hour, review_count, contact_phone, contact_telegram')
+        .eq('id', clubId)
+        .maybeSingle();
     if (res == null) return null;
     return Club.fromJson(res);
   }
@@ -482,8 +486,9 @@ class SupabaseService {
       final response = await _client.functions.invoke(
         'checkin',
         body: {
-          'zone_id': zoneId,
-          'qr_hmac': qrHmac,
+          // Edge fn reads club_id/qr_token (qrHmac is the HMAC it validates).
+          'club_id': zoneId,
+          'qr_token': qrHmac,
           if (geoLat != null) 'geo_lat': geoLat,
           if (geoLon != null) 'geo_lon': geoLon,
         },
@@ -746,7 +751,8 @@ class SupabaseService {
     if (userId == null) return [];
     final res = await _client
         .from('favorites')
-        .select('club_id, clubs(*)')
+        .select(
+            'club_id, clubs(id, name, address, lat, lon, photos, working_hours, pc_count, rating, status, tier, has_playstation, description, price_per_hour, review_count, contact_phone, contact_telegram)')
         .eq('user_id', userId)
         .order('created_at', ascending: false);
     return (res as List)
@@ -892,19 +898,24 @@ class SupabaseService {
   }
 
   Future<void> redeemGiftCertificate(String code) async {
-    final userId = _userId;
-    final gift = await getGiftByCode(code);
-    if (gift == null) throw Exception('Сертификат не найден');
-    if (gift['status'] != 'paid') throw Exception('Сертификат недействителен');
-    final expiresAt = DateTime.parse(gift['expires_at'] as String);
-    if (expiresAt.isBefore(DateTime.now()))
-      throw Exception('Сертификат просрочен');
-
-    await _client.from('gift_certificates').update({
-      'status': 'redeemed',
-      'redeemed_by': userId,
-      'redeemed_at': DateTime.now().toIso8601String(),
-    }).eq('code', code.toUpperCase());
+    // Atomic, server-authorized claim + provisioning (SECURITY DEFINER RPC).
+    // No client-side status/expiry checks or UPDATE — those were spoofable
+    // and granted no subscription (audit 2026-06-18 blocker #4).
+    final res = await _client.rpc(
+      'redeem_gift_certificate',
+      params: {'p_code': code.toUpperCase()},
+    );
+    final map = (res as Map).cast<String, dynamic>();
+    if (map['ok'] != true) {
+      final err = map['error'] as String? ?? 'unknown';
+      throw Exception(switch (err) {
+        'not_found' => 'Сертификат не найден',
+        'already_redeemed' => 'Сертификат уже активирован',
+        'not_paid' => 'Сертификат недействителен',
+        'not_authenticated' => 'Войдите в аккаунт',
+        _ => 'Не удалось активировать сертификат',
+      });
+    }
   }
 
   // ── Bookings ──────────────────────────────────────────────

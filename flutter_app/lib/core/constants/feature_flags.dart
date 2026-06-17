@@ -27,7 +27,10 @@ class FeatureFlags {
   static const bool booking = false; // Бронирование ПК
 
   // ── Other ────────────────────────────────────────────────────
-  static const bool gifts = true; // Подарочные сертификаты — оставляем
+  // Off until gift CREATION is wired to the payment flow and the secure
+  // gift_certificates table + redeem_gift_certificate RPC are live (audit
+  // 2026-06-18 launch blocker: current flow takes no money & grants nothing).
+  static const bool gifts = false; // Подарочные сертификаты
   static const bool referral = true; // Реферальная программа — оставляем
   static const bool freeze = true; // Заморозка подписки — оставляем
   static const bool savings = true; // Виджет «Сколько сэкономили» — оставляем

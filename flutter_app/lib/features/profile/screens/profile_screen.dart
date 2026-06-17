@@ -452,12 +452,13 @@ class _ProfileContent extends ConsumerWidget {
           title: ref.lang('profile.buy_sub'),
           onTap: () => context.push('/plans'),
         ),
-        _MenuItem(
-          icon: Icons.card_giftcard_rounded,
-          title: ref.lang('profile.gifts'),
-          subtitle: ref.lang('profile.gifts_sub'),
-          onTap: () => context.push('/gift/purchase'),
-        ),
+        if (FeatureFlags.gifts)
+          _MenuItem(
+            icon: Icons.card_giftcard_rounded,
+            title: ref.lang('profile.gifts'),
+            subtitle: ref.lang('profile.gifts_sub'),
+            onTap: () => context.push('/gift/purchase'),
+          ),
         _MenuItem(
           icon: Icons.people_outline_rounded,
           title: ref.lang('profile.referral'),

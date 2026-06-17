@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/constants/feature_flags.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_locale.dart';
 import '../../../core/widgets/neon_shimmer.dart';
@@ -117,20 +118,22 @@ class MySubscriptionScreen extends ConsumerWidget {
                           title: ref.lang('sub.promo'),
                           onTap: () => _showPromoDialog(context, ref),
                         ),
-                        const _Divider(),
-                        _ActionTile(
-                          icon: Icons.card_giftcard_rounded,
-                          iconColor: AppTheme.error,
-                          title: ref.lang('sub.gift_buy'),
-                          onTap: () => _showGiftInfo(context),
-                        ),
-                        const _Divider(),
-                        _ActionTile(
-                          icon: Icons.redeem_rounded,
-                          iconColor: AppTheme.neonPurple,
-                          title: ref.lang('sub.gift_redeem'),
-                          onTap: () => context.push('/gift/redeem'),
-                        ),
+                        if (FeatureFlags.gifts) ...[
+                          const _Divider(),
+                          _ActionTile(
+                            icon: Icons.card_giftcard_rounded,
+                            iconColor: AppTheme.error,
+                            title: ref.lang('sub.gift_buy'),
+                            onTap: () => _showGiftInfo(context),
+                          ),
+                          const _Divider(),
+                          _ActionTile(
+                            icon: Icons.redeem_rounded,
+                            iconColor: AppTheme.neonPurple,
+                            title: ref.lang('sub.gift_redeem'),
+                            onTap: () => context.push('/gift/redeem'),
+                          ),
+                        ],
                       ],
                     ),
                   ),

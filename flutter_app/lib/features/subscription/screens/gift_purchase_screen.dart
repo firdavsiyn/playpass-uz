@@ -18,7 +18,7 @@ class GiftPurchaseScreen extends ConsumerStatefulWidget {
 }
 
 class _GiftPurchaseScreenState extends ConsumerState<GiftPurchaseScreen> {
-  String _selectedPlan = 'standard';
+  String _selectedPlan = 'day';
   final _nameCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
   bool _loading = false;
@@ -66,7 +66,11 @@ class _GiftPurchaseScreenState extends ConsumerState<GiftPurchaseScreen> {
   }
 
   Widget _buildForm() {
-    final plans = AppConstants.plans.values.toList();
+    // Only purchasable tariffs — never the legacy unlimited plans (bankruptcy
+    // vector: an unlimited gift could be farmed for payouts far above price).
+    final plans = AppConstants.purchasablePlanCodes
+        .map((c) => AppConstants.plans[c]!)
+        .toList();
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
       children: [

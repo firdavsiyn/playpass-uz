@@ -150,8 +150,17 @@ serve(async (req) => {
       return json({ error: "Достигнут дневной лимит: 8 чекинов в сутки." }, 429);
     }
 
-    // ── 10. Geo validation (server-side, 300m radius) ─────────
-    if (geo_lat && geo_lon && club.lat && club.lon) {
+    // ── 10. Geo validation (server-side, 300m radius) — MANDATORY ─────
+    // Presence is REQUIRED: if the club has coordinates the request must
+    // include finite geo and pass the radius check. Previously the whole
+    // block was skipped when geo was absent (truthiness), so any client
+    // could check in remotely just by omitting coordinates.
+    if (club.lat != null && club.lon != null) {
+      if (!Number.isFinite(geo_lat) || !Number.isFinite(geo_lon)) {
+        return json({
+          error: "Геолокация обязательна для чек-ина. Разрешите доступ к геопозиции и попробуйте снова."
+        }, 403);
+      }
       const distMeters = haversineMeters(geo_lat, geo_lon, club.lat, club.lon);
       if (distMeters > 300) {
         return json({
