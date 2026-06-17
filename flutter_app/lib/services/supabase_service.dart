@@ -911,6 +911,7 @@ class SupabaseService {
       throw Exception(switch (err) {
         'not_found' => 'Сертификат не найден',
         'already_redeemed' => 'Сертификат уже активирован',
+        'expired' => 'Срок действия сертификата истёк',
         'not_paid' => 'Сертификат недействителен',
         'not_authenticated' => 'Войдите в аккаунт',
         _ => 'Не удалось активировать сертификат',

@@ -1,15 +1,14 @@
 -- ════════════════════════════════════════════════════════════════════════
 -- Audit 2026-06-18 — LAUNCH BLOCKER #4 (secure foundation)
--- The gift flow had NO table, NO RLS, took NO money, and granted NOTHING:
--- creation minted free certs with a client-chosen plan/amount; redemption
--- only flipped a status and provisioned no subscription; everything was a
--- client-side write. This migration lays the SECURE storage + redemption.
+-- The gift_certificates table already exists in the live DB (created outside
+-- migrations) with columns: code, plan, amount_uzs, buyer_id, recipient_name,
+-- recipient_email, recipient_phone, expires_at, status, redeemed_by,
+-- redeemed_at. This migration secures it (RLS + atomic redeem RPC). The
+-- CREATE TABLE IF NOT EXISTS is a no-op on the live DB and only matters for a
+-- fresh setup; it uses the SAME column names the client/live schema use.
 --
--- The gift UI is gated OFF in the app (FeatureFlags.gifts=false) until gift
--- CREATION is wired to the payment flow (a cert must only become 'paid' via a
--- verified payment webhook — never from the client). Until then, certs can be
--- created only by service_role (webhook/admin); redemption below is atomic and
--- server-authorized.
+-- Gift UI stays OFF (FeatureFlags.gifts=false) until CREATION is wired to a
+-- verified payment webhook (a cert must only become 'paid' server-side).
 -- ════════════════════════════════════════════════════════════════════════
 
 CREATE TABLE IF NOT EXISTS public.gift_certificates (
@@ -17,9 +16,11 @@ CREATE TABLE IF NOT EXISTS public.gift_certificates (
   code            text UNIQUE NOT NULL,
   plan            text NOT NULL,
   amount_uzs      int  NOT NULL,
-  purchaser_id    uuid REFERENCES public.users(id) ON DELETE SET NULL,
+  buyer_id        uuid REFERENCES public.users(id) ON DELETE SET NULL,
   recipient_name  text,
+  recipient_email text,
   recipient_phone text,
+  expires_at      timestamptz,
   payment_id      uuid,
   status          text NOT NULL DEFAULT 'pending_payment'
                     CHECK (status IN ('pending_payment','paid','redeemed','cancelled')),
@@ -33,20 +34,17 @@ CREATE INDEX IF NOT EXISTS idx_gift_certificates_code ON public.gift_certificate
 
 ALTER TABLE public.gift_certificates ENABLE ROW LEVEL SECURITY;
 
--- Users may read only certs they purchased or redeemed. No client INSERT/
--- UPDATE/DELETE: all writes go through the redeem RPC (definer) or the
--- service_role (payment webhook / admin). No bare code-lookup SELECT — that
--- would let anyone enumerate/scrape codes.
+-- Users may read only certs they bought or redeemed. No client INSERT/UPDATE/
+-- DELETE: writes go through the redeem RPC (definer) or service_role (payment
+-- webhook / admin). No bare code-lookup SELECT (prevents code enumeration).
 DROP POLICY IF EXISTS gift_certificates_select_own ON public.gift_certificates;
 CREATE POLICY gift_certificates_select_own ON public.gift_certificates
   FOR SELECT TO authenticated
-  USING (purchaser_id = auth.uid() OR redeemed_by = auth.uid());
+  USING (buyer_id = auth.uid() OR redeemed_by = auth.uid());
 
--- ── Atomic redemption ────────────────────────────────────────────────────
--- Claims a PAID cert (CAS, single-row UPDATE) and provisions the subscription
--- in one transaction. Idempotent against double-spend: the CAS only succeeds
--- while status='paid', so a second caller (or the same code twice) gets a
--- clear error instead of a second subscription.
+-- Atomic redemption: CAS-claims a PAID, non-expired cert and provisions the
+-- subscription in one transaction. Double-spend safe (CAS succeeds only while
+-- status='paid').
 CREATE OR REPLACE FUNCTION public.redeem_gift_certificate(p_code text)
 RETURNS jsonb
 LANGUAGE plpgsql
@@ -54,37 +52,39 @@ SECURITY DEFINER
 SET search_path = public, pg_temp
 AS $$
 DECLARE
-  v_uid       uuid := auth.uid();
-  v_cert      public.gift_certificates%ROWTYPE;
-  v_visits    int;
-  v_end       date;
+  v_uid    uuid := auth.uid();
+  v_cert   public.gift_certificates%ROWTYPE;
+  v_visits int;
+  v_end    date;
 BEGIN
   IF v_uid IS NULL THEN
     RETURN jsonb_build_object('ok', false, 'error', 'not_authenticated');
   END IF;
 
-  -- Atomic claim: only one caller can flip paid → redeemed.
   UPDATE public.gift_certificates
      SET status      = 'redeemed',
          redeemed_by = v_uid,
          redeemed_at = now()
    WHERE code = p_code
      AND status = 'paid'
+     AND (expires_at IS NULL OR expires_at > now())
   RETURNING * INTO v_cert;
 
   IF NOT FOUND THEN
-    -- Distinguish the failure for a useful client message.
     SELECT * INTO v_cert FROM public.gift_certificates WHERE code = p_code;
     IF NOT FOUND THEN
       RETURN jsonb_build_object('ok', false, 'error', 'not_found');
     ELSIF v_cert.status = 'redeemed' THEN
       RETURN jsonb_build_object('ok', false, 'error', 'already_redeemed');
+    ELSIF v_cert.status = 'paid'
+          AND v_cert.expires_at IS NOT NULL
+          AND v_cert.expires_at <= now() THEN
+      RETURN jsonb_build_object('ok', false, 'error', 'expired');
     ELSE
       RETURN jsonb_build_object('ok', false, 'error', 'not_paid');
     END IF;
   END IF;
 
-  -- Provision the subscription (BM v1.3 visit mapping; never unlimited).
   v_visits := CASE v_cert.plan
                 WHEN 'daily'   THEN 4
                 WHEN 'day'     THEN 12
