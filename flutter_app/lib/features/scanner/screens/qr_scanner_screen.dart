@@ -24,12 +24,15 @@ class QrScannerScreen extends ConsumerStatefulWidget {
 
 class _QrScannerScreenState extends ConsumerState<QrScannerScreen>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
-  // IMPORTANT: in a StatefulShellBranch the screen widget is kept alive across
-  // tab switches — dispose() is NOT called when leaving the tab. mobile_scanner's
-  // stop() only pauses the feed; on iOS the camera hardware (and the orange
-  // privacy indicator) is only released by dispose(). So we make the controller
-  // nullable and fully dispose/recreate on lifecycle boundaries.
-  MobileScannerController? _scanner;
+  // The scanner lives in a StatefulShellBranch (IndexedStack), so it stays
+  // mounted across tab switches. We keep ONE controller alive for the screen's
+  // life and toggle the feed with start()/stop(). (An earlier version disposed
+  // & recreated the controller on every tab switch with autoStart:true — on
+  // web/PWA the recreated controller raced the widget mount and the preview
+  // stayed black while the camera was held. One persistent controller fixes it;
+  // stop() also releases the browser camera track, clearing the indicator.)
+  late final MobileScannerController _scanner;
+  bool _started = false;
   ScanState _state = ScanState.scanning;
   String? _message;
   Map<String, dynamic>? _result;
@@ -49,62 +52,62 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen>
     _pulseAnimation = Tween(begin: 0.95, end: 1.05).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
-    _initScanner();
-  }
-
-  /// Create the controller and start the feed. No-op if already alive.
-  void _initScanner() {
-    if (_scanner != null) return;
+    // Created once. NOT autoStart — we start explicitly once the widget is in
+    // the tree and the scanner tab is active (see build()), so the preview
+    // attaches reliably on web and native.
     _scanner = MobileScannerController(
       formats: const [BarcodeFormat.qrCode],
       detectionSpeed: DetectionSpeed.normal,
       facing: CameraFacing.back,
       torchEnabled: false,
-      autoStart: true,
+      autoStart: false,
     );
   }
 
-  /// Fully release camera hardware. This is what actually clears the iOS
-  /// privacy indicator — stop() alone is not enough.
-  Future<void> _releaseScanner() async {
-    final s = _scanner;
-    _scanner = null;
-    if (s == null) return;
+  Future<void> _startCamera() async {
+    if (_started) return;
+    _started = true;
     try {
-      await s.stop();
-    } catch (_) {}
+      await _scanner.start();
+    } catch (_) {
+      _started = false; // allow a retry on next build
+    }
+  }
+
+  Future<void> _stopCamera() async {
+    if (!_started) return;
+    _started = false;
     try {
-      await s.dispose();
+      await _scanner.stop();
     } catch (_) {}
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Release on background — frees hardware + clears indicator.
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
-      _releaseScanner();
+      _stopCamera();
     }
-    // Recreate on resume only if user is still on scanner & in scanning state.
     if (state == AppLifecycleState.resumed &&
-        _scanner == null &&
+        !_started &&
         _state == ScanState.scanning) {
-      _initScanner();
-      if (mounted) setState(() {});
+      // Only resume if the user is actually on the scanner tab.
+      if (ref.read(activeTabIndexProvider) == 2) _startCamera();
     }
   }
 
   @override
   void deactivate() {
-    // Tab switch / navigation away — release everything.
-    _releaseScanner();
+    // Tab switch / navigation away — pause the feed (releases the camera track
+    // on web), but keep the controller for an instant resume.
+    _stopCamera();
     super.deactivate();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _releaseScanner();
+    _scanner.dispose();
     _pulseController.dispose();
     super.dispose();
   }
@@ -137,9 +140,9 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen>
 
     _processed = true;
     setState(() => _state = ScanState.processing);
-    // Release the camera the moment we have a valid code — clears iOS indicator
-    // before the network call and overlay animation.
-    await _releaseScanner();
+    // Pause the feed the moment we have a valid code — frees the camera before
+    // the network call and overlay animation.
+    await _stopCamera();
 
     final raw = rawValue;
 
@@ -199,8 +202,8 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen>
     });
     Future.delayed(const Duration(seconds: 4), () async {
       if (!mounted) return;
-      // Recreate scanner for retry (was released on detection).
-      _initScanner();
+      // Resume the feed for another attempt (was paused on detection).
+      await _startCamera();
       if (!mounted) return;
       setState(() {
         _state = ScanState.scanning;
@@ -216,20 +219,18 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen>
     final activeTab = ref.watch(activeTabIndexProvider);
     final isScannerTab = activeTab == 2;
 
-    // Release camera when user switches away from scanner tab.
-    // This is what clears the iOS privacy indicator on tab change.
-    if (!isScannerTab && _scanner != null) {
+    // Pause the feed when the user leaves the scanner tab (frees the camera
+    // track on web, clears the indicator).
+    if (!isScannerTab && _started) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && !isScannerTab) _releaseScanner();
+        if (mounted && ref.read(activeTabIndexProvider) != 2) _stopCamera();
       });
     }
-    // Recreate camera when user switches back (only if still in scanning state).
-    if (isScannerTab && _scanner == null && _state == ScanState.scanning) {
+    // Start the feed when the scanner tab is active and we're scanning. Runs
+    // after the frame so the MobileScanner widget is mounted first.
+    if (isScannerTab && !_started && _state == ScanState.scanning) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          _initScanner();
-          setState(() => _processed = false);
-        }
+        if (mounted && ref.read(activeTabIndexProvider) == 2) _startCamera();
       });
     }
 
@@ -237,11 +238,11 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen>
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // Scanner — only mount when controller is alive
-          if (_scanner != null &&
-              (_state == ScanState.scanning || _state == ScanState.processing))
+          // Scanner — controller persists for the screen's life; feed toggles
+          // via start()/stop(). Mounted whenever we're in a camera state.
+          if (_state == ScanState.scanning || _state == ScanState.processing)
             MobileScanner(
-              controller: _scanner!,
+              controller: _scanner,
               onDetect: _onQrDetected,
             ),
 
@@ -257,7 +258,7 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen>
                   IconButton(
                     icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
                     onPressed: () async {
-                      await _releaseScanner();
+                      await _stopCamera();
                       if (context.mounted) context.go('/home');
                     },
                   ),
@@ -274,7 +275,7 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen>
                   ),
                   IconButton(
                     icon: const Icon(Icons.flash_on, color: Colors.white),
-                    onPressed: () => _scanner?.toggleTorch(),
+                    onPressed: () => _scanner.toggleTorch(),
                   ),
                 ],
               ),
@@ -547,8 +548,7 @@ class _ResultOverlayState extends ConsumerState<_ResultOverlay>
                     AnimatedBuilder(
                       animation: _counterAnim,
                       builder: (context, _) {
-                        final value =
-                            (_counterAnim.value * hoursLeft).floor();
+                        final value = (_counterAnim.value * hoursLeft).floor();
                         return Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 18, vertical: 12),

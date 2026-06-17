@@ -110,315 +110,298 @@ class HomeScreen extends ConsumerWidget {
       // Utility-first: no atmospheric orbs (removed — pure decoration that
       // reads as dirty blotches on the light background).
       body: RefreshIndicator(
-            color: AppTheme.primary,
-            onRefresh: () async {
-              await Future.wait([
-                ref.refresh(activeSubscriptionProvider.future),
-                ref.refresh(nearbyClubsProvider.future),
-                ref.refresh(recentVisitsProvider.future),
-                ref.refresh(activeSessionProvider.future),
-              ]);
-            },
-            child: CustomScrollView(
-              slivers: [
-                // ── App Bar ─────────────────────────────────────
-                SliverAppBar(
-                  floating: true,
-                  pinned: false,
-                  backgroundColor: context.bg,
-                  title: Row(
-                    children: [
-                      // Logo with neon glow
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [AppTheme.primary, AppTheme.neonCyan],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppTheme.primary.withValues(alpha: 0.4),
-                              blurRadius: 12,
-                              spreadRadius: -4,
-                            ),
-                          ],
-                        ),
-                        child: const Center(
-                          child: Icon(Icons.sports_esports_rounded,
-                              color: Colors.white, size: 20),
-                        ),
+        color: AppTheme.primary,
+        onRefresh: () async {
+          await Future.wait([
+            ref.refresh(activeSubscriptionProvider.future),
+            ref.refresh(nearbyClubsProvider.future),
+            ref.refresh(recentVisitsProvider.future),
+            ref.refresh(activeSessionProvider.future),
+          ]);
+        },
+        child: CustomScrollView(
+          slivers: [
+            // ── App Bar ─────────────────────────────────────
+            SliverAppBar(
+              floating: true,
+              pinned: false,
+              backgroundColor: context.bg,
+              title: Row(
+                children: [
+                  // Logo with neon glow
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [AppTheme.primary, AppTheme.neonCyan],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                      const SizedBox(width: 10),
-                      Text(
-                        'PlayPass',
-                        style: TextStyle(
-                          color: context.text1,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 22,
-                          letterSpacing: -0.5,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.primary.withValues(alpha: 0.4),
+                          blurRadius: 12,
+                          spreadRadius: -4,
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
+                    child: const Center(
+                      child: Icon(Icons.sports_esports_rounded,
+                          color: Colors.white, size: 20),
+                    ),
                   ),
-                  actions: [
-                    Consumer(builder: (context, ref, _) {
-                      final count =
-                          ref.watch(unreadNotifCountProvider).valueOrNull ?? 0;
-                      return IconButton(
-                        icon: Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            Icon(Icons.notifications_outlined,
-                                color: context.text1),
-                            if (count > 0)
-                              Positioned(
-                                right: -4,
-                                top: -4,
-                                child: Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.error,
-                                    shape: BoxShape.circle,
-                                    boxShadow: [
-                                      BoxShadow(
-                                          color: AppTheme.error
-                                              .withValues(alpha: 0.4),
-                                          blurRadius: 6)
-                                    ],
-                                  ),
-                                  constraints: const BoxConstraints(
-                                      minWidth: 16, minHeight: 16),
-                                  child: Text(
-                                    count > 99 ? '99+' : '$count',
-                                    style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 9,
-                                        fontWeight: FontWeight.w700),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
+                  const SizedBox(width: 10),
+                  Text(
+                    'PlayPass',
+                    style: TextStyle(
+                      color: context.text1,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 22,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                Consumer(builder: (context, ref, _) {
+                  final count =
+                      ref.watch(unreadNotifCountProvider).valueOrNull ?? 0;
+                  return IconButton(
+                    icon: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Icon(Icons.notifications_outlined,
+                            color: context.text1),
+                        if (count > 0)
+                          Positioned(
+                            right: -4,
+                            top: -4,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: AppTheme.error,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                      color:
+                                          AppTheme.error.withValues(alpha: 0.4),
+                                      blurRadius: 6)
+                                ],
                               ),
-                          ],
-                        ),
-                        onPressed: () => context.push('/notifications'),
-                      );
-                    }),
-                    const SizedBox(width: 4),
-                  ],
-                ),
-
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate([
-                      const SizedBox(height: 8),
-
-                      // ════════════════════════════════════════════
-                      // ABOVE THE FOLD — utility-first
-                      // ════════════════════════════════════════════
-
-                      // ── 1. Active session widget (genuine utility) ──
-                      // Only renders when a session is live.
-                      ref.watch(activeSessionProvider).when(
-                            data: (session) => session != null
-                                ? Padding(
-                                    padding: const EdgeInsets.only(bottom: 16),
-                                    child: ActiveSessionWidget(
-                                      session: session,
-                                      onEnded: () {
-                                        ref.invalidate(activeSessionProvider);
-                                        ref.invalidate(
-                                            activeSubscriptionProvider);
-                                      },
-                                      activeSessionLabel:
-                                          ref.lang('home.active_session'),
-                                      endSessionLabel:
-                                          ref.lang('home.end_session'),
-                                      clubDefault:
-                                          ref.lang('common.club_default'),
-                                      errorPrefix:
-                                          ref.lang('common.error_prefix'),
-                                      timeH: ref.lang('common.time_h'),
-                                      timeM: ref.lang('common.time_m'),
-                                      timeS: ref.lang('common.time_s'),
-                                    ),
-                                  )
-                                : const SizedBox.shrink(),
-                            loading: () => const SizedBox.shrink(),
-                            error: (_, __) => const SizedBox.shrink(),
+                              constraints: const BoxConstraints(
+                                  minWidth: 16, minHeight: 16),
+                              child: Text(
+                                count > 99 ? '99+' : '$count',
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w700),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
                           ),
-
-                      // ── 2. Compact subscription STATUS strip ────
-                      // No skeleton on loading — emit nothing so the layout
-                      // stays calm and the real strip slides in when ready.
-                      subscriptionAsync.when(
-                        data: (sub) => SubscriptionWidget(subscription: sub),
-                        loading: () => const SizedBox.shrink(),
-                        error: (_, __) => const _SubscriptionError(),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // ── 3. LARGE scan hero button (visual hero) ──
-                      subscriptionAsync.when(
-                        data: (sub) => _ScanButton(
-                          hasActiveSubscription: sub?.isActive == true,
-                          isFrozen: sub?.isFrozen == true,
-                        ),
-                        loading: () => const SizedBox.shrink(),
-                        error: (_, __) => const SizedBox.shrink(),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // ════════════════════════════════════════════
-                      // BELOW THE FOLD
-                      // ════════════════════════════════════════════
-
-                      // ── 4. Nearby Clubs Section (gated) ─────────
-                      // Render the whole section only when clubs exist;
-                      // otherwise emit nothing (no header, no "all →").
-                      ref.watch(nearbyClubsProvider).when(
-                            data: (clubs) => clubs.isEmpty
-                                ? const SizedBox.shrink()
-                                : Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.stretch,
-                                    children: [
-                                      _SectionHeader(
-                                        title: ref.lang('home.nearby'),
-                                        action: ref.lang('home.all'),
-                                        onAction: () => context.go('/clubs'),
-                                      ),
-                                      const SizedBox(height: 12),
-                                      NearbyClubsRow(
-                                          clubsAsync: ref
-                                              .watch(nearbyClubsProvider)),
-                                      const SizedBox(height: 24),
-                                    ],
-                                  ),
-                            loading: () => const SizedBox.shrink(),
-                            error: (_, __) => const SizedBox.shrink(),
-                          ),
-
-                      // ── 5. Recent Visits Section ───────────────
-                      _SectionHeader(
-                        title: ref.lang('home.recent'),
-                        action: ref.lang('home.history'),
-                        onAction: () => context.push('/profile/history'),
-                      ),
-                      const SizedBox(height: 12),
-                      RecentVisitsWidget(
-                          visitsAsync: ref.watch(recentVisitsProvider)),
-
-                      const SizedBox(height: 24),
-
-                      // ── 6. Streak widget (engagement — demoted) ──
-                      Consumer(
-                        builder: (context, ref, _) {
-                          final streakAsync = ref.watch(streakProvider);
-                          return streakAsync.when(
-                            data: (data) {
-                              final days = data['streak_days'] as int? ?? 0;
-                              if (days < 1) return const SizedBox.shrink();
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 16),
-                                child: StreakWidget(
-                                  streakDays: days,
-                                  lastVisitDate:
-                                      data['last_visit_date'] as DateTime?,
-                                ),
-                              );
-                            },
-                            loading: () => const SizedBox.shrink(),
-                            error: (_, __) => const SizedBox.shrink(),
-                          );
-                        },
-                      ),
-
-                      // ── 7. Smart Home Feed (engagement — demoted) ──
-                      if (FeatureFlags.smartHomeFeed)
-                        Consumer(
-                          builder: (context, ref, _) {
-                            final hintsAsync =
-                                ref.watch(homeRecommendationsProvider);
-                            return hintsAsync.when(
-                              data: (hints) {
-                                if (hints.isEmpty)
-                                  return const SizedBox.shrink();
-                                return Column(
-                                  children: hints
-                                      .take(2)
-                                      .map((h) => Padding(
-                                            padding: const EdgeInsets.only(
-                                                bottom: 10),
-                                            child: SmartHintCard(hint: h),
-                                          ))
-                                      .toList(),
-                                );
-                              },
-                              loading: () => const SizedBox.shrink(),
-                              error: (_, __) => const SizedBox.shrink(),
-                            );
-                          },
-                        ),
-
-                      // ── 8. Savings indicator (duplicates hours) ──
-                      subscriptionAsync.when(
-                        data: (sub) {
-                          if (sub == null || !sub.isActive)
-                            return const SizedBox.shrink();
-                          final hoursUsed =
-                              (sub.hoursTotal ?? 0) - (sub.hoursBalance ?? 0);
-                          final saved = SavingsCalculator.calculate(
-                            hoursUsed: hoursUsed,
-                            plan: sub.plan,
-                            subscriptionCost: sub.priceUzs,
-                          );
-                          if (saved <= 0) return const SizedBox.shrink();
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: _SavingsWidget(saved: saved),
-                          );
-                        },
-                        loading: () => const SizedBox.shrink(),
-                        error: (_, __) => const SizedBox.shrink(),
-                      ),
-
-                      // ── 9. Friends online widget (social — demoted) ──
-                      if (FeatureFlags.friends) ...[
-                        const FriendsOnlineWidget(),
-                        const SizedBox(height: 16),
                       ],
-
-                      // ════════════════════════════════════════════
-                      // MARKETING — very bottom (each self-hides empty)
-                      // ════════════════════════════════════════════
-
-                      // ── 10. Stories bubbles ────────────────────
-                      if (FeatureFlags.stories) ...[
-                        const StoryBubbles(),
-                        const SizedBox(height: 16),
-                      ],
-
-                      // ── 11. Quick Actions ──────────────────────
-                      const _QuickActions(),
-                      const SizedBox(height: 16),
-
-                      // ── 12. Banners ────────────────────────────
-                      const BannersCarousel(),
-
-                      const SizedBox(height: 100),
-                    ]),
-                  ),
-                ),
+                    ),
+                    onPressed: () => context.push('/notifications'),
+                  );
+                }),
+                const SizedBox(width: 4),
               ],
             ),
-          ),
+
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  const SizedBox(height: 8),
+
+                  // ════════════════════════════════════════════
+                  // ABOVE THE FOLD — utility-first
+                  // ════════════════════════════════════════════
+
+                  // ── 1. Active session widget (genuine utility) ──
+                  // Only renders when a session is live.
+                  ref.watch(activeSessionProvider).when(
+                        data: (session) => session != null
+                            ? Padding(
+                                padding: const EdgeInsets.only(bottom: 16),
+                                child: ActiveSessionWidget(
+                                  session: session,
+                                  onEnded: () {
+                                    ref.invalidate(activeSessionProvider);
+                                    ref.invalidate(activeSubscriptionProvider);
+                                  },
+                                  activeSessionLabel:
+                                      ref.lang('home.active_session'),
+                                  endSessionLabel: ref.lang('home.end_session'),
+                                  clubDefault: ref.lang('common.club_default'),
+                                  errorPrefix: ref.lang('common.error_prefix'),
+                                  timeH: ref.lang('common.time_h'),
+                                  timeM: ref.lang('common.time_m'),
+                                  timeS: ref.lang('common.time_s'),
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                        loading: () => const SizedBox.shrink(),
+                        error: (_, __) => const SizedBox.shrink(),
+                      ),
+
+                  // ── 2. Compact subscription STATUS strip ────
+                  // No skeleton on loading — emit nothing so the layout
+                  // stays calm and the real strip slides in when ready.
+                  subscriptionAsync.when(
+                    data: (sub) => SubscriptionWidget(subscription: sub),
+                    loading: () => const SizedBox.shrink(),
+                    error: (_, __) => const _SubscriptionError(),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // ════════════════════════════════════════════
+                  // (Scan moved out of home — the floating scan
+                  //  button in the bottom nav is the single entry.)
+                  // ════════════════════════════════════════════
+
+                  // ── 4. Nearby Clubs Section (gated) ─────────
+                  // Render the whole section only when clubs exist;
+                  // otherwise emit nothing (no header, no "all →").
+                  ref.watch(nearbyClubsProvider).when(
+                        data: (clubs) => clubs.isEmpty
+                            ? const SizedBox.shrink()
+                            : Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  _SectionHeader(
+                                    title: ref.lang('home.nearby'),
+                                    action: ref.lang('home.all'),
+                                    onAction: () => context.go('/clubs'),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  NearbyClubsRow(
+                                      clubsAsync:
+                                          ref.watch(nearbyClubsProvider)),
+                                  const SizedBox(height: 24),
+                                ],
+                              ),
+                        loading: () => const SizedBox.shrink(),
+                        error: (_, __) => const SizedBox.shrink(),
+                      ),
+
+                  // ── 5. Recent Visits Section ───────────────
+                  _SectionHeader(
+                    title: ref.lang('home.recent'),
+                    action: ref.lang('home.history'),
+                    onAction: () => context.push('/profile/history'),
+                  ),
+                  const SizedBox(height: 12),
+                  RecentVisitsWidget(
+                      visitsAsync: ref.watch(recentVisitsProvider)),
+
+                  const SizedBox(height: 24),
+
+                  // ── 6. Streak widget (engagement — demoted) ──
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final streakAsync = ref.watch(streakProvider);
+                      return streakAsync.when(
+                        data: (data) {
+                          final days = data['streak_days'] as int? ?? 0;
+                          if (days < 1) return const SizedBox.shrink();
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: StreakWidget(
+                              streakDays: days,
+                              lastVisitDate:
+                                  data['last_visit_date'] as DateTime?,
+                            ),
+                          );
+                        },
+                        loading: () => const SizedBox.shrink(),
+                        error: (_, __) => const SizedBox.shrink(),
+                      );
+                    },
+                  ),
+
+                  // ── 7. Smart Home Feed (engagement — demoted) ──
+                  if (FeatureFlags.smartHomeFeed)
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final hintsAsync =
+                            ref.watch(homeRecommendationsProvider);
+                        return hintsAsync.when(
+                          data: (hints) {
+                            if (hints.isEmpty) return const SizedBox.shrink();
+                            return Column(
+                              children: hints
+                                  .take(2)
+                                  .map((h) => Padding(
+                                        padding:
+                                            const EdgeInsets.only(bottom: 10),
+                                        child: SmartHintCard(hint: h),
+                                      ))
+                                  .toList(),
+                            );
+                          },
+                          loading: () => const SizedBox.shrink(),
+                          error: (_, __) => const SizedBox.shrink(),
+                        );
+                      },
+                    ),
+
+                  // ── 8. Savings indicator (duplicates hours) ──
+                  subscriptionAsync.when(
+                    data: (sub) {
+                      if (sub == null || !sub.isActive)
+                        return const SizedBox.shrink();
+                      final hoursUsed =
+                          (sub.hoursTotal ?? 0) - (sub.hoursBalance ?? 0);
+                      final saved = SavingsCalculator.calculate(
+                        hoursUsed: hoursUsed,
+                        plan: sub.plan,
+                        subscriptionCost: sub.priceUzs,
+                      );
+                      if (saved <= 0) return const SizedBox.shrink();
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: _SavingsWidget(saved: saved),
+                      );
+                    },
+                    loading: () => const SizedBox.shrink(),
+                    error: (_, __) => const SizedBox.shrink(),
+                  ),
+
+                  // ── 9. Friends online widget (social — demoted) ──
+                  if (FeatureFlags.friends) ...[
+                    const FriendsOnlineWidget(),
+                    const SizedBox(height: 16),
+                  ],
+
+                  // ════════════════════════════════════════════
+                  // MARKETING — very bottom (each self-hides empty)
+                  // ════════════════════════════════════════════
+
+                  // ── 10. Stories bubbles ────────────────────
+                  if (FeatureFlags.stories) ...[
+                    const StoryBubbles(),
+                    const SizedBox(height: 16),
+                  ],
+
+                  // ── 11. Quick Actions ──────────────────────
+                  const _QuickActions(),
+                  const SizedBox(height: 16),
+
+                  // ── 12. Banners ────────────────────────────
+                  const BannersCarousel(),
+
+                  const SizedBox(height: 100),
+                ]),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -462,199 +445,6 @@ class _SectionHeader extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-// ── Scan Button (CTA) ───────────────────────────────────────
-
-class _ScanButton extends ConsumerStatefulWidget {
-  final bool hasActiveSubscription;
-  final bool isFrozen;
-  const _ScanButton(
-      {required this.hasActiveSubscription, this.isFrozen = false});
-
-  @override
-  ConsumerState<_ScanButton> createState() => _ScanButtonState();
-}
-
-class _ScanButtonState extends ConsumerState<_ScanButton>
-    with TickerProviderStateMixin {
-  late AnimationController _pulseController;
-  late AnimationController _pressController;
-
-  @override
-  void initState() {
-    super.initState();
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2000),
-    );
-    // Press animation: scale to 0.96 in 100ms, back to 1.0 with spring
-    _pressController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 120),
-      reverseDuration: const Duration(milliseconds: 220),
-    );
-    if (widget.hasActiveSubscription && !widget.isFrozen) {
-      _pulseController.repeat(reverse: true);
-    }
-  }
-
-  @override
-  void didUpdateWidget(covariant _ScanButton oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.hasActiveSubscription && !widget.isFrozen) {
-      if (!_pulseController.isAnimating) _pulseController.repeat(reverse: true);
-    } else {
-      _pulseController.stop();
-    }
-  }
-
-  @override
-  void dispose() {
-    _pulseController.dispose();
-    _pressController.dispose();
-    super.dispose();
-  }
-
-  void _handleTap() {
-    HapticFeedback.mediumImpact();
-    if (widget.isFrozen) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(ref.lang('home.frozen'))),
-      );
-    } else if (widget.hasActiveSubscription) {
-      context.go('/scanner');
-    } else {
-      context.push('/plans');
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final canScan = widget.hasActiveSubscription && !widget.isFrozen;
-
-    return GestureDetector(
-      onTapDown: (_) => _pressController.forward(),
-      onTapUp: (_) => _pressController.reverse(),
-      onTapCancel: () => _pressController.reverse(),
-      onTap: _handleTap,
-      child: AnimatedBuilder(
-        animation: Listenable.merge([_pulseController, _pressController]),
-        builder: (_, __) {
-          final pulse = canScan ? _pulseController.value : 0.0;
-          // Spring-out scale: 1.0 → 0.96 on press, back with elastic
-          final scale = 1.0 - (_pressController.value * 0.04);
-          return Transform.scale(
-            scale: scale,
-            child: _buildButton(canScan, pulse),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildButton(bool canScan, double pulse) {
-    // Visual hero: height ≈ half the screen width (large, tappable).
-    final heroHeight =
-        (MediaQuery.of(context).size.width * 0.5).clamp(180.0, 240.0);
-
-    return Container(
-      height: heroHeight,
-      decoration: BoxDecoration(
-        gradient: canScan
-            ? const LinearGradient(
-                colors: [
-                  AppTheme.primary,
-                  AppTheme.indigo,
-                  AppTheme.neonCyan,
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              )
-            : null,
-        color: canScan ? null : context.card,
-        borderRadius: BorderRadius.circular(20),
-        border: canScan
-            ? null
-            : Border.all(color: AppTheme.primary.withValues(alpha: 0.15)),
-        boxShadow: canScan
-            ? AppTheme.neonGlow(
-                color: AppTheme.primary,
-                radius: 24 + pulse * 16,
-                spread: pulse * 2,
-              )
-            : AppTheme.cardGlow(),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Stack(
-          children: [
-            // Inner shine highlight when active (gradient-relative)
-            if (canScan)
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                height: heroHeight * 0.5,
-                child: Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Color(0x1AFFFFFF),
-                        Color(0x00FFFFFF),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            // Button content — large icon + label, vertically centred
-            Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    widget.isFrozen
-                        ? Icons.ac_unit_rounded
-                        : widget.hasActiveSubscription
-                            ? Icons.qr_code_scanner_rounded
-                            : Icons.shopping_cart_outlined,
-                    color: canScan ? Colors.white : context.text3,
-                    size: 56,
-                  ),
-                  const SizedBox(height: 14),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        widget.isFrozen
-                            ? ref.lang('home.frozen')
-                            : widget.hasActiveSubscription
-                                ? ref.lang('home.scan_qr')
-                                : ref.lang('home.buy_sub'),
-                        style: TextStyle(
-                          color: canScan ? Colors.white : context.text3,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.3,
-                        ),
-                      ),
-                      if (canScan) ...[
-                        const SizedBox(width: 8),
-                        const Icon(Icons.arrow_forward_rounded,
-                            color: Colors.white, size: 24),
-                      ],
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

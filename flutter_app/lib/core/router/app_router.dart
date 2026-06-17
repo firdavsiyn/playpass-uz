@@ -333,49 +333,58 @@ class MainShell extends ConsumerWidget {
                     ),
                   ],
                 ),
-                child: BottomNavigationBar(
-                  currentIndex: shell.currentIndex,
-                  onTap: onTap,
-                  type: BottomNavigationBarType.fixed,
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                  selectedItemColor: AppTheme.primary,
-                  unselectedItemColor: context.text3,
-                  selectedLabelStyle: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 11,
+                // Respect the bottom safe area (home indicator on iPhone X+).
+                // The glass background still fills down to the screen edge;
+                // only the tappable items/labels are lifted above the inset.
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).padding.bottom,
                   ),
-                  unselectedLabelStyle: const TextStyle(fontSize: 11),
-                  items: [
-                    BottomNavigationBarItem(
-                      icon: const Icon(Icons.home_outlined, size: 24),
-                      activeIcon: const _NeonIcon(icon: Icons.home_rounded),
-                      label: s['nav.home']!,
+                  child: BottomNavigationBar(
+                    currentIndex: shell.currentIndex,
+                    onTap: onTap,
+                    type: BottomNavigationBarType.fixed,
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    selectedItemColor: AppTheme.primary,
+                    unselectedItemColor: context.text3,
+                    selectedLabelStyle: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 11,
                     ),
-                    BottomNavigationBarItem(
-                      icon: const Icon(Icons.map_outlined, size: 24),
-                      activeIcon: const _NeonIcon(icon: Icons.map_rounded),
-                      label: s['nav.clubs']!,
-                    ),
-                    // Invisible placeholder — the real button is the floating overlay
-                    BottomNavigationBarItem(
-                      icon: const SizedBox(height: 24, width: 24),
-                      activeIcon: const SizedBox(height: 24, width: 24),
-                      label: '',
-                    ),
-                    BottomNavigationBarItem(
-                      icon:
-                          const Icon(Icons.card_membership_outlined, size: 24),
-                      activeIcon:
-                          const _NeonIcon(icon: Icons.card_membership_rounded),
-                      label: s['nav.subscription']!,
-                    ),
-                    BottomNavigationBarItem(
-                      icon: const Icon(Icons.person_outline_rounded, size: 24),
-                      activeIcon: const _NeonIcon(icon: Icons.person_rounded),
-                      label: s['nav.profile']!,
-                    ),
-                  ],
+                    unselectedLabelStyle: const TextStyle(fontSize: 11),
+                    items: [
+                      BottomNavigationBarItem(
+                        icon: const Icon(Icons.home_outlined, size: 24),
+                        activeIcon: const _NeonIcon(icon: Icons.home_rounded),
+                        label: s['nav.home']!,
+                      ),
+                      BottomNavigationBarItem(
+                        icon: const Icon(Icons.map_outlined, size: 24),
+                        activeIcon: const _NeonIcon(icon: Icons.map_rounded),
+                        label: s['nav.clubs']!,
+                      ),
+                      // Invisible placeholder — the real button is the floating overlay
+                      BottomNavigationBarItem(
+                        icon: const SizedBox(height: 24, width: 24),
+                        activeIcon: const SizedBox(height: 24, width: 24),
+                        label: '',
+                      ),
+                      BottomNavigationBarItem(
+                        icon: const Icon(Icons.card_membership_outlined,
+                            size: 24),
+                        activeIcon: const _NeonIcon(
+                            icon: Icons.card_membership_rounded),
+                        label: s['nav.subscription']!,
+                      ),
+                      BottomNavigationBarItem(
+                        icon:
+                            const Icon(Icons.person_outline_rounded, size: 24),
+                        activeIcon: const _NeonIcon(icon: Icons.person_rounded),
+                        label: s['nav.profile']!,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
