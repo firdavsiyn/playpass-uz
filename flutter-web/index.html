@@ -277,18 +277,10 @@
     // Build an SVG icon based on club type + live occupancy
     // occupancyPct: -1 = no data, 0-49 free (green), 50-79 busy (yellow), 80+ full (red)
     window._buildMarkerIcon = function(hasPc, hasPs, isVip, isOpen, occupancyPct) {
-      if (!hasPc && !hasPs) hasPc = true;
-      var mode = (hasPc && hasPs) ? 'both' : (hasPs ? 'ps' : 'pc');
-
-      // Occupancy ring color
-      var occColor = null;
-      if (occupancyPct >= 0 && isOpen) {
-        if (occupancyPct < 50) occColor = '#22C55E';      // green
-        else if (occupancyPct < 80) occColor = '#F59E0B'; // yellow
-        else occColor = '#EF4444';                         // red
-      }
-
-      var key = 'v4_' + mode + '_' + isVip + '_' + isOpen + '_' + (occColor || 'na');
+      // Clean teardrop pin — no PC/PS glyphs, no occupancy ring (per request).
+      // Open/closed is conveyed by marker opacity (set in addClubMarkers) +
+      // the small status dot below; VIP shows a brand-lime edge.
+      var key = 'v5_' + isVip + '_' + isOpen;
       if (window._ymapIconCache[key]) return window._ymapIconCache[key];
 
       // Brand gradient inside the pin
@@ -298,81 +290,26 @@
         '<stop offset="100%" stop-color="#4D8DF0"/></linearGradient>';
       var fillFill = 'url(#' + gradId + ')';
 
-      // Occupancy color overrides default white border; VIP gold has priority
-      var borderColor = isVip ? '#E6F945' : (occColor || '#FFFFFF'); // brand lime for VIP
-      var borderWidth = (isVip || occColor) ? 2.5 : 2;
+      // VIP → brand-lime edge; otherwise a clean white edge. No occupancy ring.
+      var borderColor = isVip ? '#E6F945' : '#FFFFFF';
+      var borderWidth = isVip ? 2.5 : 2;
 
-      // Pin geometry — Google Maps-style teardrop
-      // Single icon: 44×56 (point at bottom). Dual: 64×56 capsule with bottom point
-      var isWide = (mode === 'both');
-      var width = isWide ? 64 : 44;
-      var height = 56;
+      var width = 44, height = 56;
+      var pinPath = 'M 22 4 C 12 4 4 12 4 22 C 4 32 12 38 22 54 C 32 38 40 32 40 22 C 40 12 32 4 22 4 Z';
 
-      // Pin path: rounded top + pointed bottom (anchor at center-bottom of viewport)
-      var pinPath;
-      if (isWide) {
-        // Wider capsule pin for 'both' mode
-        pinPath = 'M 8 4 Q 4 4 4 14 L 4 32 Q 4 42 14 42 L ' + (width - 14) +
-          ' 42 Q ' + (width - 4) + ' 42 ' + (width - 4) + ' 32 L ' + (width - 4) +
-          ' 14 Q ' + (width - 4) + ' 4 ' + (width - 8) + ' 4 Z ' +
-          // Bottom point
-          'M ' + (width / 2 - 6) + ' 42 L ' + (width / 2) + ' 54 L ' + (width / 2 + 6) + ' 42 Z';
-      } else {
-        // Standard teardrop pin
-        pinPath = 'M 22 4 C 12 4 4 12 4 22 C 4 32 12 38 22 54 C 32 38 40 32 40 22 C 40 12 32 4 22 4 Z';
-      }
-
-      // Glyphs translate slightly UP so they're centered in the round head, not the tail
-      function pcGlyph(tx, ty) {
-        return '<g transform="translate(' + tx + ', ' + ty + ') scale(0.78)">' +
-          '<rect x="2" y="3" width="20" height="14" rx="2" fill="none" stroke="white" stroke-width="2"/>' +
-          '<line x1="8" y1="21" x2="16" y2="21" stroke="white" stroke-width="2" stroke-linecap="round"/>' +
-          '<line x1="12" y1="17" x2="12" y2="21" stroke="white" stroke-width="2"/>' +
-          '</g>';
-      }
-      function psGlyph(tx, ty) {
-        return '<g transform="translate(' + tx + ', ' + ty + ') scale(0.78)">' +
-          '<path d="M 4 8 Q 4 3 9 3 L 15 3 Q 20 3 20 8 L 20 12 Q 20 17 15 17 L 14 14 L 10 14 L 9 17 Q 4 17 4 12 Z" ' +
-          'fill="none" stroke="white" stroke-width="2" stroke-linejoin="round"/>' +
-          '<rect x="7" y="9" width="3" height="1.2" fill="white"/>' +
-          '<rect x="8" y="8" width="1.2" height="3" fill="white"/>' +
-          '<circle cx="15" cy="8.5" r="0.9" fill="white"/>' +
-          '<circle cx="16.5" cy="10" r="0.9" fill="white"/>' +
-          '<circle cx="15" cy="11.5" r="0.9" fill="white"/>' +
-          '<circle cx="13.5" cy="10" r="0.9" fill="white"/>' +
-          '</g>';
-      }
-
-      var content;
-      if (mode === 'both') {
-        // PC on the left, PS on the right, both in the head zone (y=8)
-        content = pcGlyph(8, 8) + psGlyph(34, 8);
-      } else if (mode === 'ps') {
-        content = psGlyph(11, 7);
-      } else {
-        content = pcGlyph(11, 7);
-      }
-
-      // Drop shadow under the pin
-      var shadow = '<ellipse cx="' + (width / 2) + '" cy="' + (height - 1) +
-        '" rx="7" ry="2.5" fill="rgba(0,0,0,0.22)"/>';
-
-      // Glossy specular highlight on the head — gives a glassy, premium look
-      var gloss = isWide
-        ? '<ellipse cx="' + (width / 2) + '" cy="13" rx="' + (width / 2 - 10) + '" ry="4.5" fill="#FFFFFF" opacity="0.16"/>'
-        : '<ellipse cx="22" cy="14" rx="9" ry="5" fill="#FFFFFF" opacity="0.20"/>';
+      var shadow = '<ellipse cx="22" cy="55" rx="7" ry="2.5" fill="rgba(0,0,0,0.22)"/>';
+      var gloss = '<ellipse cx="22" cy="14" rx="9" ry="5" fill="#FFFFFF" opacity="0.20"/>';
 
       var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + width + '" height="' + height + '">' +
         '<defs>' + gradStops + '</defs>' +
         shadow +
         '<path d="' + pinPath + '" fill="' + fillFill +
         '" stroke="' + borderColor + '" stroke-width="' + borderWidth + '" stroke-linejoin="round"/>' +
-        gloss +
-        content;
+        gloss;
 
       if (isOpen) {
-        // Green "open now" dot in top-right of the head
-        svg += '<circle cx="' + (width - 8) + '" cy="8" r="4" fill="#22C55E" stroke="white" stroke-width="1.5"/>';
+        // Small "open now" status dot (top-right) — not the removed ring.
+        svg += '<circle cx="36" cy="8" r="4" fill="#22C55E" stroke="white" stroke-width="1.5"/>';
       }
       svg += '</svg>';
 
