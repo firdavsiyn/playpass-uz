@@ -338,7 +338,12 @@ class HomeScreen extends ConsumerWidget {
                           final hintsAsync =
                               ref.watch(homeRecommendationsProvider);
                           return hintsAsync.when(
-                            data: (hints) {
+                            data: (allHints) {
+                              // Drop the "Самое игровое время" (time_suggest)
+                              // card — kept other hints (expiry, comeback…).
+                              final hints = allHints
+                                  .where((h) => h['type'] != 'time_suggest')
+                                  .toList();
                               if (hints.isEmpty) return const SizedBox.shrink();
                               return Column(
                                 children: hints
