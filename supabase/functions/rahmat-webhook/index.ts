@@ -90,33 +90,26 @@ Deno.serve(async (req) => {
       return new Response('Amount mismatch', { status: 400 });
     }
 
-    // ── 5. Already-completed → idempotent success ────────────
-    if (payment.status === 'completed') {
-      return jsonOk({ received: true, already_completed: true });
-    }
-
-    // ── 6. Optimistic-lock: pending → completed (atomic) ──────
-    // Same CAS pattern as click-webhook — only the first worker advances
-    // the status, every other concurrent / replayed webhook sees zero
-    // rows changed and returns idempotent success.
-    const { data: claimed, error: claimErr } = await admin
-      .from('payments')
-      .update({
-        status: 'completed',
-        provider_transaction_id: txnId ?? null,
-        completed_at: new Date().toISOString(),
-      })
-      .eq('id', order_id)
-      .eq('status', 'pending')
-      .select('id, user_id');
-
-    if (claimErr) {
-      console.error('Payment claim failed:', claimErr);
-      return new Response('Internal error', { status: 500 });
-    }
-    if (!claimed || claimed.length === 0) {
-      // Someone else already advanced this payment. Idempotent OK.
-      return jsonOk({ received: true, already_completed: true });
+    // ── 5/6. Self-healing complete + activate (audit High #4) ────────
+    // The old code returned success on the already-'completed' path WITHOUT
+    // activating, so a prior attempt that flipped status but failed
+    // activation lost the subscription forever. Now we flip pending→completed
+    // via atomic CAS, then ALWAYS call activation (idempotent via
+    // payments.activated), so a Rahmat retry re-provisions a failed one.
+    if (payment.status === 'pending') {
+      const { error: claimErr } = await admin
+        .from('payments')
+        .update({
+          status: 'completed',
+          provider_transaction_id: txnId ?? null,
+          completed_at: new Date().toISOString(),
+        })
+        .eq('id', order_id)
+        .eq('status', 'pending'); // ← optimistic lock; race-safe
+      if (claimErr) {
+        console.error('Payment claim failed:', order_id, claimErr);
+        return new Response('Internal error', { status: 500 });
+      }
     }
 
     // ── 7. Activate subscription via SECURITY DEFINER RPC ─────
@@ -125,13 +118,12 @@ Deno.serve(async (req) => {
       { payment_id: order_id },
     );
     if (activateErr) {
-      console.error('Activation failed:', activateErr);
-      // Payment is marked completed but activation failed — needs manual
-      // review. Returning 500 prompts Rahmat to retry.
+      // 500 prompts Rahmat to retry → idempotent activation self-heals.
+      console.error('ALERT activation failed (rahmat):', order_id, activateErr);
       return new Response('Activation failed', { status: 500 });
     }
 
-    const userId = claimed[0].user_id as string;
+    const userId = payment.user_id as string;
 
     // ── 8. First-time-buyer → trigger referral bonus ──────────
     const { count: subCount } = await admin

@@ -84,16 +84,18 @@ class AppConstants {
   // ── Тарифы ─────────────────────────────────────────────────
   // ВАЖНО: поле hours теперь трактуется как ВИЗИТЫ/мес (BM v1.2).
   static const Map<String, PlanConfig> plans = {
-    // Day-Pass — пробный вход: 4 визита, действует 1 день
+    // Day-Pass — пробный вход: 2 визита в дневное время (08–18), 1 день.
+    // Money-safe: 2 × 10000 off-peak payout = 20000 < 25000 цена (золотое
+    // правило). Off-peak обязателен — check-in блокирует вечер/ночь.
     'daily': PlanConfig(
       id: 'daily',
       name: 'Day Pass',
-      hours: 4,
+      hours: 2,
       isUnlimited: false,
       priceUzs: 25000,
-      description: '4 визита на 1 день, Базовая зона',
+      description: '2 визита (08:00–18:00), 1 день, Базовая зона',
       allowedZones: ['basic'],
-      allowedSlots: ['day', 'evening', 'night'],
+      allowedSlots: ['day'],
     ),
     // Day — основной off-peak тариф: 12 визитов, только день 08–18
     'day': PlanConfig(

@@ -539,60 +539,26 @@ class SupabaseService {
   }
 
   Future<Map<String, dynamic>> applyPromoCode(String code) async {
-    final userId = _userId;
-    final promo = await validatePromoCode(code);
-    if (promo == null) throw Exception('Промокод недействителен или истёк');
-
-    final promoId = promo['id'] as String;
-    final type = promo['type'] as String? ?? 'hours';
-    final value = promo['value'] as int? ?? 0;
-
-    // Check if user already used this promo
-    final existing = await _client
-        .from('promo_usages')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('promo_id', promoId)
-        .maybeSingle();
-    if (existing != null) throw Exception('Вы уже использовали этот промокод');
-
-    // Record usage
-    await _client.from('promo_usages').insert({
-      'user_id': userId,
-      'promo_id': promoId,
-    });
-
-    // Increment used_count
-    await _client.from('promos').update({
-      'used_count': (promo['used_count'] as int? ?? 0) + 1,
-    }).eq('id', promoId);
-
-    // Apply bonus based on type
-    if (type == 'hours') {
-      // Add hours to active subscription
-      final sub = await getActiveSubscription();
-      if (sub != null) {
-        await _client.from('subscriptions').update({
-          'hours_balance': (sub.hoursBalance ?? 0) + value,
-        }).eq('id', sub.id);
-      }
-    } else if (type == 'days') {
-      // Extend subscription
-      final sub = await getActiveSubscription();
-      if (sub != null) {
-        final newEnd = sub.endDate.add(Duration(days: value));
-        await _client.from('subscriptions').update({
-          'end_date': newEnd.toIso8601String().split('T')[0],
-        }).eq('id', sub.id);
-      }
-    } else if (type == 'discount') {
-      // Discount promos are validated at payment time, just record usage
+    // Server-authorized, atomic redemption + bonus application (definer RPC).
+    // No client-side promo_usages/promos/subscriptions writes (which were
+    // spoofable AND never actually applied the bonus — audit High #3).
+    final res = await _client.rpc('redeem_promo', params: {'p_code': code});
+    final map = (res as Map).cast<String, dynamic>();
+    if (map['success'] != true) {
+      final reason = map['reason'] as String? ?? 'unknown';
+      throw Exception(switch (reason) {
+        'not_authenticated' => 'Войдите в аккаунт',
+        'invalid_or_exhausted' => 'Промокод недействителен или израсходован',
+        'already_used' => 'Вы уже использовали этот промокод',
+        'no_active_subscription' =>
+          'Нужна активная подписка, чтобы применить промокод',
+        'no_bonus_needed' => 'У вас безлимит — бонус-часы не нужны',
+        _ => 'Не удалось применить промокод',
+      });
     }
-
     return {
-      'type': type,
-      'value': value,
-      'description': promo['description'] as String? ?? '',
+      'type': map['type'] as String? ?? 'hours',
+      'value': map['value'] as int? ?? 0,
     };
   }
 

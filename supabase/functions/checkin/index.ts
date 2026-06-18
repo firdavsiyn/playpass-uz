@@ -102,9 +102,11 @@ serve(async (req) => {
       }
     }
 
-    // ── 6b. Off-peak gate for the Day tariff ──────────────────
-    // Plan 'day' only works 08:00–18:00 (local Tashkent = UTC+5).
-    if (subscription.plan === "day") {
+    // ── 6b. Off-peak gate for the Day + Day-Pass tariffs ──────
+    // Plans 'day' and 'daily' only work 08:00–18:00 (local Tashkent = UTC+5).
+    // Day-Pass MUST be off-peak: at 2 visits × 10000 off-peak payout (20000)
+    // it stays under the 25000 price; peak (18000) visits would lose money.
+    if (subscription.plan === "day" || subscription.plan === "daily") {
       const tashkentHour = (new Date().getUTCHours() + 5) % 24;
       if (tashkentHour < 8 || tashkentHour >= 18) {
         return json({

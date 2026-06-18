@@ -67,54 +67,37 @@ Deno.serve(async (req) => {
     if (action === 1) {
       // Complete: mark paid + activate subscription.
       //
-      // IDEMPOTENCY GUARD: two concurrent webhooks (Click retry, attacker
-      // replay) must NOT cause double activation. We rely on a conditional
-      // UPDATE with .eq('status', 'pending') as an atomic compare-and-swap:
-      // only the first caller flips pending → completed. Everyone else sees
-      // zero rows affected and returns idempotent success without
-      // re-running activation.
-      if (payment.status === 'completed') {
-        return clickOk({
-          click_trans_id: clickTransId,
-          merchant_trans_id: orderId,
-          merchant_confirm_id: payment.id,
-        });
+      // Two-step write made SELF-HEALING (audit High #4): the old code
+      // returned success on the already-'completed' path WITHOUT activating,
+      // so if a prior attempt flipped status but then failed activation the
+      // subscription was lost forever. Now we (a) flip pending→completed via
+      // an atomic CAS, then (b) ALWAYS call activation. Activation is
+      // idempotent (guarded by payments.activated), so re-calling it on every
+      // Click retry is safe and re-provisions a previously-failed activation.
+      if (payment.status === 'pending') {
+        const { error: claimErr } = await admin
+          .from('payments')
+          .update({
+            status: 'completed',
+            provider_transaction_id: clickTransId,
+            completed_at: new Date().toISOString(),
+          })
+          .eq('id', orderId)
+          .eq('status', 'pending'); // ← optimistic lock; race-safe
+        if (claimErr) {
+          console.error('Payment claim failed:', orderId, claimErr);
+          return clickError(-9, 'Internal error');
+        }
       }
 
-      const { data: claimed, error: claimErr } = await admin
-        .from('payments')
-        .update({
-          status: 'completed',
-          provider_transaction_id: clickTransId,
-          completed_at: new Date().toISOString(),
-        })
-        .eq('id', orderId)
-        .eq('status', 'pending') // ← optimistic lock; race-safe
-        .select('id');
-
-      if (claimErr) {
-        console.error('Payment claim failed:', claimErr);
-        return clickError(-9, 'Internal error');
-      }
-
-      if (!claimed || claimed.length === 0) {
-        // Someone else (or the previous attempt) already completed it.
-        // Don't re-activate — return success per Click protocol.
-        return clickOk({
-          click_trans_id: clickTransId,
-          merchant_trans_id: orderId,
-          merchant_confirm_id: payment.id,
-        });
-      }
-
-      // We are the unique winner — activate now.
       const { error: activateErr } = await admin.rpc('activate_subscription_from_payment', {
         payment_id: orderId,
       });
 
       if (activateErr) {
-        console.error('Activation failed:', activateErr);
-        // Payment is marked completed but activation failed — needs manual review
+        // Returning an error makes Click retry → idempotent activation
+        // re-attempts and self-heals. This log line is the dead-letter hook.
+        console.error('ALERT activation failed (click):', orderId, activateErr);
         return clickError(-9, 'Activation failed: ' + activateErr.message);
       }
 
