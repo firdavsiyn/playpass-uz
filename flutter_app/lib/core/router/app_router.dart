@@ -100,6 +100,12 @@ final routerProvider = Provider<GoRouter>((ref) {
           (raw.contains('error=') && raw.contains('error_description='));
       if (isAuthCallback) {
         final user = Supabase.instance.client.auth.currentUser;
+        // Password-recovery links must land on the reset screen, not /home.
+        // The SDK sets a recovery session (user != null), so without this
+        // special-case the generic fallback below would swallow it.
+        if (raw.contains('type=recovery')) {
+          return user != null ? '/auth/reset-password' : '/auth/login';
+        }
         return user != null ? '/home' : '/auth/login';
       }
 

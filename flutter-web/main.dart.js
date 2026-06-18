@@ -106754,24 +106754,26 @@ if(r.e!=null){s=this.b!=null?"/home":"/auth/login"
 A.c4(r).fc(0,s,null)}},
 $S:4}
 A.b6q.prototype={
-$2(a,b){var s,r,q,p,o="/auth/login",n=b.b.j(0),m=!0
-if(!B.d.n(n,"access_token="))if(!B.d.n(n,"refresh_token=")){if(!B.d.n(n,"type=signup"))if(!B.d.n(n,"type=recovery"))s=B.d.n(n,"error=")&&B.d.n(n,"error_description=")
-else s=m
-else s=m
-m=s}if(m){s=$.dK().b
+$2(a,b){var s,r,q,p,o,n="type=recovery",m="/auth/reset-password",l="/auth/login",k=b.b.j(0),j=!0
+if(!B.d.n(k,"access_token="))if(!B.d.n(k,"refresh_token=")){if(!B.d.n(k,"type=signup"))if(!B.d.n(k,n))s=B.d.n(k,"error=")&&B.d.n(k,"error_description=")
+else s=j
+else s=j
+j=s}if(j){s=$.dK().b
 s===$&&A.a()
 s=s.gcl().c
-return(s==null?null:s.r)!=null?"/home":o}s=$.dK().b
+r=s==null?null:s.r
+if(B.d.n(k,n))return r!=null?m:l
+return r!=null?"/home":l}s=$.dK().b
 s===$&&A.a()
 s=s.gcl().c
 s=(s==null?null:s.r)==null
-r=b.f
-q=B.d.bg(r,"/auth")
-if(s&&!q)return o
-p=!1
-if(!s)if(r!=="/auth/reset-password")s=r==="/"||q
-else s=p
-else s=p
+q=b.f
+p=B.d.bg(q,"/auth")
+if(s&&!p)return l
+o=!1
+if(!s)if(q!==m)s=q==="/"||p
+else s=o
+else s=o
 if(s)return"/home"
 return null},
 $S:24}
