@@ -406,7 +406,7 @@ class AppTheme {
           onError: Colors.white,
         ),
         scaffoldBackgroundColor: bgDark,
-        fontFamily: 'Poppins',
+        fontFamily: 'Urbanist',
 
         // AppBar — transparent blend with background
         appBarTheme: const AppBarTheme(
@@ -415,7 +415,7 @@ class AppTheme {
           scrolledUnderElevation: 0,
           centerTitle: false,
           titleTextStyle: TextStyle(
-            fontFamily: 'SpaceGrotesk',
+            fontFamily: 'Urbanist',
             fontSize: 20,
             fontWeight: FontWeight.w700,
             color: textPrimary,
@@ -446,7 +446,7 @@ class AppTheme {
               borderRadius: BorderRadius.circular(16),
             ),
             textStyle: const TextStyle(
-              fontFamily: 'Poppins',
+              fontFamily: 'Urbanist',
               fontSize: 15,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.2,
@@ -463,7 +463,7 @@ class AppTheme {
               borderRadius: BorderRadius.circular(14),
             ),
             textStyle: const TextStyle(
-              fontFamily: 'Poppins',
+              fontFamily: 'Urbanist',
               fontSize: 15,
               fontWeight: FontWeight.w600,
             ),
@@ -475,7 +475,7 @@ class AppTheme {
           style: TextButton.styleFrom(
             foregroundColor: primaryLight,
             textStyle: const TextStyle(
-              fontFamily: 'Poppins',
+              fontFamily: 'Urbanist',
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -535,30 +535,30 @@ class AppTheme {
         // Text theme — bolder, more impactful
         textTheme: const TextTheme(
           displayLarge: TextStyle(
-              fontFamily: 'SpaceGrotesk',
+              fontFamily: 'Urbanist',
               color: textPrimary,
               fontWeight: FontWeight.w700,
               letterSpacing: -1),
           displayMedium: TextStyle(
-              fontFamily: 'SpaceGrotesk',
+              fontFamily: 'Urbanist',
               color: textPrimary,
               fontWeight: FontWeight.w700,
               letterSpacing: -0.5),
           headlineLarge: TextStyle(
-              fontFamily: 'SpaceGrotesk',
+              fontFamily: 'Urbanist',
               color: textPrimary,
               fontWeight: FontWeight.w700,
               letterSpacing: -0.5),
           headlineMedium: TextStyle(
-              fontFamily: 'SpaceGrotesk',
+              fontFamily: 'Urbanist',
               color: textPrimary,
               fontWeight: FontWeight.w700),
           headlineSmall: TextStyle(
-              fontFamily: 'SpaceGrotesk',
+              fontFamily: 'Urbanist',
               color: textPrimary,
               fontWeight: FontWeight.w700),
           titleLarge: TextStyle(
-              fontFamily: 'SpaceGrotesk',
+              fontFamily: 'Urbanist',
               color: textPrimary,
               fontWeight: FontWeight.w700,
               letterSpacing: -0.3),
@@ -642,7 +642,7 @@ class AppTheme {
           onError: Colors.white,
         ),
         scaffoldBackgroundColor: lightBg,
-        fontFamily: 'Poppins',
+        fontFamily: 'Urbanist',
 
         appBarTheme: const AppBarTheme(
           backgroundColor: lightBg,
@@ -650,7 +650,7 @@ class AppTheme {
           scrolledUnderElevation: 0,
           centerTitle: false,
           titleTextStyle: TextStyle(
-            fontFamily: 'SpaceGrotesk',
+            fontFamily: 'Urbanist',
             fontSize: 20,
             fontWeight: FontWeight.w700,
             color: lightTextPrimary,
@@ -678,7 +678,7 @@ class AppTheme {
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             textStyle: const TextStyle(
-                fontFamily: 'Poppins',
+                fontFamily: 'Urbanist',
                 fontSize: 15,
                 fontWeight: FontWeight.w700),
           ),
@@ -752,30 +752,30 @@ class AppTheme {
 
         textTheme: const TextTheme(
           displayLarge: TextStyle(
-              fontFamily: 'SpaceGrotesk',
+              fontFamily: 'Urbanist',
               color: lightTextPrimary,
               fontWeight: FontWeight.w700,
               letterSpacing: -1),
           displayMedium: TextStyle(
-              fontFamily: 'SpaceGrotesk',
+              fontFamily: 'Urbanist',
               color: lightTextPrimary,
               fontWeight: FontWeight.w700,
               letterSpacing: -0.5),
           headlineLarge: TextStyle(
-              fontFamily: 'SpaceGrotesk',
+              fontFamily: 'Urbanist',
               color: lightTextPrimary,
               fontWeight: FontWeight.w700,
               letterSpacing: -0.5),
           headlineMedium: TextStyle(
-              fontFamily: 'SpaceGrotesk',
+              fontFamily: 'Urbanist',
               color: lightTextPrimary,
               fontWeight: FontWeight.w700),
           headlineSmall: TextStyle(
-              fontFamily: 'SpaceGrotesk',
+              fontFamily: 'Urbanist',
               color: lightTextPrimary,
               fontWeight: FontWeight.w700),
           titleLarge: TextStyle(
-              fontFamily: 'SpaceGrotesk',
+              fontFamily: 'Urbanist',
               color: lightTextPrimary,
               fontWeight: FontWeight.w700,
               letterSpacing: -0.3),

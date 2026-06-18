@@ -227,16 +227,25 @@
           suppressMapOpenBlock: true,
         });
 
+        // Custom brand cluster icon — navy-gradient bubble with a lime ring and
+        // a soft glow, count centered in white. Replaces the default pie chart.
+        var ClusterLayout = ymaps.templateLayoutFactory.createClass(
+          '<div style="width:46px;height:46px;margin-left:-23px;margin-top:-23px;' +
+          'border-radius:50%;display:flex;align-items:center;justify-content:center;' +
+          'color:#fff;font:700 15px Poppins,-apple-system,BlinkMacSystemFont,sans-serif;' +
+          'background:radial-gradient(circle at 50% 34%,#2E6FE0,#013A7A);' +
+          'border:1.5px solid rgba(230,249,69,0.85);' +
+          'box-shadow:0 0 0 4px rgba(46,111,224,0.22),0 4px 12px rgba(0,0,0,0.40);">' +
+          '{{ properties.geoObjects.length }}</div>'
+        );
+
         // Create ObjectManager with clustering — handles 100s of markers efficiently
         var om = new ymaps.ObjectManager({
           clusterize: true,
           gridSize: 64,             // cluster cell in pixels
           clusterDisableClickZoom: false, // click cluster = zoom in
-          // Preset cluster icon color
-          clusterIconLayout: 'default#pieChart',
-          clusterIconPieChartRadius: 20,
-          clusterIconPieChartCoreRadius: 12,
-          clusterIconPieChartStrokeWidth: 2,
+          clusterIconLayout: ClusterLayout,
+          clusterIconShape: { type: 'Circle', coordinates: [0, 0], radius: 23 },
         });
 
         window._ymapInstance = map;
@@ -290,7 +299,7 @@
       var fillFill = 'url(#' + gradId + ')';
 
       // Occupancy color overrides default white border; VIP gold has priority
-      var borderColor = isVip ? '#FBBF24' : (occColor || '#FFFFFF');
+      var borderColor = isVip ? '#E6F945' : (occColor || '#FFFFFF'); // brand lime for VIP
       var borderWidth = (isVip || occColor) ? 2.5 : 2;
 
       // Pin geometry — Google Maps-style teardrop
@@ -346,13 +355,19 @@
 
       // Drop shadow under the pin
       var shadow = '<ellipse cx="' + (width / 2) + '" cy="' + (height - 1) +
-        '" rx="6" ry="2" fill="rgba(0,0,0,0.25)"/>';
+        '" rx="7" ry="2.5" fill="rgba(0,0,0,0.22)"/>';
+
+      // Glossy specular highlight on the head — gives a glassy, premium look
+      var gloss = isWide
+        ? '<ellipse cx="' + (width / 2) + '" cy="13" rx="' + (width / 2 - 10) + '" ry="4.5" fill="#FFFFFF" opacity="0.16"/>'
+        : '<ellipse cx="22" cy="14" rx="9" ry="5" fill="#FFFFFF" opacity="0.20"/>';
 
       var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + width + '" height="' + height + '">' +
         '<defs>' + gradStops + '</defs>' +
         shadow +
         '<path d="' + pinPath + '" fill="' + fillFill +
         '" stroke="' + borderColor + '" stroke-width="' + borderWidth + '" stroke-linejoin="round"/>' +
+        gloss +
         content;
 
       if (isOpen) {

@@ -649,7 +649,7 @@ class _BentoDashboard extends ConsumerWidget {
                 color: context.text1,
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
-                fontFamily: 'SpaceGrotesk',
+                fontFamily: 'Urbanist',
               ),
             ),
             const SizedBox(height: 16),
